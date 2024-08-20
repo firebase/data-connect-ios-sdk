@@ -77,7 +77,7 @@ public struct LocalDate: Codable, Equatable, CustomStringConvertible {
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
-extension LocalDate: Codable {
+extension LocalDate {
   public init(from decoder: any Decoder) throws {
     let container = try decoder.singleValueContainer()
     let localDateString = try container.decode(String.self)
@@ -97,7 +97,7 @@ extension LocalDate: Codable {
 // MARK: Equatable, Comparable
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
-extension LocalDate: Comparable, Equatable {
+extension LocalDate {
   public static func < (lhs: LocalDate, rhs: LocalDate) -> Bool {
     return lhs.date < rhs.date
   }

@@ -17,7 +17,6 @@ import Foundation
 import FirebaseAppCheck
 import FirebaseAuth
 import FirebaseCoreInternal
-import FirebaseSharedSwift
 import GRPC
 import NIOCore
 import NIOHPACK

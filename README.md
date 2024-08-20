@@ -37,14 +37,14 @@ Here's a quick rundown of steps to get you started. Learn more about details at 
 ### 1. Create a new Data Connect service and Cloud SQL instance.
 * Go to Firebase Console and select Firebase Data Connect from the Left Navigation bar to create a new Data Connect service and a Cloud SQL instance. You have to be in Blaze plan and you can view the details of pricing at https://firebase.google.com/pricing.
 * Select us-central1 region if you want to try out vector search with Data Connect later.
-* Your Cloud SQL instance is now to be provisioned, you can view and manage the instance at the [Cloud console](https://pantheon.corp.google.com/sql).
+* Your Cloud SQL instance is now to be provisioned, you can view and manage the instance at the Google Cloud console.
 
 ### 2. Setup your iOS app and [initialize Firebase](https://firebase.google.com/docs/ios/setup)
 
 #### The following steps will guide you to setup your schema and create query operation that you need for your app. The toolings below will help you to test out your query with dummy data and once you are happy with your query, the tools will help generate client code for that query so you can call directly from your app.
 
 
-### 3. Set up [Firebase CLI](https://firebase.devsite.corp.google.com/docs/cli)
+### 3. Set up [Firebase CLI](https://firebase.google.com/docs/cli)
 
 * If you already have CLI, make sure you always update to the latest version
 ```
@@ -90,7 +90,7 @@ type User @table(key: "uid") {
 * Fill out the fields and click on Run button to run the query to add a user dummy data for testing
 
 ### 7. Deploy your schema
-* To deploy your schema, you will need your Cloud SQL instance to be ready. You can view the instance at the [Cloud console](https://pantheon.corp.google.com/sql).
+* To deploy your schema, you will need your Cloud SQL instance to be ready. You can view the instance at the Cloud Cloud console.
 * Select the Firebase icon on the left and Click on the "Deploy all" button to deploy all the schema and operations to backend.
 * You can now see your schemas on the Firebase Console.
 
