@@ -12,7 +12,7 @@
 
 # Firebase Apple Open Source Development
 
-This repository contains the source code for Apple platform Firebase Data Connect SDKs. 
+This repository contains the source code of Firebase Data Connect SDKs for development on Apple platforms. 
 
 Firebase Data Connect (https://firebase.google.com/products/data-connect) lets you build applications with CloudSQL for PostgreSQL
 
@@ -26,20 +26,6 @@ monetize your app. More information about Firebase can be found on the
 
 Instructions for [Swift Package Manager](https://swift.org/package-manager/) support can be
 found in the [SwiftPackageManager.md](SwiftPackageManager.md) Markdown file.
-
-### Installing from GitHub
-
-These instructions can be used to access the Firebase repo at other branches,
-tags, or commits.
-
-#### Background
-
-See [the Podfile Syntax Reference](https://guides.cocoapods.org/syntax/podfile.html#pod)
-for instructions and options about overriding pod source locations.
-
-### Using Firebase from a Framework or a library
-
-For details on using Firebase from a Framework or a library, refer to [firebase_in_libraries.md](docs/firebase_in_libraries.md).
 
 ## Getting Started
 Firebase Data Connect is in Private Preview at no cost for a limited time. Sign up the program at https://firebase.google.com/products/data-connect.
@@ -196,32 +182,6 @@ identifier (e.g., `com.google.Database-Example`)
 ### Coverage Report Generation
 
 For coverage report generation instructions, see [scripts/code_coverage_report/README](scripts/code_coverage_report/README.md) Markdown file.
-
-## Specific Component Instructions
-See the sections below for any special instructions for those components.
-
-## Building with Firebase on Apple platforms
-
-Firebase provides official beta support for macOS, Catalyst, and tvOS. visionOS and watchOS
-are community supported. Thanks to community contributions for many of the multi-platform PRs.
-
-At this time, most of Firebase's products are available across Apple platforms. There are still
-a few gaps, especially on visionOS and watchOS. For details about the current support matrix, see
-[this chart](https://firebase.google.com/docs/ios/learn-more#firebase_library_support_by_platform)
-in Firebase's documentation.
-
-### watchOS
-Thanks to contributions from the community, many of Firebase SDKs now compile, run unit tests, and
-work on watchOS. See the [Independent Watch App Sample](Example/watchOSSample).
-
-Keep in mind that watchOS is not officially supported by Firebase. While we can catch basic unit
-test issues with GitHub Actions, there may be some changes where the SDK no longer works as expected
-on watchOS. If you encounter this, please
-[file an issue](https://github.com/firebase/firebase-ios-sdk/issues).
-
-During app setup in the console, you may get to a step that mentions something like "Checking if the
-app has communicated with our servers". This relies on Analytics and will not work on watchOS.
-**It's safe to ignore the message and continue**, the rest of the SDKs will work as expected.
 
 ## Contributing
 

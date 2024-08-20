@@ -36,6 +36,7 @@ scripts/code_coverage_report/*/.build
 # Bad sorts get generated if the package .xcscheme is not regenerated.
 # Anything committed to xcshareddata gets propagated to clients. (#8167)
 .swiftpm/xcode/xcshareddata/
+.swiftpm/Xcode/package.xcworkspace/xcuserdata/
 
 # Mint package manager
 Mint
@@ -101,3 +102,4 @@ default.profraw
 .terraform.lock.hcl
 *.tfstate
 *.tfstate.*
+*.xcuserstate
