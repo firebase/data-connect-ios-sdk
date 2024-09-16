@@ -77,8 +77,8 @@ public struct LocalDate: Codable, Equatable, CustomStringConvertible {
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
-extension LocalDate {
-  public init(from decoder: any Decoder) throws {
+public extension LocalDate {
+  init(from decoder: any Decoder) throws {
     let container = try decoder.singleValueContainer()
     let localDateString = try container.decode(String.self)
 
@@ -87,7 +87,7 @@ extension LocalDate {
     dateComponents = calendar.dateComponents(components, from: date)
   }
 
-  public func encode(to encoder: any Encoder) throws {
+  func encode(to encoder: any Encoder) throws {
     var container = encoder.singleValueContainer()
     let formattedDate = dateFormatter.string(from: date)
     try container.encode(formattedDate)
@@ -97,12 +97,12 @@ extension LocalDate {
 // MARK: Equatable, Comparable
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
-extension LocalDate {
-  public static func < (lhs: LocalDate, rhs: LocalDate) -> Bool {
+public extension LocalDate {
+  static func < (lhs: LocalDate, rhs: LocalDate) -> Bool {
     return lhs.date < rhs.date
   }
 
-  public static func == (lhs: LocalDate, rhs: LocalDate) -> Bool {
+  static func == (lhs: LocalDate, rhs: LocalDate) -> Bool {
     return lhs.date == rhs.date
   }
 }

@@ -1,6 +1,6 @@
 # Firebase Data Connect iOS Open Source Development
 
-This repository contains the source code of Firebase Data Connect SDKs for development on iOS and related q platforms. 
+This repository contains the source code of Firebase Data Connect SDKs for development on iOS and other Apple platforms.
 
 Firebase Data Connect (https://firebase.google.com/products/data-connect) lets you build applications with CloudSQL for PostgreSQL
 

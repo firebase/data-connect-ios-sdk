@@ -19,7 +19,7 @@
 import class Foundation.ProcessInfo
 import PackageDescription
 
-//let firebaseVersion = "10.25.0"
+// let firebaseVersion = "10.25.0"
 
 let package = Package(
   name: "FirebaseDataConnect",
@@ -28,7 +28,7 @@ let package = Package(
     .library(
       name: "FirebaseDataConnect",
       targets: ["FirebaseDataConnect"]
-    )
+    ),
   ],
   dependencies: [
     .package(url: "https://github.com/firebase/firebase-ios-sdk",
@@ -44,7 +44,7 @@ let package = Package(
       dependencies: [
         .product(name: "GRPC", package: "grpc-swift"),
         .product(name: "FirebaseAuth", package: "firebase-ios-sdk"),
-        .product(name: "FirebaseAppCheck", package: "firebase-ios-sdk")
+        .product(name: "FirebaseAppCheck", package: "firebase-ios-sdk"),
 
       ],
       path: "Sources"
@@ -57,7 +57,6 @@ let package = Package(
       resources: [
         .copy("Resources/fdc-kitchensink"),
       ]
-    )
+    ),
   ]
 )
-
