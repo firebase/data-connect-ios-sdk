@@ -17,7 +17,7 @@ import Foundation
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 @propertyWrapper
 public struct OptionalVariable<Value> where Value: Encodable {
-  public private(set) var isSet: Bool = false
+  public private(set) var isSet = false
 
   public var wrappedValue: Value? {
     didSet {
