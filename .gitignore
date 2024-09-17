@@ -26,12 +26,6 @@ DerivedData
 # Swift Package Manager
 Package.resolved
 **/.build
-ReleaseTooling/.swiftpm
-ReleaseTooling/Packages
-ReleaseTooling/*.xcodeproj
-ReleaseTooling/Package.resolved
-scripts/code_coverage_report/*/Package.resolved
-scripts/code_coverage_report/*/.build
 
 # Bad sorts get generated if the package .xcscheme is not regenerated.
 # Anything committed to xcshareddata gets propagated to clients. (#8167)
@@ -104,9 +98,12 @@ default.profraw
 *.tfstate.*
 *.xcuserstate
 
-
 #firebase-ios-sdk clone
 firebase-ios-sdk/
 
 #scripts link
 scripts
+
+#xcodebuild log
+xcodebuild.log
+
