@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Firebase Data Connect
+    url: https://github.com/firebase/firebase-ios-sdk/issues/new/choose
+    about: Firebase Data Connect issues are tracked in the firebase-ios-sdk repository
