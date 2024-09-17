@@ -55,7 +55,6 @@ class InstanceTests: XCTestCase {
     FirebaseApp.configure(options: options)
     defaultApp = FirebaseApp.app()
 
-
     FirebaseApp.configure(name: "app-two", options: optionsTwo)
     appTwo = FirebaseApp.app(name: "app-two")
   }

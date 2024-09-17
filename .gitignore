@@ -103,3 +103,10 @@ default.profraw
 *.tfstate
 *.tfstate.*
 *.xcuserstate
+
+
+#firebase-ios-sdk clone
+firebase-ios-sdk/
+
+#scripts link
+scripts
