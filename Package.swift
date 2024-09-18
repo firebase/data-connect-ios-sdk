@@ -19,8 +19,6 @@
 import class Foundation.ProcessInfo
 import PackageDescription
 
-// let firebaseVersion = "10.25.0"
-
 let package = Package(
   name: "FirebaseDataConnect",
   platforms: [.iOS(.v12), .macCatalyst(.v13), .macOS(.v10_15), .tvOS(.v13), .watchOS(.v7)],
@@ -32,7 +30,7 @@ let package = Package(
   ],
   dependencies: [
     .package(url: "https://github.com/firebase/firebase-ios-sdk",
-             from: "11.0.0"),
+             branch: "nc/demo-reg"),
     .package(
       url: "https://github.com/grpc/grpc-swift.git",
       from: "1.19.1" // TODO: Constrain to a range at time of release
