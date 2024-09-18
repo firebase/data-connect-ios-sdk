@@ -40,8 +40,6 @@ actor GrpcClient: CustomStringConvertible {
 
   private let auth: Auth
 
-  private let appCheckEnabled = false
-
   private let appCheck: AppCheck?
 
   private enum RequestHeaders {
@@ -195,22 +193,20 @@ actor GrpcClient: CustomStringConvertible {
     }
 
     // Add AppCheck token if available
-    if appCheckEnabled {
-      do {
-        if let token = try await appCheck?.token(forcingRefresh: false) {
-          headers.add(name: RequestHeaders.appCheckHeader, value: "\(token)")
-          FirebaseLogger.dataConnect
-            .debug("App Check token added: \(token)")
-        } else {
-          FirebaseLogger.dataConnect
-            .debug("App Check token unavailable. Not adding App Check header.")
-        }
-      } catch {
+    do {
+      if let token = try await appCheck?.token(forcingRefresh: false) {
+        headers.add(name: RequestHeaders.appCheckHeader, value: token.token)
         FirebaseLogger.dataConnect
-          .debug(
-            "Cannot get App Check token successfully due to: \(error). Not adding App Check header."
-          )
+          .debug("App Check token added: \(token.token)")
+      } else {
+        FirebaseLogger.dataConnect
+          .debug("App Check token unavailable. Not adding App Check header.")
       }
+    } catch {
+      FirebaseLogger.dataConnect
+        .debug(
+          "Cannot get App Check token successfully due to: \(error). Not adding App Check header."
+        )
     }
 
     let options = CallOptions(customMetadata: headers)
