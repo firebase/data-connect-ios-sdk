@@ -42,5 +42,4 @@ jobs:
     - name: Initialize xcodebuild
       run: xcodebuild -list
     - name: iOS Unit Tests
-    # TODO(aashishpatil-g): Change from spmbuildonly to spm when unit tests are fixed.
       run: scripts/third_party/travis/retry.sh scripts/build.sh FirebaseDataConnect ${{ matrix.target }} spm
