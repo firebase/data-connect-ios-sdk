@@ -13,7 +13,6 @@ import GRPC
 import XCTest
 
 final class HeaderTests: XCTestCase {
-
   static var defaultApp: FirebaseApp?
 
   static var options: FirebaseOptions = {
@@ -41,8 +40,7 @@ final class HeaderTests: XCTestCase {
     let values = callOptions.customMetadata.values(
       forHeader: GrpcClient.RequestHeaders.firebaseAppId, canonicalForm: false
     )
-    let contains = values.contains { $0 == HeaderTests.defaultApp!.options.googleAppID}
+    let contains = values.contains { $0 == HeaderTests.defaultApp!.options.googleAppID }
     XCTAssertTrue(contains)
   }
-
 }

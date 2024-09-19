@@ -24,7 +24,7 @@ public class DataConnect {
   private var app: FirebaseApp
   private var settings: DataConnectSettings
 
-  internal var grpcClient: GrpcClient
+  var grpcClient: GrpcClient
   private var operationsManager: OperationsManager
 
   private static var instanceStore = InstanceStore()
@@ -62,7 +62,7 @@ public class DataConnect {
     }
 
     grpcClient = GrpcClient(
-      app: self.app,
+      app: app,
       settings: settings,
       connectorConfig: connectorConfig,
       auth: Auth.auth(app: app),

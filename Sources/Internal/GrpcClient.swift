@@ -44,7 +44,7 @@ actor GrpcClient: CustomStringConvertible {
 
   private let appCheck: AppCheck?
 
-  internal enum RequestHeaders {
+  enum RequestHeaders {
     static let googRequestParamsHeader = "x-goog-request-params"
     static let authorizationHeader = "x-firebase-auth-token"
     static let appCheckHeader = "X-Firebase-AppCheck"
@@ -75,7 +75,6 @@ actor GrpcClient: CustomStringConvertible {
   init(app: FirebaseApp, settings: DataConnectSettings, connectorConfig: ConnectorConfig,
        auth: Auth,
        appCheck: AppCheck?) {
-
     self.app = app
 
     guard let projectId = app.options.projectID else {
@@ -83,7 +82,7 @@ actor GrpcClient: CustomStringConvertible {
     }
     self.projectId = projectId
 
-    self.serverSettings = settings
+    serverSettings = settings
     self.connectorConfig = connectorConfig
     self.auth = auth
     self.appCheck = appCheck
@@ -183,11 +182,11 @@ actor GrpcClient: CustomStringConvertible {
     }
   }
 
-  internal func createCallOptions() async -> CallOptions {
+  func createCallOptions() async -> CallOptions {
     var headers = HPACKHeaders()
 
     headers.add(name: RequestHeaders.googRequestParamsHeader, value: googRequestHeaderValue)
-    headers.add(name: RequestHeaders.firebaseAppId, value: self.app.options.googleAppID)
+    headers.add(name: RequestHeaders.firebaseAppId, value: app.options.googleAppID)
 
     // Add Auth token if available
     do {
