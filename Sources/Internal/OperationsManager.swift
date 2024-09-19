@@ -27,7 +27,7 @@ class OperationsManager {
                                      with resultType: ResultDataType
                                        .Type,
                                      publisher: ResultsPublisherType = .auto)
-  -> any ObservableQueryRef {
+    -> any ObservableQueryRef {
     switch publisher {
     case .auto, .observableMacro:
       if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *) {
