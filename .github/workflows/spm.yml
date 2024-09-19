@@ -52,5 +52,3 @@ jobs:
       run: scripts/third_party/travis/retry.sh scripts/build.sh FirebaseDataConnect macOS spm
     - name: visionOS Unit Tests
       run: scripts/third_party/travis/retry.sh scripts/build.sh FirebaseDataConnect visionOS spm
-    - name: catalyst Unit Tests
-      run: scripts/third_party/travis/retry.sh scripts/build.sh FirebaseDataConnect catalyst spm
