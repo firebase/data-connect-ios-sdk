@@ -16,7 +16,6 @@ import Foundation
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public struct DataConnectSettings: Hashable, Equatable {
-  static let version = "11.3.0-beta"
   public private(set) var host: String
   public private(set) var port: Int
   public private(set) var sslEnabled: Bool

@@ -19,25 +19,22 @@ import FirebaseCore
 @testable import FirebaseDataConnect
 
 final class UserAgentTests: XCTestCase {
-  static var defaultApp: FirebaseApp?
-
   static var options: FirebaseOptions = {
     let options = FirebaseOptions(googleAppID: "0:0000000000000:ios:0000000000000000",
                                   gcmSenderID: "00000000000000000-00000000000-000000000")
-    options.projectID = "fdc-test"
-    options.apiKey = "testDummyApiKey"
+    options.projectID = "user-agent-test"
+    options.apiKey = "testUserAgentDummyApiKey"
     return options
   }()
 
   override class func setUp() {
-    FirebaseApp.configure(options: options)
-    defaultApp = FirebaseApp.app()
+    FirebaseApp.configure(name: "user-agent", options: options)
   }
 
   /// Confirm that Data Connect gets added to the user agent.
   func testUserAgent() {
     let userAgent = FirebaseApp.firebaseUserAgent()
-    let version = DataConnectSettings.version
+    let version = Version.version
     XCTAssertTrue(userAgent.contains("fire-dc/\(version)"))
   }
 }

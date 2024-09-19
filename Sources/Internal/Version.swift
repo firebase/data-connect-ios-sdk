@@ -14,10 +14,7 @@
 
 import Foundation
 
-/// Class for registration with the Firebase component system, including userAgent functionality.
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
-@objc(FIRDataConnectComponent) class DataConnectComponent: NSObject {
-  @objc class func sdkVersion() -> String {
-    return Version.version
-  }
+struct Version {
+  static let version = "11.3.0-beta"
 }
