@@ -30,8 +30,9 @@ jobs:
     strategy:
       matrix:
         os: [macos-14]
-        target: [iOS, tvOS, macOS, catalyst, visionOS]
-        xcode: [Xcode_15.2, Xcode_15.4, Xcode_16_Release_Candidate]
+        # Target matrix commented to workaround GHA download overload crashes
+        # target: [iOS, tvOS, macOS, catalyst, visionOS]
+        xcode: [Xcode_15.2, Xcode_16_Release_Candidate]
     runs-on: ${{ matrix.os }}
     env:
       FIREBASE_MAIN: 1
@@ -44,4 +45,12 @@ jobs:
     - name: Initialize xcodebuild
       run: xcodebuild -list
     - name: iOS Unit Tests
-      run: scripts/third_party/travis/retry.sh scripts/build.sh FirebaseDataConnect ${{ matrix.target }} spm
+      run: scripts/third_party/travis/retry.sh scripts/build.sh FirebaseDataConnect iOS spm
+    - name: tvOS Unit Tests
+      run: scripts/third_party/travis/retry.sh scripts/build.sh FirebaseDataConnect tvOS spm
+    - name: macOS Unit Tests
+      run: scripts/third_party/travis/retry.sh scripts/build.sh FirebaseDataConnect macOS spm
+    - name: visionOS Unit Tests
+      run: scripts/third_party/travis/retry.sh scripts/build.sh FirebaseDataConnect visionOS spm
+    - name: catalyst Unit Tests
+      run: scripts/third_party/travis/retry.sh scripts/build.sh FirebaseDataConnect catalyst spm
