@@ -30,20 +30,30 @@ jobs:
     strategy:
       matrix:
         os: [macos-14]
-        # Target matrix commented to workaround GHA download overload crashes
+        # Target and Xcode matrix commented to workaround GHA download overload crashes
         # target: [iOS, tvOS, macOS, catalyst, visionOS]
-        xcode: [Xcode_15.2, Xcode_16_Release_Candidate]
+        # xcode: [Xcode_15.2, Xcode_16_Release_Candidate]
     runs-on: ${{ matrix.os }}
     env:
       FIREBASE_MAIN: 1
     steps:
     - uses: actions/checkout@v4
     - name: Xcode
-      run: sudo xcode-select -s /Applications/${{ matrix.xcode }}.app/Contents/Developer
+      run: sudo xcode-select -s /Applications/Xcode_15.2.app/Contents/Developer
     - name: Setup Scripts Directory
       run: ./setup-scripts.sh
     - name: Initialize xcodebuild
       run: xcodebuild -list
+    - name: iOS Unit Tests
+      run: scripts/third_party/travis/retry.sh scripts/build.sh FirebaseDataConnect iOS spm
+    - name: tvOS Unit Tests
+      run: scripts/third_party/travis/retry.sh scripts/build.sh FirebaseDataConnect tvOS spm
+    - name: macOS Unit Tests
+      run: scripts/third_party/travis/retry.sh scripts/build.sh FirebaseDataConnect macOS spm
+    - name: visionOS Unit Tests
+      run: scripts/third_party/travis/retry.sh scripts/build.sh FirebaseDataConnect visionOS spm
+    - name: Xcode
+      run: sudo xcode-select -s /Applications/Xcode_16_Release_Candidate.app/Contents/Developer
     - name: iOS Unit Tests
       run: scripts/third_party/travis/retry.sh scripts/build.sh FirebaseDataConnect iOS spm
     - name: tvOS Unit Tests
