@@ -33,6 +33,8 @@ jobs:
         target: [iOS, tvOS, macOS, catalyst, visionOS]
         xcode: [Xcode_15.2, Xcode_15.4, Xcode_16_Release_Candidate]
     runs-on: ${{ matrix.os }}
+    env:
+      FIREBASE_MAIN: 1
     steps:
     - uses: actions/checkout@v4
     - name: Xcode

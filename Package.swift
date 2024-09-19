@@ -29,8 +29,7 @@ let package = Package(
     ),
   ],
   dependencies: [
-    .package(url: "https://github.com/firebase/firebase-ios-sdk",
-             branch: "nc/demo-reg"),
+    firebaseDependency(),
     .package(
       url: "https://github.com/grpc/grpc-swift.git",
       from: "1.19.1" // TODO: Constrain to a range at time of release
@@ -41,6 +40,8 @@ let package = Package(
       name: "FirebaseDataConnect",
       dependencies: [
         .product(name: "GRPC", package: "grpc-swift"),
+        .product(name: "FirebaseCore", package: "firebase-ios-sdk"),
+        // TODO: Investigate switching Auth and AppCheck to interop.
         .product(name: "FirebaseAuth", package: "firebase-ios-sdk"),
         .product(name: "FirebaseAppCheck", package: "firebase-ios-sdk"),
 
@@ -54,3 +55,15 @@ let package = Package(
     ),
   ]
 )
+
+func firebaseDependency() -> Package.Dependency {
+  let firebaseURL = "https://github.com/firebase/firebase-ios-sdk"
+
+  // Point SPM CI to the tip of main of https://github.com/firebase/firebase-ios-sdk so that the
+  // release process can defer publishing the GoogleAppMeasurement tag until after testing.
+  if ProcessInfo.processInfo.environment["FIREBASE_MAIN"] != nil {
+    return .package(url: firebaseURL, branch: "main")
+  }
+
+  return .package(url: firebaseURL, exact: "11.3.0")
+}
