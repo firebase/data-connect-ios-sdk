@@ -24,7 +24,7 @@ public class DataConnect {
   private var app: FirebaseApp
   private var settings: DataConnectSettings
 
-  var grpcClient: GrpcClient
+  private(set) var grpcClient: GrpcClient
   private var operationsManager: OperationsManager
 
   private static var instanceStore = InstanceStore()
@@ -57,7 +57,7 @@ public class DataConnect {
     // self.grpcClient.close
     // self.operations.close
 
-    guard let projectID = app.options.projectID else {
+    guard app.options.projectID != nil else {
       fatalError("Firebase DataConnect requires the projectID to be set in the app options")
     }
 
