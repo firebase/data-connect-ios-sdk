@@ -53,6 +53,15 @@ let package = Package(
       dependencies: ["FirebaseDataConnect"],
       path: "Tests/Unit"
     ),
+    .testTarget(
+      name: "FirebaseDataConnectIntegration",
+      dependencies: ["FirebaseDataConnect"],
+      path: integrationTestPath(),
+      exclude: ["Gen/KitchenSink/Package.swift"],
+      resources: [
+        .copy("Resources/fdc-kitchensink"),
+      ]
+    ),
   ]
 )
 
@@ -66,4 +75,13 @@ func firebaseDependency() -> Package.Dependency {
   }
 
   return .package(url: firebaseURL, exact: "11.3.0")
+}
+
+func integrationTestPath() -> String? {
+  // Set this env variable to disable integration tests being run as part of CI
+  if ProcessInfo.processInfo.environment["DISABLE_INTEGRATION_TESTS"] != nil {
+    return "Tests/NoIntegration"
+  } else {
+    return "Tests/Integration"
+  }
 }

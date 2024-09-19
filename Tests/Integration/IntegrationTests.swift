@@ -18,21 +18,7 @@ import FirebaseCore
 @testable import FirebaseDataConnect
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
-final class IntegrationTests: XCTestCase {
-  class func setupFirebaseApp() {
-    if FirebaseApp.app() == nil {
-      let options = FirebaseOptions(googleAppID: "0:0000000000000:ios:0000000000000000",
-                                    gcmSenderID: "00000000000000000-00000000000-000000000")
-      options.projectID = "fdc-test"
-      FirebaseApp.configure(options: options)
-    }
-  }
-
-  override class func setUp() {
-    setupFirebaseApp()
-    DataConnect.kitchenSinkClient.useEmulator(port: 3628)
-  }
-
+final class IntegrationTests: IntegrationTestBase {
   override func setUp(completion: @escaping ((any Error)?) -> Void) {
     Task {
       do {

@@ -36,6 +36,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       FIREBASE_MAIN: 1
+      DISABLE_INTEGRATION_TESTS: 1
     steps:
     - uses: actions/checkout@v4
     - name: Setup Scripts Directory

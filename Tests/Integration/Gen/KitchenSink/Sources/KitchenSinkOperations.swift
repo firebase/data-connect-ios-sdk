@@ -17,7 +17,6 @@ import Foundation
 
 // MARK: Connector Client Extension
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public extension KitchenSinkClient {
   func createTestIdMutationRef(id: UUID) -> MutationRef<
     CreateTestIdMutation.Data,
@@ -212,7 +211,6 @@ public extension KitchenSinkClient {
   }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public enum CreateTestIdMutation {
   public static let OperationName = "createTestId"
 
@@ -252,7 +250,6 @@ public enum CreateTestIdMutation {
   }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public enum CreateTestAutoIdMutation {
   public static let OperationName = "createTestAutoId"
 
@@ -269,7 +266,6 @@ public enum CreateTestAutoIdMutation {
   }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public enum CreateStandardScalarMutation {
   public static let OperationName = "createStandardScalar"
 
@@ -351,7 +347,6 @@ public enum CreateStandardScalarMutation {
   }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public enum CreateScalarBoundaryMutation {
   public static let OperationName = "createScalarBoundary"
 
@@ -446,7 +441,6 @@ public enum CreateScalarBoundaryMutation {
   }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public enum CreateLargeNumMutation {
   public static let OperationName = "createLargeNum"
 
@@ -525,7 +519,6 @@ public enum CreateLargeNumMutation {
   }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public enum CreateLocalDateMutation {
   public static let OperationName = "createLocalDate"
 
@@ -581,7 +574,6 @@ public enum CreateLocalDateMutation {
   }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public enum GetStandardScalarQuery {
   public static let OperationName = "GetStandardScalar"
 
@@ -675,7 +667,6 @@ public enum GetStandardScalarQuery {
   }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public enum GetScalarBoundaryQuery {
   public static let OperationName = "GetScalarBoundary"
 
@@ -755,7 +746,6 @@ public enum GetScalarBoundaryQuery {
   }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public enum GetLargeNumQuery {
   public static let OperationName = "GetLargeNum"
 
@@ -825,7 +815,6 @@ public enum GetLargeNumQuery {
   }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public enum GetLocalDateTypeQuery {
   public static let OperationName = "GetLocalDateType"
 
