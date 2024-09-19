@@ -16,7 +16,7 @@ import Foundation
 
 import FirebaseAppCheck
 import FirebaseAuth
-import FirebaseCoreInternal
+import FirebaseCore
 import GRPC
 import NIOCore
 import NIOHPACK
@@ -27,6 +27,8 @@ import SwiftProtobuf
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 actor GrpcClient: CustomStringConvertible {
   nonisolated let description: String
+
+  private let app: FirebaseApp
 
   private let projectId: String
 
@@ -42,10 +44,11 @@ actor GrpcClient: CustomStringConvertible {
 
   private let appCheck: AppCheck?
 
-  private enum RequestHeaders {
+  internal enum RequestHeaders {
     static let googRequestParamsHeader = "x-goog-request-params"
     static let authorizationHeader = "x-firebase-auth-token"
     static let appCheckHeader = "X-Firebase-AppCheck"
+    static let firebaseAppId = "x-firebase-gmpid"
   }
 
   private let googRequestHeaderValue: String
@@ -69,11 +72,18 @@ actor GrpcClient: CustomStringConvertible {
     }
   }()
 
-  init(projectId: String, settings: DataConnectSettings, connectorConfig: ConnectorConfig,
+  init(app: FirebaseApp, settings: DataConnectSettings, connectorConfig: ConnectorConfig,
        auth: Auth,
        appCheck: AppCheck?) {
+
+    self.app = app
+
+    guard let projectId = app.options.projectID else {
+      fatalError("Data Connect requires a Firebase project ID to be specified.")
+    }
     self.projectId = projectId
-    serverSettings = settings
+
+    self.serverSettings = settings
     self.connectorConfig = connectorConfig
     self.auth = auth
     self.appCheck = appCheck
@@ -173,10 +183,11 @@ actor GrpcClient: CustomStringConvertible {
     }
   }
 
-  private func createCallOptions() async -> CallOptions {
+  internal func createCallOptions() async -> CallOptions {
     var headers = HPACKHeaders()
 
     headers.add(name: RequestHeaders.googRequestParamsHeader, value: googRequestHeaderValue)
+    headers.add(name: RequestHeaders.firebaseAppId, value: self.app.options.googleAppID)
 
     // Add Auth token if available
     do {
