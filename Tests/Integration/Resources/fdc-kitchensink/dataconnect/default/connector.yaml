@@ -23,5 +23,5 @@ authMode: "PUBLIC"
 # In future, we can consider a Test only Swift build plugin to gen the files, to avoid this.
 generate:
    swiftSdk:
-     outputDir: "/Users/aashishp/Scratchpad/KitchenSinkSwiftGen"
+     outputDir: "../../../../Gen/"
      package: "KitchenSink"

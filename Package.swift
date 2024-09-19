@@ -53,6 +53,15 @@ let package = Package(
       dependencies: ["FirebaseDataConnect"],
       path: "Tests/Unit"
     ),
+    .testTarget(
+      name: "FirebaseDataConnectIntegration",
+      dependencies: ["FirebaseDataConnect"],
+      path: "Tests/Integration",
+      exclude: ["Gen/KitchenSink/Package.swift"],
+      resources: [
+        .copy("Resources/fdc-kitchensink"),
+      ]
+    ),
   ]
 )
 

@@ -1,23 +1,8 @@
-// Copyright 2024 Google LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 import FirebaseDataConnect
 import Foundation
 
 // MARK: Connector Client Extension
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public extension KitchenSinkClient {
   func createTestIdMutationRef(id: UUID) -> MutationRef<
     CreateTestIdMutation.Data,
@@ -212,7 +197,6 @@ public extension KitchenSinkClient {
   }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public enum CreateTestIdMutation {
   public static let OperationName = "createTestId"
 
@@ -252,7 +236,6 @@ public enum CreateTestIdMutation {
   }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public enum CreateTestAutoIdMutation {
   public static let OperationName = "createTestAutoId"
 
@@ -269,7 +252,6 @@ public enum CreateTestAutoIdMutation {
   }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public enum CreateStandardScalarMutation {
   public static let OperationName = "createStandardScalar"
 
@@ -351,7 +333,6 @@ public enum CreateStandardScalarMutation {
   }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public enum CreateScalarBoundaryMutation {
   public static let OperationName = "createScalarBoundary"
 
@@ -446,7 +427,6 @@ public enum CreateScalarBoundaryMutation {
   }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public enum CreateLargeNumMutation {
   public static let OperationName = "createLargeNum"
 
@@ -525,7 +505,6 @@ public enum CreateLargeNumMutation {
   }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public enum CreateLocalDateMutation {
   public static let OperationName = "createLocalDate"
 
@@ -581,7 +560,6 @@ public enum CreateLocalDateMutation {
   }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public enum GetStandardScalarQuery {
   public static let OperationName = "GetStandardScalar"
 
@@ -675,7 +653,6 @@ public enum GetStandardScalarQuery {
   }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public enum GetScalarBoundaryQuery {
   public static let OperationName = "GetScalarBoundary"
 
@@ -755,7 +732,6 @@ public enum GetScalarBoundaryQuery {
   }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public enum GetLargeNumQuery {
   public static let OperationName = "GetLargeNum"
 
@@ -825,7 +801,6 @@ public enum GetLargeNumQuery {
   }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public enum GetLocalDateTypeQuery {
   public static let OperationName = "GetLocalDateType"
 
