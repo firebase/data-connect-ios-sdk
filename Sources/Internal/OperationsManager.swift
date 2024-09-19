@@ -35,20 +35,20 @@ class OperationsManager {
           request: request,
           dataType: resultType,
           grpcClient: self.grpcClient
-        ) as! (any ObservableQueryRef)
+        ) as (any ObservableQueryRef)
       } else {
         return QueryRefObservableObject<ResultDataType, VariableType>(
           request: request,
           dataType: resultType,
           grpcClient: grpcClient
-        ) as! (any ObservableQueryRef)
+        ) as (any ObservableQueryRef)
       }
     case .observableObject:
       return QueryRefObservableObject<ResultDataType, VariableType>(
         request: request,
         dataType: resultType,
         grpcClient: grpcClient
-      ) as! (any ObservableQueryRef)
+      ) as (any ObservableQueryRef)
     }
   }
 

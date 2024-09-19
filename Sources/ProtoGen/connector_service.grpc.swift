@@ -272,7 +272,8 @@ public struct Google_Firebase_Dataconnect_V1alpha_ConnectorServiceNIOClient: Goo
 
 #endif // compiler(>=5.6)
 
-public protocol Google_Firebase_Dataconnect_V1alpha_ConnectorServiceClientInterceptorFactoryProtocol: GRPCSendable {
+public protocol Google_Firebase_Dataconnect_V1alpha_ConnectorServiceClientInterceptorFactoryProtocol:
+  Swift.Sendable {
   /// - Returns: Interceptors to use when invoking 'executeQuery'.
   func makeExecuteQueryInterceptors() -> [ClientInterceptor<
     Google_Firebase_Dataconnect_V1alpha_ExecuteQueryRequest,
