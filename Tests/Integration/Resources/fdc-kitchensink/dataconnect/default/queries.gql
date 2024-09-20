@@ -43,3 +43,9 @@ query GetLocalDateType($id: UUID!) @auth(level: PUBLIC) {
         localDate
     }
 }
+
+query GetAnyValueType($id: UUID!) @auth(level: PUBLIC) {
+    anyValueType(id: $id) {
+        props
+    }
+}

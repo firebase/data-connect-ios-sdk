@@ -143,6 +143,25 @@ public extension KitchenSinkClient {
     return ref as! MutationRef<CreateLocalDateMutation.Data, CreateLocalDateMutation.Variables>
   }
 
+  func createAnyValueTypeMutationRef(id: UUID,
+
+                                     props: AnyValue) -> MutationRef<
+    CreateAnyValueTypeMutation.Data,
+    CreateAnyValueTypeMutation.Variables
+  > {
+    var variables = CreateAnyValueTypeMutation.Variables(id: id, props: props)
+
+    let request = MutationRequest(operationName: "createAnyValueType", variables: variables)
+    let ref = dataConnect.mutation(
+      request: request,
+      resultsDataType: CreateAnyValueTypeMutation.Data.self
+    )
+    return ref as! MutationRef<
+      CreateAnyValueTypeMutation.Data,
+      CreateAnyValueTypeMutation.Variables
+    >
+  }
+
   func getStandardScalarQueryRef(id: UUID)
     -> QueryRefObservableObject<GetStandardScalarQuery.Data,
       GetStandardScalarQuery.Variables> {
@@ -207,6 +226,24 @@ public extension KitchenSinkClient {
     return ref as! QueryRefObservableObject<
       GetLocalDateTypeQuery.Data,
       GetLocalDateTypeQuery.Variables
+    >
+  }
+
+  func getAnyValueTypeQueryRef(id: UUID) -> QueryRefObservableObject<
+    GetAnyValueTypeQuery.Data,
+    GetAnyValueTypeQuery.Variables
+  > {
+    var variables = GetAnyValueTypeQuery.Variables(id: id)
+
+    let request = QueryRequest(operationName: "GetAnyValueType", variables: variables)
+    let ref = dataConnect.query(
+      request: request,
+      resultsDataType: GetAnyValueTypeQuery.Data.self,
+      publisher: .observableObject
+    )
+    return ref as! QueryRefObservableObject<
+      GetAnyValueTypeQuery.Data,
+      GetAnyValueTypeQuery.Variables
     >
   }
 }
@@ -574,6 +611,61 @@ public enum CreateLocalDateMutation {
   }
 }
 
+public enum CreateAnyValueTypeMutation {
+  public static let OperationName = "createAnyValueType"
+
+  public typealias Ref = MutationRef<
+    CreateAnyValueTypeMutation.Data,
+    CreateAnyValueTypeMutation.Variables
+  >
+
+  public struct Variables: OperationVariable {
+    public var
+      id: UUID
+
+    public var
+      props: AnyValue
+
+    public init(id: UUID,
+
+                props: AnyValue) {
+      self.id = id
+      self.props = props
+    }
+
+    public static func == (lhs: Variables, rhs: Variables) -> Bool {
+      return lhs.id == rhs.id &&
+        lhs.props == rhs.props
+    }
+
+    public func hash(into hasher: inout Hasher) {
+      hasher.combine(id)
+
+      hasher.combine(props)
+    }
+
+    enum CodingKeys: String, CodingKey {
+      case id
+
+      case props
+    }
+
+    public func encode(to encoder: Encoder) throws {
+      var container = encoder.container(keyedBy: CodingKeys.self)
+      let codecHelper = CodecHelper<CodingKeys>()
+
+      try codecHelper.encode(id, forKey: .id, container: &container)
+
+      try codecHelper.encode(props, forKey: .props, container: &container)
+    }
+  }
+
+  public struct Data: Decodable {
+    public var
+      anyValueType_insert: AnyValueTypeKey
+  }
+}
+
 public enum GetStandardScalarQuery {
   public static let OperationName = "GetStandardScalar"
 
@@ -874,5 +966,63 @@ public enum GetLocalDateTypeQuery {
 
     public var
       localDateType: LocalDateType?
+  }
+}
+
+public enum GetAnyValueTypeQuery {
+  public static let OperationName = "GetAnyValueType"
+
+  public typealias Ref = QueryRefObservableObject<
+    GetAnyValueTypeQuery.Data,
+    GetAnyValueTypeQuery.Variables
+  >
+
+  public struct Variables: OperationVariable {
+    public var
+      id: UUID
+
+    public init(id: UUID) {
+      self.id = id
+    }
+
+    public static func == (lhs: Variables, rhs: Variables) -> Bool {
+      return lhs.id == rhs.id
+    }
+
+    public func hash(into hasher: inout Hasher) {
+      hasher.combine(id)
+    }
+
+    enum CodingKeys: String, CodingKey {
+      case id
+    }
+
+    public func encode(to encoder: Encoder) throws {
+      var container = encoder.container(keyedBy: CodingKeys.self)
+      let codecHelper = CodecHelper<CodingKeys>()
+
+      try codecHelper.encode(id, forKey: .id, container: &container)
+    }
+  }
+
+  public struct Data: Decodable {
+    public struct AnyValueType: Decodable {
+      public var
+        props: AnyValue
+
+      enum CodingKeys: String, CodingKey {
+        case props
+      }
+
+      public init(from decoder: any Decoder) throws {
+        var container = try decoder.container(keyedBy: CodingKeys.self)
+        let codecHelper = CodecHelper<CodingKeys>()
+
+        props = try codecHelper.decode(AnyValue.self, forKey: .props, container: &container)
+      }
+    }
+
+    public var
+      anyValueType: AnyValueType?
   }
 }
