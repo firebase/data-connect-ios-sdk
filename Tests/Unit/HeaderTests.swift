@@ -66,7 +66,7 @@ final class HeaderTests: XCTestCase {
     let contains = values
       .contains {
         $0 ==
-          "gl-swift/\(Version.swiftMajorVersion()) fire/\(Version.sdkVersion) \(Version.platformVersionHeader()) grpc-swift/"
+          "gl-swift/\(Version.swiftVersion()) fire/\(Version.sdkVersion) \(Version.platformVersionHeader()) grpc-swift/"
       }
     XCTAssertTrue(contains)
   }
@@ -83,7 +83,7 @@ final class HeaderTests: XCTestCase {
     let contains = values
       .contains {
         $0 ==
-          "gl-swift/\(Version.swiftMajorVersion()) fire/\(Version.sdkVersion) \(Version.platformVersionHeader()) grpc-swift/ swift/gen"
+          "gl-swift/\(Version.swiftVersion()) fire/\(Version.sdkVersion) \(Version.platformVersionHeader()) grpc-swift/ swift/gen"
       }
     XCTAssertTrue(contains)
   }

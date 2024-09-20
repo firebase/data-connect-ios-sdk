@@ -77,7 +77,7 @@ actor GrpcClient: CustomStringConvertible {
 
   private lazy var googApiClientHeaderValue: String = {
     let header =
-      "gl-swift/\(Version.swiftMajorVersion()) fire/\(Version.sdkVersion) \(Version.platformVersionHeader()) grpc-swift/"
+      "gl-swift/\(Version.swiftVersion()) fire/\(Version.sdkVersion) \(Version.platformVersionHeader()) grpc-swift/"
 
     switch self.callerSDKType {
     case .base:
