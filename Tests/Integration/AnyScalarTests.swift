@@ -45,14 +45,12 @@ final class AnyScalarTests: IntegrationTestBase {
       .execute()
     let anyValueResult = result.data.anyValueType?.props
     let decodedResult = try anyValueResult?.decodeValue(String.self)
-    print(decodedResult)
 
     XCTAssertEqual(testData, decodedResult)
   }
 
   func testAnyValueInt() async throws {
     let testNumber = Int.random(in: 1 ... 9999)
-    print("testNumber \(testNumber)")
     let anyTestData = try AnyValue(codableValue: testNumber)
 
     let anyValueId = UUID()
@@ -65,7 +63,7 @@ final class AnyScalarTests: IntegrationTestBase {
       .execute()
     let anyValueResult = result.data.anyValueType?.props
     let decodedResult = try anyValueResult?.decodeValue(Int.self)
-    print("decodedNumber \(decodedResult)")
+
     XCTAssertEqual(testNumber, decodedResult)
   }
 

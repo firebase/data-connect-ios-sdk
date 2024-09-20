@@ -43,9 +43,6 @@ extension AnyValue: Codable {
   public init(from decoder: any Decoder) throws {
     let singleValueContainer = try decoder.singleValueContainer()
     value = try singleValueContainer.decode(Data.self)
-
-    print("decoded data \(value.count)")
-    print("decoded data string \(String(data: value, encoding: .utf8))")
   }
 
   public func encode(to encoder: any Encoder) throws {
