@@ -43,7 +43,7 @@ jobs:
           key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
 
   spm:
-    needs: changed_today
+    needs: changed_today, spm-package-resolved
     if: ${{ github.event_name == 'pull_request' || needs.changed_today.outputs.WAS_CHANGED == 'true' }}
 
     strategy:
@@ -52,7 +52,6 @@ jobs:
         target: [iOS, tvOS, macOS, catalyst, visionOS]
         xcode: [Xcode_15.2, Xcode_15.4, Xcode_16]
     runs-on: ${{ matrix.os }}
-    needs: spm-package-resolved
     env:
       FIREBASE_MAIN: 1
       DISABLE_INTEGRATION_TESTS: 1
