@@ -7,6 +7,20 @@
 // For information on using the generated types, please see the documentation:
 //   https://github.com/apple/swift-protobuf/
 
+// Copyright 2024 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 ///adopted from third_party/firebase/dataconnect/emulator/server/api/connector_service.proto
 
 import Foundation
@@ -23,7 +37,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 }
 
 /// The ExecuteQuery request to Firebase Data Connect.
-public struct Google_Firebase_Dataconnect_V1alpha_ExecuteQueryRequest {
+public struct Google_Firebase_Dataconnect_V1beta_ExecuteQueryRequest {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -60,7 +74,7 @@ public struct Google_Firebase_Dataconnect_V1alpha_ExecuteQueryRequest {
 }
 
 /// The ExecuteMutation request to Firebase Data Connect.
-public struct Google_Firebase_Dataconnect_V1alpha_ExecuteMutationRequest {
+public struct Google_Firebase_Dataconnect_V1beta_ExecuteMutationRequest {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -97,7 +111,7 @@ public struct Google_Firebase_Dataconnect_V1alpha_ExecuteMutationRequest {
 }
 
 /// The ExecuteQuery response from Firebase Data Connect.
-public struct Google_Firebase_Dataconnect_V1alpha_ExecuteQueryResponse {
+public struct Google_Firebase_Dataconnect_V1beta_ExecuteQueryResponse {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -113,7 +127,7 @@ public struct Google_Firebase_Dataconnect_V1alpha_ExecuteQueryResponse {
   public mutating func clearData() {self._data = nil}
 
   /// Errors of this response.
-  public var errors: [Google_Firebase_Dataconnect_V1alpha_GraphqlError] = []
+  public var errors: [Google_Firebase_Dataconnect_V1beta_GraphqlError] = []
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -123,7 +137,7 @@ public struct Google_Firebase_Dataconnect_V1alpha_ExecuteQueryResponse {
 }
 
 /// The ExecuteMutation response from Firebase Data Connect.
-public struct Google_Firebase_Dataconnect_V1alpha_ExecuteMutationResponse {
+public struct Google_Firebase_Dataconnect_V1beta_ExecuteMutationResponse {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -139,7 +153,7 @@ public struct Google_Firebase_Dataconnect_V1alpha_ExecuteMutationResponse {
   public mutating func clearData() {self._data = nil}
 
   /// Errors of this response.
-  public var errors: [Google_Firebase_Dataconnect_V1alpha_GraphqlError] = []
+  public var errors: [Google_Firebase_Dataconnect_V1beta_GraphqlError] = []
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -149,17 +163,17 @@ public struct Google_Firebase_Dataconnect_V1alpha_ExecuteMutationResponse {
 }
 
 #if swift(>=5.5) && canImport(_Concurrency)
-extension Google_Firebase_Dataconnect_V1alpha_ExecuteQueryRequest: @unchecked Sendable {}
-extension Google_Firebase_Dataconnect_V1alpha_ExecuteMutationRequest: @unchecked Sendable {}
-extension Google_Firebase_Dataconnect_V1alpha_ExecuteQueryResponse: @unchecked Sendable {}
-extension Google_Firebase_Dataconnect_V1alpha_ExecuteMutationResponse: @unchecked Sendable {}
+extension Google_Firebase_Dataconnect_V1beta_ExecuteQueryRequest: @unchecked Sendable {}
+extension Google_Firebase_Dataconnect_V1beta_ExecuteMutationRequest: @unchecked Sendable {}
+extension Google_Firebase_Dataconnect_V1beta_ExecuteQueryResponse: @unchecked Sendable {}
+extension Google_Firebase_Dataconnect_V1beta_ExecuteMutationResponse: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "google.firebase.dataconnect.v1alpha"
+fileprivate let _protobuf_package = "google.firebase.dataconnect.v1beta"
 
-extension Google_Firebase_Dataconnect_V1alpha_ExecuteQueryRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension Google_Firebase_Dataconnect_V1beta_ExecuteQueryRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ExecuteQueryRequest"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "name"),
@@ -198,7 +212,7 @@ extension Google_Firebase_Dataconnect_V1alpha_ExecuteQueryRequest: SwiftProtobuf
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: Google_Firebase_Dataconnect_V1alpha_ExecuteQueryRequest, rhs: Google_Firebase_Dataconnect_V1alpha_ExecuteQueryRequest) -> Bool {
+  public static func ==(lhs: Google_Firebase_Dataconnect_V1beta_ExecuteQueryRequest, rhs: Google_Firebase_Dataconnect_V1beta_ExecuteQueryRequest) -> Bool {
     if lhs.name != rhs.name {return false}
     if lhs.operationName != rhs.operationName {return false}
     if lhs._variables != rhs._variables {return false}
@@ -207,7 +221,7 @@ extension Google_Firebase_Dataconnect_V1alpha_ExecuteQueryRequest: SwiftProtobuf
   }
 }
 
-extension Google_Firebase_Dataconnect_V1alpha_ExecuteMutationRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension Google_Firebase_Dataconnect_V1beta_ExecuteMutationRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ExecuteMutationRequest"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "name"),
@@ -246,7 +260,7 @@ extension Google_Firebase_Dataconnect_V1alpha_ExecuteMutationRequest: SwiftProto
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: Google_Firebase_Dataconnect_V1alpha_ExecuteMutationRequest, rhs: Google_Firebase_Dataconnect_V1alpha_ExecuteMutationRequest) -> Bool {
+  public static func ==(lhs: Google_Firebase_Dataconnect_V1beta_ExecuteMutationRequest, rhs: Google_Firebase_Dataconnect_V1beta_ExecuteMutationRequest) -> Bool {
     if lhs.name != rhs.name {return false}
     if lhs.operationName != rhs.operationName {return false}
     if lhs._variables != rhs._variables {return false}
@@ -255,7 +269,7 @@ extension Google_Firebase_Dataconnect_V1alpha_ExecuteMutationRequest: SwiftProto
   }
 }
 
-extension Google_Firebase_Dataconnect_V1alpha_ExecuteQueryResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension Google_Firebase_Dataconnect_V1beta_ExecuteQueryResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ExecuteQueryResponse"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "data"),
@@ -289,7 +303,7 @@ extension Google_Firebase_Dataconnect_V1alpha_ExecuteQueryResponse: SwiftProtobu
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: Google_Firebase_Dataconnect_V1alpha_ExecuteQueryResponse, rhs: Google_Firebase_Dataconnect_V1alpha_ExecuteQueryResponse) -> Bool {
+  public static func ==(lhs: Google_Firebase_Dataconnect_V1beta_ExecuteQueryResponse, rhs: Google_Firebase_Dataconnect_V1beta_ExecuteQueryResponse) -> Bool {
     if lhs._data != rhs._data {return false}
     if lhs.errors != rhs.errors {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
@@ -297,7 +311,7 @@ extension Google_Firebase_Dataconnect_V1alpha_ExecuteQueryResponse: SwiftProtobu
   }
 }
 
-extension Google_Firebase_Dataconnect_V1alpha_ExecuteMutationResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension Google_Firebase_Dataconnect_V1beta_ExecuteMutationResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ExecuteMutationResponse"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "data"),
@@ -331,7 +345,7 @@ extension Google_Firebase_Dataconnect_V1alpha_ExecuteMutationResponse: SwiftProt
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: Google_Firebase_Dataconnect_V1alpha_ExecuteMutationResponse, rhs: Google_Firebase_Dataconnect_V1alpha_ExecuteMutationResponse) -> Bool {
+  public static func ==(lhs: Google_Firebase_Dataconnect_V1beta_ExecuteMutationResponse, rhs: Google_Firebase_Dataconnect_V1beta_ExecuteMutationResponse) -> Bool {
     if lhs._data != rhs._data {return false}
     if lhs.errors != rhs.errors {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}

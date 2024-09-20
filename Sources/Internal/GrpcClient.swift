@@ -25,6 +25,10 @@ import OSLog
 import SwiftProtobuf
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
+public typealias FirebaseDataConnectAsyncClient =
+  Google_Firebase_Dataconnect_V1beta_ConnectorServiceAsyncClient
+
+@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 actor GrpcClient: CustomStringConvertible {
   nonisolated let description: String
 
@@ -56,7 +60,7 @@ actor GrpcClient: CustomStringConvertible {
 
   private let googRequestHeaderValue: String
 
-  private lazy var client: Google_Firebase_Dataconnect_V1alpha_ConnectorServiceAsyncClient? = {
+  private lazy var client: FirebaseDataConnectAsyncClient? = {
     do {
       FirebaseLogger.dataConnect.debug("\(self.description) initialization starts.")
       let group = PlatformSupport.makeEventLoopGroup(loopCount: threadPoolSize)
@@ -68,7 +72,7 @@ actor GrpcClient: CustomStringConvertible {
         eventLoopGroup: group
       )
       FirebaseLogger.dataConnect.debug("\(self.description) has been created.")
-      return Google_Firebase_Dataconnect_V1alpha_ConnectorServiceAsyncClient(channel: channel)
+      return FirebaseDataConnectAsyncClient(channel: channel)
     } catch {
       FirebaseLogger.dataConnect.error("Error:\(error) when creating \(self.description).")
       return nil

@@ -17,6 +17,12 @@ import Foundation
 import SwiftProtobuf
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
+public typealias FirebaseDataConnectExecuteMutationRequest =
+  Google_Firebase_Dataconnect_V1beta_ExecuteMutationRequest
+public typealias FirebaseDataConnectExecuteQueryRequest =
+  Google_Firebase_Dataconnect_V1beta_ExecuteQueryRequest
+
+@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 class Codec {
   // Encode Codable to Protos
   func encode(args: any Encodable) throws -> Google_Protobuf_Struct {
@@ -46,14 +52,14 @@ class Codec {
                                                                 request: QueryRequest<
                                                                   VariableType
                                                                 >) throws
-    -> Google_Firebase_Dataconnect_V1alpha_ExecuteQueryRequest {
+    -> FirebaseDataConnectExecuteQueryRequest {
     do {
       var varStruct: Google_Protobuf_Struct? = nil
       if let variables = request.variables {
         varStruct = try encode(args: variables)
       }
 
-      let internalRequest = Google_Firebase_Dataconnect_V1alpha_ExecuteQueryRequest.with { ireq in
+      let internalRequest = FirebaseDataConnectExecuteQueryRequest.with { ireq in
         ireq.operationName = request.operationName
 
         if let varStruct {
@@ -73,14 +79,14 @@ class Codec {
                                                                    request: MutationRequest<
                                                                      VariableType
                                                                    >) throws
-    -> Google_Firebase_Dataconnect_V1alpha_ExecuteMutationRequest {
+    -> FirebaseDataConnectExecuteMutationRequest {
     do {
       var varStruct: Google_Protobuf_Struct? = nil
       if let variables = request.variables {
         varStruct = try encode(args: variables)
       }
 
-      let internalRequest = Google_Firebase_Dataconnect_V1alpha_ExecuteMutationRequest
+      let internalRequest = FirebaseDataConnectExecuteMutationRequest
         .with { ireq in
           ireq.operationName = request.operationName
 
