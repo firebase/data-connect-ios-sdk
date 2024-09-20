@@ -43,7 +43,7 @@ jobs:
           key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
 
   spm:
-    needs: changed_today, spm-package-resolved
+    needs: [changed_today, spm-package-resolved]
     if: ${{ github.event_name == 'pull_request' || needs.changed_today.outputs.WAS_CHANGED == 'true' }}
 
     strategy:
