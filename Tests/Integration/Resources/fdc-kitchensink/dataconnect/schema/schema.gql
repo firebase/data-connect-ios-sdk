@@ -52,5 +52,5 @@ type LocalDateType @table {
 
 type AnyValueType @table {
     id: UUID!
-    props: Any! 
+    props: Any!
 }
