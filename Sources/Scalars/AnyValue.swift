@@ -14,10 +14,8 @@
 
 import Foundation
 
-/**
- AnyValue represents the Any graphql scalar, which represents a scalar Codable data (Int, Double, String) or a JSON object
-
- */
+/// AnyValue represents the Any graphql scalar, which represents Codable data -  scalar data (Int,
+/// Double, String, Bool,...) or a JSON object
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public struct AnyValue {
   public private(set) var value: Data
