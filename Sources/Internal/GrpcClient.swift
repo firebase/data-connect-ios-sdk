@@ -44,11 +44,14 @@ actor GrpcClient: CustomStringConvertible {
 
   private let appCheck: AppCheck?
 
+  private let callerSDKType: CallerSDKType
+
   enum RequestHeaders {
     static let googRequestParamsHeader = "x-goog-request-params"
     static let authorizationHeader = "x-firebase-auth-token"
     static let appCheckHeader = "X-Firebase-AppCheck"
     static let firebaseAppId = "x-firebase-gmpid"
+    static let googApiClient = "x-goog-api-client"
   }
 
   private let googRequestHeaderValue: String
@@ -72,9 +75,23 @@ actor GrpcClient: CustomStringConvertible {
     }
   }()
 
+  private lazy var googApiClientHeaderValue: String = {
+    let header =
+      "gl-swift/\(Version.swiftVersion()) fire/\(Version.sdkVersion) \(Version.platformVersionHeader()) grpc-swift/"
+
+    switch self.callerSDKType {
+    case .base:
+      return header
+    case .generated:
+      return "\(header) swift/gen"
+    }
+
+  }()
+
   init(app: FirebaseApp, settings: DataConnectSettings, connectorConfig: ConnectorConfig,
        auth: Auth,
-       appCheck: AppCheck?) {
+       appCheck: AppCheck?,
+       callerSDKType: CallerSDKType) {
     self.app = app
 
     guard let projectId = app.options.projectID else {
@@ -86,6 +103,7 @@ actor GrpcClient: CustomStringConvertible {
     self.connectorConfig = connectorConfig
     self.auth = auth
     self.appCheck = appCheck
+    self.callerSDKType = callerSDKType
 
     connectorName =
       "projects/\(projectId)/locations/\(connectorConfig.location)/services/\(connectorConfig.serviceId)/connectors/\(connectorConfig.connector)"
@@ -187,6 +205,7 @@ actor GrpcClient: CustomStringConvertible {
 
     headers.add(name: RequestHeaders.googRequestParamsHeader, value: googRequestHeaderValue)
     headers.add(name: RequestHeaders.firebaseAppId, value: app.options.googleAppID)
+    headers.add(name: RequestHeaders.googApiClient, value: googApiClientHeaderValue)
 
     // Add Auth token if available
     do {

@@ -34,6 +34,10 @@ let package = Package(
       url: "https://github.com/grpc/grpc-swift.git",
       from: "1.19.1" // TODO: Constrain to a range at time of release
     ),
+    .package(
+      url: "https://github.com/google/GoogleUtilities.git",
+      "8.0.0" ..< "9.0.0"
+    ),
   ],
   targets: [
     .target(
@@ -44,7 +48,7 @@ let package = Package(
         // TODO: Investigate switching Auth and AppCheck to interop.
         .product(name: "FirebaseAuth", package: "firebase-ios-sdk"),
         .product(name: "FirebaseAppCheck", package: "firebase-ios-sdk"),
-
+        .product(name: "GULEnvironment", package: "GoogleUtilities"),
       ],
       path: "Sources"
     ),

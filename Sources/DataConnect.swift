@@ -27,6 +27,8 @@ public class DataConnect {
   private(set) var grpcClient: GrpcClient
   private var operationsManager: OperationsManager
 
+  private var callerSDKType: CallerSDKType = .base
+
   private static var instanceStore = InstanceStore()
 
   public enum EmulatorDefaults {
@@ -38,13 +40,20 @@ public class DataConnect {
 
   public class func dataConnect(app: FirebaseApp? = FirebaseApp.app(),
                                 connectorConfig: ConnectorConfig,
-                                settings: DataConnectSettings = DataConnectSettings())
+                                settings: DataConnectSettings = DataConnectSettings(),
+                                callerSDKType: CallerSDKType = .base)
     -> DataConnect {
     guard let app = app else {
       fatalError("No Firebase App present")
     }
 
-    return instanceStore.instance(for: app, config: connectorConfig, settings: settings)
+    return instanceStore
+      .instance(
+        for: app,
+        config: connectorConfig,
+        settings: settings,
+        callerSDKType: callerSDKType
+      )
   }
 
   // MARK: Emulator
@@ -66,7 +75,8 @@ public class DataConnect {
       settings: settings,
       connectorConfig: connectorConfig,
       auth: Auth.auth(app: app),
-      appCheck: AppCheck.appCheck(app: app)
+      appCheck: AppCheck.appCheck(app: app),
+      callerSDKType: callerSDKType
     )
 
     operationsManager = OperationsManager(grpcClient: grpcClient)
@@ -74,21 +84,24 @@ public class DataConnect {
 
   // MARK: Init
 
-  init(app: FirebaseApp, connectorConfig: ConnectorConfig, settings: DataConnectSettings) {
-    self.app = app
-    self.settings = settings
-    self.connectorConfig = connectorConfig
-
+  init(app: FirebaseApp, connectorConfig: ConnectorConfig, settings: DataConnectSettings,
+       callerSDKType: CallerSDKType = .base) {
     guard app.options.projectID != nil else {
       fatalError("Firebase DataConnect requires the projectID to be set in the app options")
     }
+
+    self.app = app
+    self.settings = settings
+    self.connectorConfig = connectorConfig
+    self.callerSDKType = callerSDKType
 
     grpcClient = GrpcClient(
       app: self.app,
       settings: settings,
       connectorConfig: connectorConfig,
       auth: Auth.auth(app: app),
-      appCheck: AppCheck.appCheck(app: app)
+      appCheck: AppCheck.appCheck(app: app),
+      callerSDKType: self.callerSDKType
     )
     operationsManager = OperationsManager(grpcClient: grpcClient)
   }
@@ -112,6 +125,13 @@ public class DataConnect {
       Variable> {
     return operationsManager.mutationRef(for: request, with: resultsDataType)
   }
+}
+
+// This enum is public so the gen sdk can access it
+@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
+public enum CallerSDKType {
+  case base // base sdk is directly used
+  case generated // generated sdk is calling the base
 }
 
 // MARK: Instance Creation
@@ -145,13 +165,18 @@ private class InstanceStore {
   var instances = [InstanceKey: DataConnect]()
 
   func instance(for app: FirebaseApp, config: ConnectorConfig,
-                settings: DataConnectSettings) -> DataConnect {
+                settings: DataConnectSettings, callerSDKType: CallerSDKType) -> DataConnect {
     accessQ.sync {
       let key = InstanceKey(app: app, config: config)
       if let inst = instances[key] {
         return inst
       } else {
-        let dc = DataConnect(app: app, connectorConfig: config, settings: settings)
+        let dc = DataConnect(
+          app: app,
+          connectorConfig: config,
+          settings: settings,
+          callerSDKType: callerSDKType
+        )
         instances[key] = dc
         return dc
       }

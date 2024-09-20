@@ -34,7 +34,7 @@ final class UserAgentTests: XCTestCase {
   /// Confirm that Data Connect gets added to the user agent.
   func testUserAgent() {
     let userAgent = FirebaseApp.firebaseUserAgent()
-    let version = Version.version
+    let version = Version.sdkVersion
     XCTAssertTrue(userAgent.contains("fire-dc/\(version)"))
   }
 }
