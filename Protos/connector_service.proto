@@ -16,35 +16,27 @@
 //adopted from third_party/firebase/dataconnect/emulator/server/api/connector_service.proto
 syntax = "proto3";
 
-package google.firebase.dataconnect.v1alpha;
+package google.firebase.dataconnect.v1beta;
 
 import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
 import "google/protobuf/struct.proto";
 import "graphql_error.proto";
 
-option java_package = "com.google.firebase.dataconnect.v1alpha";
+option java_package = "com.google.firebase.dataconnect.v1beta";
 option java_multiple_files = true;
 option java_outer_classname = "ConnectorServiceProto";
 
-
-// Firebase Data Connect provides means to deploy a set of predefined GraphQL
-// operations (queries and mutations) as a Connector.
-//
-// Firebase developers can build mobile and web apps that uses Connectors
-// to access Data Sources directly. Connectors allow operations without
-// admin credentials and help Firebase customers control the API exposure.
-//
-// Note: `ConnectorService` doesn't check IAM permissions and instead developers
-// must define auth policies on each pre-defined operation to secure this
-// connector. The auth policies typically define rules on the Firebase Auth
-// token.
 service ConnectorService {
   // Execute a predefined query in a Connector.
   rpc ExecuteQuery(ExecuteQueryRequest) returns (ExecuteQueryResponse) {
     option (google.api.http) = {
       post: "/v1alpha/{name=projects/*/locations/*/services/*/connectors/*}:executeQuery"
       body: "*"
+      additional_bindings {
+        post: "/v1beta/{name=projects/*/locations/*/services/*/connectors/*}:executeQuery"
+        body: "*"
+      }
     };
   }
 
@@ -54,6 +46,10 @@ service ConnectorService {
     option (google.api.http) = {
       post: "/v1alpha/{name=projects/*/locations/*/services/*/connectors/*}:executeMutation"
       body: "*"
+      additional_bindings {
+        post: "/v1beta/{name=projects/*/locations/*/services/*/connectors/*}:executeMutation"
+        body: "*"
+      }
     };
   }
 }
@@ -65,9 +61,7 @@ message ExecuteQueryRequest {
   // ```
   // projects/{project}/locations/{location}/services/{service}/connectors/{connector}
   // ```
-  string name = 1 [
-    (google.api.field_behavior) = REQUIRED
-  ];
+  string name = 1 [(google.api.field_behavior) = REQUIRED];
 
   // The name of the GraphQL operation name.
   // Required because all Connector operations must be named.
@@ -87,9 +81,7 @@ message ExecuteMutationRequest {
   // ```
   // projects/{project}/locations/{location}/services/{service}/connectors/{connector}
   // ```
-  string name = 1 [
-    (google.api.field_behavior) = REQUIRED
-  ];
+  string name = 1 [(google.api.field_behavior) = REQUIRED];
 
   // The name of the GraphQL operation name.
   // Required because all Connector operations must be named.
