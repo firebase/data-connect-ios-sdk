@@ -26,7 +26,7 @@ jobs:
   spm-package-resolved:
     runs-on: macos-14
     outputs:
-      cache-primary-key: ${{ steps.cache.outputs.cache-primary-key }}
+      cache_key: ${{ steps.generate_cache_key.outputs.cache_key }}
     env:
       FIREBASE_MAIN: 1
       DISABLE_INTEGRATION_TESTS: 1
@@ -36,6 +36,11 @@ jobs:
         id: swift_package_resolve
         run: |
           swift package resolve
+      - name: Generate cache key
+        id: generate_cache_key
+        run: |
+          cache_key="${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}"
+          echo "cache_key=${cache_key}" >> "$GITHUB_OUTPUT"
       - uses: actions/cache/save@v4
         id: cache
         with:
@@ -60,7 +65,7 @@ jobs:
     - uses: actions/cache/restore@v4
       with:
         path: .build
-        key: ${{ runner.os }}-spm-${{needs.spm-package-resolved.outputs.cache-primary-key}}
+        key: ${{needs.spm-package-resolved.outputs.cache_key}}
     - name: Xcode
       run: sudo xcode-select -s /Applications/${{ matrix.xcode }}.app/Contents/Developer
     - name: Setup Scripts Directory
