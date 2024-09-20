@@ -16,6 +16,46 @@ import Foundation
 
 import FirebaseDataConnect
 
+public struct AnyValueTypeKey {
+  public private(set) var id: UUID
+
+  enum CodingKeys: String, CodingKey {
+    case id
+  }
+}
+
+extension AnyValueTypeKey: Codable {
+  public init(from decoder: any Decoder) throws {
+    var container = try decoder.container(keyedBy: CodingKeys.self)
+    let codecHelper = CodecHelper<CodingKeys>()
+
+    id = try codecHelper.decode(UUID.self, forKey: .id, container: &container)
+  }
+
+  public func encode(to encoder: Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    let codecHelper = CodecHelper<CodingKeys>()
+
+    try codecHelper.encode(id, forKey: .id, container: &container)
+  }
+}
+
+extension AnyValueTypeKey: Equatable {
+  public static func == (lhs: AnyValueTypeKey, rhs: AnyValueTypeKey) -> Bool {
+    if lhs.id != rhs.id {
+      return false
+    }
+
+    return true
+  }
+}
+
+extension AnyValueTypeKey: Hashable {
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(id)
+  }
+}
+
 public struct LargeIntTypeKey {
   public private(set) var id: UUID
 

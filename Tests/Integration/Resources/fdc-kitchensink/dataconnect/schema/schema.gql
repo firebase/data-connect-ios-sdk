@@ -49,3 +49,8 @@ type LocalDateType @table {
     id: UUID!
     localDate: Date
 }
+
+type AnyValueType @table {
+    id: UUID!
+    props: Any!
+}

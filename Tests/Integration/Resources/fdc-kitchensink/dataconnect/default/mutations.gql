@@ -56,3 +56,10 @@ mutation createLocalDate($id: UUID!, $localDate: Date!) @auth(level: PUBLIC) {
         localDate: $localDate
     })
 }
+
+mutation createAnyValueType($id: UUID!, $props: Any!) @auth(level: PUBLIC) {
+    anyValueType_insert(data: {
+        id: $id
+        props: $props
+    })
+}

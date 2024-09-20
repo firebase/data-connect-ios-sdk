@@ -53,11 +53,10 @@ actor ProjectConfigurator {
     var configureRequest = URLRequest(url: configureUrl)
     configureRequest.httpMethod = "POST"
 
-    let (data, response) = try await URLSession.shared.upload(
+    let (_, response) = try await URLSession.shared.upload(
       for: configureRequest,
       from: configureBody.data(using: .utf8)!
     )
-    print("responseData \(response)")
     setupComplete = true
   }
 }
