@@ -18,6 +18,6 @@ import Foundation
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 @objc(FIRDataConnectComponent) class DataConnectComponent: NSObject {
   @objc class func sdkVersion() -> String {
-    return Version.version
+    return Version.sdkVersion
   }
 }

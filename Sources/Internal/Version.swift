@@ -16,5 +16,41 @@ import Foundation
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 struct Version {
-  static let version = "11.3.0-beta"
+  static let sdkVersion = "11.3.0-beta"
+
+  // returns value of form gl-PLATFORM_NAME/PLATFORM_VERSION
+  static func platformVersionHeader() -> String {
+    let version = ProcessInfo.processInfo.operatingSystemVersion
+    let versionString = "\(version.majorVersion).\(version.minorVersion).\(version.patchVersion)"
+    #if os(iOS)
+      return "gl-ios/\(versionString)"
+    #elseif os(watchOS)
+      return "gl-watchos/\(versionString)"
+    #elseif os(tvOS)
+      return "gl-tvos/\(versionString)"
+    #elseif os(macOS)
+      return "gl-macos/\(versionString)"
+    #else
+      return ""
+    #endif
+  }
+
+  // returns the build time major version of swift
+  static func swiftMajorVersion() -> String {
+    #if swift(>=6)
+      return "6"
+    #elseif swift(>=5)
+      return "5"
+    #elseif swift(>=4)
+      return "4"
+    #elseif swift(>=3)
+      return "3"
+    #elseif swift(>=2)
+      return "2"
+    #elseif swift(>=1)
+      return "1"
+    #else
+      return ""
+    #endif
+  }
 }

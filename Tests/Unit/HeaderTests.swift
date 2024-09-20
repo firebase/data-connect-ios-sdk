@@ -36,6 +36,12 @@ final class HeaderTests: XCTestCase {
     connector: "kitchensink"
   )
 
+  var fakeConnectorConfigTwo = ConnectorConfig(
+    serviceId: "dataconnect",
+    location: "us-east1",
+    connector: "kitchensinkgen"
+  )
+
   override class func setUp() {
     FirebaseApp.configure(options: options)
     defaultApp = FirebaseApp.app()
@@ -48,6 +54,44 @@ final class HeaderTests: XCTestCase {
       forHeader: GrpcClient.RequestHeaders.firebaseAppId, canonicalForm: false
     )
     let contains = values.contains { $0 == HeaderTests.defaultApp!.options.googleAppID }
+    XCTAssertTrue(contains)
+  }
+
+  func testGoogApiClientHeaderBaseSdk() async throws {
+    let dcOne = DataConnect.dataConnect(connectorConfig: fakeConnectorConfigOne)
+    let callOptions = await dcOne.grpcClient.createCallOptions()
+    let values = callOptions.customMetadata.values(
+      forHeader: GrpcClient.RequestHeaders.googApiClient, canonicalForm: false
+    )
+    for value in values {
+      print("value \(value)")
+    }
+    print("values \(values)")
+    let contains = values
+      .contains {
+        $0 ==
+          "gl-swift/\(Version.swiftMajorVersion()) fire/\(Version.sdkVersion) \(Version.platformVersionHeader()) grpc-swift/"
+      }
+    XCTAssertTrue(contains)
+  }
+
+  func testGoogleApiClientHeaderGenSdk() async throws {
+    let dcOne = DataConnect.dataConnect(
+      connectorConfig: fakeConnectorConfigTwo,
+      callerSDKType: .generated
+    )
+    let callOptions = await dcOne.grpcClient.createCallOptions()
+    let values = callOptions.customMetadata.values(
+      forHeader: GrpcClient.RequestHeaders.googApiClient, canonicalForm: false
+    )
+    for value in values {
+      print("value \(value)")
+    }
+    let contains = values
+      .contains {
+        $0 ==
+          "gl-swift/\(Version.swiftMajorVersion()) fire/\(Version.sdkVersion) \(Version.platformVersionHeader()) grpc-swift/ swift/gen"
+      }
     XCTAssertTrue(contains)
   }
 }
