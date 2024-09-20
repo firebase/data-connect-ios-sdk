@@ -63,10 +63,6 @@ final class HeaderTests: XCTestCase {
     let values = callOptions.customMetadata.values(
       forHeader: GrpcClient.RequestHeaders.googApiClient, canonicalForm: false
     )
-    for value in values {
-      print("value \(value)")
-    }
-    print("values \(values)")
     let contains = values
       .contains {
         $0 ==
@@ -84,9 +80,6 @@ final class HeaderTests: XCTestCase {
     let values = callOptions.customMetadata.values(
       forHeader: GrpcClient.RequestHeaders.googApiClient, canonicalForm: false
     )
-    for value in values {
-      print("value \(value)")
-    }
     let contains = values
       .contains {
         $0 ==

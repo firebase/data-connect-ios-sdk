@@ -14,25 +14,18 @@
 
 import Foundation
 
+import GoogleUtilities_Environment
+
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 struct Version {
   static let sdkVersion = "11.3.0-beta"
 
   // returns value of form gl-PLATFORM_NAME/PLATFORM_VERSION
   static func platformVersionHeader() -> String {
-    let version = ProcessInfo.processInfo.operatingSystemVersion
-    let versionString = "\(version.majorVersion).\(version.minorVersion).\(version.patchVersion)"
-    #if os(iOS)
-      return "gl-ios/\(versionString)"
-    #elseif os(watchOS)
-      return "gl-watchos/\(versionString)"
-    #elseif os(tvOS)
-      return "gl-tvos/\(versionString)"
-    #elseif os(macOS)
-      return "gl-macos/\(versionString)"
-    #else
-      return ""
-    #endif
+    let versionString = GULAppEnvironmentUtil.systemVersion()
+    let platformName = GULAppEnvironmentUtil.applePlatform()
+
+    return "gl-\(platformName)/\(versionString)"
   }
 
   // returns the build time major version of swift
