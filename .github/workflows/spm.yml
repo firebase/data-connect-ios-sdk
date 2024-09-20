@@ -23,13 +23,13 @@ jobs:
         if: ${{ github.event_name == 'schedule' }}
         run: echo '::set-output name=WAS_CHANGED::'$(test -n "$(git log --format=%H --since='24 hours ago')" && echo 'true' || echo 'false')
 
-
   spm-package-resolved:
     runs-on: macos-14
     outputs:
       package_resolved_hash: ${{ steps.cache.outputs.cache-primary-key }}
     env:
-      FIREBASECI_USE_LATEST_GOOGLEAPPMEASUREMENT: 1
+      FIREBASE_MAIN: 1
+      DISABLE_INTEGRATION_TESTS: 1
     steps:
       - uses: actions/checkout@v4
       - name: Generate Swift Package.resolved
