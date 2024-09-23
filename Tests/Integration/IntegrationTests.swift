@@ -33,14 +33,15 @@ final class IntegrationTests: IntegrationTestBase {
   // test to confirm that we can assign an explicit UUID
   func testSpecifiedUUID() async throws {
     let specifiedUUID = UUID()
-    let result = try await DataConnect.kitchenSinkClient.createTestIdMutationRef(id: specifiedUUID)
-      .execute()
+    let result = try await DataConnect.kitchenSinkConnector.createTestIdMutation.execute(
+      id: specifiedUUID
+    )
     XCTAssertEqual(result.data.testId_insert.id, specifiedUUID)
   }
 
   // test for an auto generated UUID assignment
   func testAutoId() async throws {
-    let result = try await DataConnect.kitchenSinkClient.createTestAutoIdMutationRef().execute()
+    let result = try await DataConnect.kitchenSinkConnector.createTestAutoIdMutation.execute()
     _ = result.data.testAutoId_insert.id
     // if we get till here - we have successfully got a UUID and decoded it. So test is successful
     XCTAssert(true)
@@ -56,12 +57,15 @@ final class IntegrationTests: IntegrationTestBase {
     // Tracked internally with issue - b/358198261
     // let testInt = -6196243450739521536
 
-    let executeResult = try await DataConnect.kitchenSinkClient.createStandardScalarMutationRef(
-      id: standardScalarUUID,
-      number: testInt,
-      text: testText,
-      decimal: testDecimal
-    ).execute()
+    let executeResult = try await DataConnect.kitchenSinkConnector.createStandardScalarMutation
+      .execute(
+        id: standardScalarUUID,
+        number: testInt,
+        text: testText,
+        decimal: testDecimal
+      )
+
+    let dc = DataConnect.kitchenSinkConnector.dataConnect
 
     XCTAssertEqual(
       executeResult.data.standardScalars_insert.id,
@@ -69,8 +73,8 @@ final class IntegrationTests: IntegrationTestBase {
       "UUID mismatch between specified and returned"
     )
 
-    let queryResult = try await DataConnect.kitchenSinkClient
-      .getStandardScalarQueryRef(id: standardScalarUUID).execute()
+    let queryResult = try await DataConnect.kitchenSinkConnector
+      .getStandardScalarQuery.execute(id: standardScalarUUID)
 
     let returnedDecimal = queryResult.data.standardScalars?.decimal
     XCTAssertEqual(
@@ -102,7 +106,7 @@ final class IntegrationTests: IntegrationTestBase {
     let maxFloat = Double.greatestFiniteMagnitude
     let minFloat = Double.leastNormalMagnitude
 
-    _ = try await DataConnect.kitchenSinkClient.createScalarBoundaryMutationRef(
+    _ = try await DataConnect.kitchenSinkConnector.createScalarBoundaryMutation.ref(
       id: scalaryBoundaryUUID,
       maxNumber: maxInt,
       minNumber: minInt,
@@ -110,8 +114,8 @@ final class IntegrationTests: IntegrationTestBase {
       minDecimal: minFloat
     ).execute()
 
-    let queryResult = try await DataConnect.kitchenSinkClient
-      .getScalarBoundaryQueryRef(id: scalaryBoundaryUUID).execute()
+    let queryResult = try await DataConnect.kitchenSinkConnector
+      .getScalarBoundaryQuery.ref(id: scalaryBoundaryUUID).execute()
 
     let returnedMaxInt = queryResult.data.scalarBoundary?.maxNumber
     XCTAssertEqual(
@@ -148,15 +152,16 @@ final class IntegrationTests: IntegrationTestBase {
     let largeNumMax = Int64.max
     let largeNumMin = Int64.min
 
-    _ = try await DataConnect.kitchenSinkClient.createLargeNumMutationRef(
+    _ = try await DataConnect.kitchenSinkConnector.createLargeNumMutation.ref(
       id: largeNumUUID,
       num: largeNum,
       maxNum: largeNumMax,
       minNum: largeNumMin
     ).execute()
 
-    let result = try await DataConnect.kitchenSinkClient.getLargeNumQueryRef(id: largeNumUUID)
-      .execute()
+    let result = try await DataConnect.kitchenSinkConnector.getLargeNumQuery.execute(
+      id: largeNumUUID
+    )
 
     let returnedLargeNum = result.data.largeIntType?.num
     XCTAssertEqual(
@@ -184,13 +189,15 @@ final class IntegrationTests: IntegrationTestBase {
     let localDateUUID = UUID()
     let ld = try LocalDate(localDateString: "2024-11-01")
 
-    _ = try await DataConnect.kitchenSinkClient.createLocalDateMutationRef(
+    _ = try await DataConnect.kitchenSinkConnector.createLocalDateMutation.ref(
       id: localDateUUID,
       localDate: ld
     ).execute()
 
-    let result = try await DataConnect.kitchenSinkClient.getLocalDateTypeQueryRef(id: localDateUUID)
-      .execute()
+    let result = try await DataConnect.kitchenSinkConnector.getLocalDateTypeQuery.ref(
+      id: localDateUUID
+    )
+    .execute()
     let returnedLd = result.data.localDateType?.localDate
     XCTAssertEqual(ld, returnedLd)
   }

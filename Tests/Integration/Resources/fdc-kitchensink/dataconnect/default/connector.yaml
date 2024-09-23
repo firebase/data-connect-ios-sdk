@@ -25,3 +25,4 @@ generate:
    swiftSdk:
      outputDir: "../../../../Gen/"
      package: "KitchenSink"
+     observablePublisher: "observableObject"

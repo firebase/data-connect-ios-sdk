@@ -35,13 +35,13 @@ final class AnyScalarTests: IntegrationTestBase {
     let anyTestData = try AnyValue(codableValue: testData)
 
     let anyValueId = UUID()
-    _ = try await DataConnect.kitchenSinkClient.createAnyValueTypeMutationRef(
+    _ = try await DataConnect.kitchenSinkConnector.createAnyValueTypeMutation.ref(
       id: anyValueId,
       props: anyTestData
     ).execute()
     print(anyValueId)
 
-    let result = try await DataConnect.kitchenSinkClient.getAnyValueTypeQueryRef(id: anyValueId)
+    let result = try await DataConnect.kitchenSinkConnector.getAnyValueTypeQuery.ref(id: anyValueId)
       .execute()
     let anyValueResult = result.data.anyValueType?.props
     let decodedResult = try anyValueResult?.decodeValue(String.self)
@@ -54,12 +54,12 @@ final class AnyScalarTests: IntegrationTestBase {
     let anyTestData = try AnyValue(codableValue: testNumber)
 
     let anyValueId = UUID()
-    _ = try await DataConnect.kitchenSinkClient.createAnyValueTypeMutationRef(
+    _ = try await DataConnect.kitchenSinkConnector.createAnyValueTypeMutation.ref(
       id: anyValueId,
       props: anyTestData
     ).execute()
 
-    let result = try await DataConnect.kitchenSinkClient.getAnyValueTypeQueryRef(id: anyValueId)
+    let result = try await DataConnect.kitchenSinkConnector.getAnyValueTypeQuery.ref(id: anyValueId)
       .execute()
     let anyValueResult = result.data.anyValueType?.props
     let decodedResult = try anyValueResult?.decodeValue(Int.self)
@@ -73,12 +73,12 @@ final class AnyScalarTests: IntegrationTestBase {
     let anyTestData = try AnyValue(codableValue: testDouble)
 
     let anyValueId = UUID()
-    _ = try await DataConnect.kitchenSinkClient.createAnyValueTypeMutationRef(
+    _ = try await DataConnect.kitchenSinkConnector.createAnyValueTypeMutation.ref(
       id: anyValueId,
       props: anyTestData
     ).execute()
 
-    let result = try await DataConnect.kitchenSinkClient.getAnyValueTypeQueryRef(id: anyValueId)
+    let result = try await DataConnect.kitchenSinkConnector.getAnyValueTypeQuery.ref(id: anyValueId)
       .execute()
     let anyValueResult = result.data.anyValueType?.props
     let decodedResult = try anyValueResult?.decodeValue(Double.self)
@@ -91,12 +91,12 @@ final class AnyScalarTests: IntegrationTestBase {
     let anyTestData = try AnyValue(codableValue: testInt64)
 
     let anyValueId = UUID()
-    _ = try await DataConnect.kitchenSinkClient.createAnyValueTypeMutationRef(
+    _ = try await DataConnect.kitchenSinkConnector.createAnyValueTypeMutation.ref(
       id: anyValueId,
       props: anyTestData
     ).execute()
 
-    let result = try await DataConnect.kitchenSinkClient.getAnyValueTypeQueryRef(id: anyValueId)
+    let result = try await DataConnect.kitchenSinkConnector.getAnyValueTypeQuery.ref(id: anyValueId)
       .execute()
     let anyValueResult = result.data.anyValueType?.props
     let decodedResult = try anyValueResult?.decodeValue(Int64.self)
@@ -109,10 +109,10 @@ final class AnyScalarTests: IntegrationTestBase {
     let anyTestData = try AnyValue(codableValue: int64Max)
 
     let anyValueId = UUID()
-    _ = try await DataConnect.kitchenSinkClient
-      .createAnyValueTypeMutationRef(id: anyValueId, props: anyTestData).execute()
+    _ = try await DataConnect.kitchenSinkConnector
+      .createAnyValueTypeMutation.ref(id: anyValueId, props: anyTestData).execute()
 
-    let result = try await DataConnect.kitchenSinkClient.getAnyValueTypeQueryRef(id: anyValueId)
+    let result = try await DataConnect.kitchenSinkConnector.getAnyValueTypeQuery.ref(id: anyValueId)
       .execute()
     let anyValueResult = result.data.anyValueType?.props
     let decodedResult = try anyValueResult?.decodeValue(Int64.self)
@@ -125,10 +125,10 @@ final class AnyScalarTests: IntegrationTestBase {
     let anyTestData = try AnyValue(codableValue: int64Min)
 
     let anyValueId = UUID()
-    _ = try await DataConnect.kitchenSinkClient
-      .createAnyValueTypeMutationRef(id: anyValueId, props: anyTestData).execute()
+    _ = try await DataConnect.kitchenSinkConnector
+      .createAnyValueTypeMutation.ref(id: anyValueId, props: anyTestData).execute()
 
-    let result = try await DataConnect.kitchenSinkClient.getAnyValueTypeQueryRef(id: anyValueId)
+    let result = try await DataConnect.kitchenSinkConnector.getAnyValueTypeQuery.ref(id: anyValueId)
       .execute()
     let anyValueResult = result.data.anyValueType?.props
     let decodedResult = try anyValueResult?.decodeValue(Int64.self)
@@ -141,12 +141,12 @@ final class AnyScalarTests: IntegrationTestBase {
     let anyTestData = try AnyValue(codableValue: testDouble)
 
     let anyValueId = UUID()
-    _ = try await DataConnect.kitchenSinkClient.createAnyValueTypeMutationRef(
+    _ = try await DataConnect.kitchenSinkConnector.createAnyValueTypeMutation.ref(
       id: anyValueId,
       props: anyTestData
     ).execute()
 
-    let result = try await DataConnect.kitchenSinkClient.getAnyValueTypeQueryRef(id: anyValueId)
+    let result = try await DataConnect.kitchenSinkConnector.getAnyValueTypeQuery.ref(id: anyValueId)
       .execute()
     let anyValueResult = result.data.anyValueType?.props
     let decodedResult = try anyValueResult?.decodeValue(Double.self)
@@ -159,12 +159,12 @@ final class AnyScalarTests: IntegrationTestBase {
     let anyTestData = try AnyValue(codableValue: testDouble)
 
     let anyValueId = UUID()
-    _ = try await DataConnect.kitchenSinkClient.createAnyValueTypeMutationRef(
+    _ = try await DataConnect.kitchenSinkConnector.createAnyValueTypeMutation.ref(
       id: anyValueId,
       props: anyTestData
     ).execute()
 
-    let result = try await DataConnect.kitchenSinkClient.getAnyValueTypeQueryRef(id: anyValueId)
+    let result = try await DataConnect.kitchenSinkConnector.getAnyValueTypeQuery.ref(id: anyValueId)
       .execute()
     let anyValueResult = result.data.anyValueType?.props
     let decodedResult = try anyValueResult?.decodeValue(Double.self)
@@ -212,12 +212,12 @@ final class AnyScalarTests: IntegrationTestBase {
     let anyValStruct = try AnyValue(codableValue: structVal)
 
     let anyValueId = UUID()
-    _ = try await DataConnect.kitchenSinkClient.createAnyValueTypeMutationRef(
+    _ = try await DataConnect.kitchenSinkConnector.createAnyValueTypeMutation.ref(
       id: anyValueId,
       props: anyValStruct
     ).execute()
 
-    let result = try await DataConnect.kitchenSinkClient.getAnyValueTypeQueryRef(id: anyValueId)
+    let result = try await DataConnect.kitchenSinkConnector.getAnyValueTypeQuery.ref(id: anyValueId)
       .execute()
     let anyValueResult = result.data.anyValueType?.props
     let decodedResult = try anyValueResult?.decodeValue(AnyValueTestStruct.self)

@@ -42,7 +42,7 @@ actor ProjectConfigurator {
 
     let configureBody = """
     {
-      "service_id": "\(KitchenSinkClient.connectorConfig.serviceId)",
+      "service_id": "\(KitchenSinkConnector.connectorConfig.serviceId)",
       "config_directory": "\(projectDirPath)",
       "use_dummy": \(useDummyEngine)
     }'
