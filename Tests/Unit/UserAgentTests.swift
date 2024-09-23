@@ -18,6 +18,7 @@ import XCTest
 import FirebaseCore
 @testable import FirebaseDataConnect
 
+@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
 final class UserAgentTests: XCTestCase {
   static var options: FirebaseOptions = {
     let options = FirebaseOptions(googleAppID: "0:0000000000000:ios:0000000000000000",
