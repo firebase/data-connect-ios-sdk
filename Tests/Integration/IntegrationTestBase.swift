@@ -39,6 +39,6 @@ class IntegrationTestBase: XCTestCase {
   override class func setUp() {
     FirebaseApp.configure(options: options)
     defaultApp = FirebaseApp.app()
-    DataConnect.kitchenSinkClient.useEmulator(port: 3628)
+    DataConnect.kitchenSinkConnector.useEmulator(port: 3628)
   }
 }

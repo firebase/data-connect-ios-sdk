@@ -15,240 +15,22 @@
 import FirebaseDataConnect
 import Foundation
 
-// MARK: Connector Client Extension
+// MARK: Common Enums
 
-public extension KitchenSinkClient {
-  func createTestIdMutationRef(id: UUID) -> MutationRef<
-    CreateTestIdMutation.Data,
-    CreateTestIdMutation.Variables
-  > {
-    var variables = CreateTestIdMutation.Variables(id: id)
-
-    let request = MutationRequest(operationName: "createTestId", variables: variables)
-    let ref = dataConnect.mutation(
-      request: request,
-      resultsDataType: CreateTestIdMutation.Data.self
-    )
-    return ref as! MutationRef<CreateTestIdMutation.Data, CreateTestIdMutation.Variables>
-  }
-
-  func createTestAutoIdMutationRef(
-  ) -> MutationRef<CreateTestAutoIdMutation.Data, CreateTestAutoIdMutation.Variables> {
-    var variables = CreateTestAutoIdMutation.Variables()
-
-    let request = MutationRequest(operationName: "createTestAutoId", variables: variables)
-    let ref = dataConnect.mutation(
-      request: request,
-      resultsDataType: CreateTestAutoIdMutation.Data.self
-    )
-    return ref as! MutationRef<
-      CreateTestAutoIdMutation.Data,
-      CreateTestAutoIdMutation.Variables
-    >
-  }
-
-  func createStandardScalarMutationRef(id: UUID,
-
-                                       number: Int,
-
-                                       text: String,
-
-                                       decimal: Double)
-    -> MutationRef<CreateStandardScalarMutation.Data,
-      CreateStandardScalarMutation.Variables> {
-    var variables = CreateStandardScalarMutation.Variables(
-      id: id,
-      number: number,
-      text: text,
-      decimal: decimal
-    )
-
-    let request = MutationRequest(operationName: "createStandardScalar", variables: variables)
-    let ref = dataConnect.mutation(
-      request: request,
-      resultsDataType: CreateStandardScalarMutation.Data.self
-    )
-    return ref as! MutationRef<
-      CreateStandardScalarMutation.Data,
-      CreateStandardScalarMutation.Variables
-    >
-  }
-
-  func createScalarBoundaryMutationRef(id: UUID,
-
-                                       maxNumber: Int,
-
-                                       minNumber: Int,
-
-                                       maxDecimal: Double,
-
-                                       minDecimal: Double)
-    -> MutationRef<CreateScalarBoundaryMutation.Data,
-      CreateScalarBoundaryMutation.Variables> {
-    var variables = CreateScalarBoundaryMutation.Variables(
-      id: id,
-      maxNumber: maxNumber,
-      minNumber: minNumber,
-      maxDecimal: maxDecimal,
-      minDecimal: minDecimal
-    )
-
-    let request = MutationRequest(operationName: "createScalarBoundary", variables: variables)
-    let ref = dataConnect.mutation(
-      request: request,
-      resultsDataType: CreateScalarBoundaryMutation.Data.self
-    )
-    return ref as! MutationRef<
-      CreateScalarBoundaryMutation.Data,
-      CreateScalarBoundaryMutation.Variables
-    >
-  }
-
-  func createLargeNumMutationRef(id: UUID,
-
-                                 num: Int64,
-
-                                 maxNum: Int64,
-
-                                 minNum: Int64)
-    -> MutationRef<CreateLargeNumMutation.Data,
-      CreateLargeNumMutation.Variables> {
-    var variables = CreateLargeNumMutation.Variables(
-      id: id,
-      num: num,
-      maxNum: maxNum,
-      minNum: minNum
-    )
-
-    let request = MutationRequest(operationName: "createLargeNum", variables: variables)
-    let ref = dataConnect.mutation(
-      request: request,
-      resultsDataType: CreateLargeNumMutation.Data.self
-    )
-    return ref as! MutationRef<CreateLargeNumMutation.Data, CreateLargeNumMutation.Variables>
-  }
-
-  func createLocalDateMutationRef(id: UUID,
-
-                                  localDate: LocalDate)
-    -> MutationRef<CreateLocalDateMutation.Data,
-      CreateLocalDateMutation.Variables> {
-    var variables = CreateLocalDateMutation.Variables(id: id, localDate: localDate)
-
-    let request = MutationRequest(operationName: "createLocalDate", variables: variables)
-    let ref = dataConnect.mutation(
-      request: request,
-      resultsDataType: CreateLocalDateMutation.Data.self
-    )
-    return ref as! MutationRef<CreateLocalDateMutation.Data, CreateLocalDateMutation.Variables>
-  }
-
-  func createAnyValueTypeMutationRef(id: UUID,
-
-                                     props: AnyValue) -> MutationRef<
-    CreateAnyValueTypeMutation.Data,
-    CreateAnyValueTypeMutation.Variables
-  > {
-    var variables = CreateAnyValueTypeMutation.Variables(id: id, props: props)
-
-    let request = MutationRequest(operationName: "createAnyValueType", variables: variables)
-    let ref = dataConnect.mutation(
-      request: request,
-      resultsDataType: CreateAnyValueTypeMutation.Data.self
-    )
-    return ref as! MutationRef<
-      CreateAnyValueTypeMutation.Data,
-      CreateAnyValueTypeMutation.Variables
-    >
-  }
-
-  func getStandardScalarQueryRef(id: UUID)
-    -> QueryRefObservableObject<GetStandardScalarQuery.Data,
-      GetStandardScalarQuery.Variables> {
-    var variables = GetStandardScalarQuery.Variables(id: id)
-
-    let request = QueryRequest(operationName: "GetStandardScalar", variables: variables)
-    let ref = dataConnect.query(
-      request: request,
-      resultsDataType: GetStandardScalarQuery.Data.self,
-      publisher: .observableObject
-    )
-    return ref as! QueryRefObservableObject<
-      GetStandardScalarQuery.Data,
-      GetStandardScalarQuery.Variables
-    >
-  }
-
-  func getScalarBoundaryQueryRef(id: UUID)
-    -> QueryRefObservableObject<GetScalarBoundaryQuery.Data,
-      GetScalarBoundaryQuery.Variables> {
-    var variables = GetScalarBoundaryQuery.Variables(id: id)
-
-    let request = QueryRequest(operationName: "GetScalarBoundary", variables: variables)
-    let ref = dataConnect.query(
-      request: request,
-      resultsDataType: GetScalarBoundaryQuery.Data.self,
-      publisher: .observableObject
-    )
-    return ref as! QueryRefObservableObject<
-      GetScalarBoundaryQuery.Data,
-      GetScalarBoundaryQuery.Variables
-    >
-  }
-
-  func getLargeNumQueryRef(id: UUID) -> QueryRefObservableObject<
-    GetLargeNumQuery.Data,
-    GetLargeNumQuery.Variables
-  > {
-    var variables = GetLargeNumQuery.Variables(id: id)
-
-    let request = QueryRequest(operationName: "GetLargeNum", variables: variables)
-    let ref = dataConnect.query(
-      request: request,
-      resultsDataType: GetLargeNumQuery.Data.self,
-      publisher: .observableObject
-    )
-    return ref as! QueryRefObservableObject<GetLargeNumQuery.Data, GetLargeNumQuery.Variables>
-  }
-
-  func getLocalDateTypeQueryRef(id: UUID) -> QueryRefObservableObject<
-    GetLocalDateTypeQuery.Data,
-    GetLocalDateTypeQuery.Variables
-  > {
-    var variables = GetLocalDateTypeQuery.Variables(id: id)
-
-    let request = QueryRequest(operationName: "GetLocalDateType", variables: variables)
-    let ref = dataConnect.query(
-      request: request,
-      resultsDataType: GetLocalDateTypeQuery.Data.self,
-      publisher: .observableObject
-    )
-    return ref as! QueryRefObservableObject<
-      GetLocalDateTypeQuery.Data,
-      GetLocalDateTypeQuery.Variables
-    >
-  }
-
-  func getAnyValueTypeQueryRef(id: UUID) -> QueryRefObservableObject<
-    GetAnyValueTypeQuery.Data,
-    GetAnyValueTypeQuery.Variables
-  > {
-    var variables = GetAnyValueTypeQuery.Variables(id: id)
-
-    let request = QueryRequest(operationName: "GetAnyValueType", variables: variables)
-    let ref = dataConnect.query(
-      request: request,
-      resultsDataType: GetAnyValueTypeQuery.Data.self,
-      publisher: .observableObject
-    )
-    return ref as! QueryRefObservableObject<
-      GetAnyValueTypeQuery.Data,
-      GetAnyValueTypeQuery.Variables
-    >
-  }
+public enum OrderDirection: String, Codable {
+  case ASC
+  case DESC
 }
 
-public enum CreateTestIdMutation {
+// End enum definitions
+
+public class CreateTestIdMutation {
+  let dataConnect: DataConnect
+
+  public init(dataConnect: DataConnect) {
+    self.dataConnect = dataConnect
+  }
+
   public static let OperationName = "createTestId"
 
   public typealias Ref = MutationRef<CreateTestIdMutation.Data, CreateTestIdMutation.Variables>
@@ -285,9 +67,39 @@ public enum CreateTestIdMutation {
     public var
       testId_insert: TestIdKey
   }
+
+  public func ref(id: UUID)
+    -> MutationRef<CreateTestIdMutation.Data, CreateTestIdMutation.Variables> {
+    let variables = CreateTestIdMutation.Variables(id: id)
+
+    let ref = dataConnect.mutation(
+      name: "createTestId",
+      variables: variables,
+      resultsDataType: CreateTestIdMutation.Data.self
+    )
+    return ref as MutationRef<CreateTestIdMutation.Data, CreateTestIdMutation.Variables>
+  }
+
+  public func execute(id: UUID) async throws -> OperationResult<CreateTestIdMutation.Data> {
+    let variables = CreateTestIdMutation.Variables(id: id)
+
+    let ref = dataConnect.mutation(
+      name: "createTestId",
+      variables: variables,
+      resultsDataType: CreateTestIdMutation.Data.self
+    )
+
+    return try await ref.execute()
+  }
 }
 
-public enum CreateTestAutoIdMutation {
+public class CreateTestAutoIdMutation {
+  let dataConnect: DataConnect
+
+  public init(dataConnect: DataConnect) {
+    self.dataConnect = dataConnect
+  }
+
   public static let OperationName = "createTestAutoId"
 
   public typealias Ref = MutationRef<
@@ -301,9 +113,40 @@ public enum CreateTestAutoIdMutation {
     public var
       testAutoId_insert: TestAutoIdKey
   }
+
+  public func ref(
+  ) -> MutationRef<CreateTestAutoIdMutation.Data, CreateTestAutoIdMutation.Variables> {
+    let variables = CreateTestAutoIdMutation.Variables()
+
+    let ref = dataConnect.mutation(
+      name: "createTestAutoId",
+      variables: variables,
+      resultsDataType: CreateTestAutoIdMutation.Data.self
+    )
+    return ref as MutationRef<CreateTestAutoIdMutation.Data, CreateTestAutoIdMutation.Variables>
+  }
+
+  public func execute(
+  ) async throws -> OperationResult<CreateTestAutoIdMutation.Data> {
+    let variables = CreateTestAutoIdMutation.Variables()
+
+    let ref = dataConnect.mutation(
+      name: "createTestAutoId",
+      variables: variables,
+      resultsDataType: CreateTestAutoIdMutation.Data.self
+    )
+
+    return try await ref.execute()
+  }
 }
 
-public enum CreateStandardScalarMutation {
+public class CreateStandardScalarMutation {
+  let dataConnect: DataConnect
+
+  public init(dataConnect: DataConnect) {
+    self.dataConnect = dataConnect
+  }
+
   public static let OperationName = "createStandardScalar"
 
   public typealias Ref = MutationRef<
@@ -382,9 +225,66 @@ public enum CreateStandardScalarMutation {
     public var
       standardScalars_insert: StandardScalarsKey
   }
+
+  public func ref(id: UUID,
+
+                  number: Int,
+
+                  text: String,
+
+                  decimal: Double)
+    -> MutationRef<CreateStandardScalarMutation.Data,
+      CreateStandardScalarMutation.Variables> {
+    let variables = CreateStandardScalarMutation.Variables(
+      id: id,
+      number: number,
+      text: text,
+      decimal: decimal
+    )
+
+    let ref = dataConnect.mutation(
+      name: "createStandardScalar",
+      variables: variables,
+      resultsDataType: CreateStandardScalarMutation.Data.self
+    )
+    return ref as MutationRef<
+      CreateStandardScalarMutation.Data,
+      CreateStandardScalarMutation.Variables
+    >
+  }
+
+  public func execute(id: UUID,
+
+                      number: Int,
+
+                      text: String,
+
+                      decimal: Double) async throws
+    -> OperationResult<CreateStandardScalarMutation.Data> {
+    let variables = CreateStandardScalarMutation.Variables(
+      id: id,
+      number: number,
+      text: text,
+      decimal: decimal
+    )
+
+    let ref = dataConnect.mutation(
+      name: "createStandardScalar",
+      variables: variables,
+      resultsDataType: CreateStandardScalarMutation.Data.self
+    )
+
+    return try await ref.execute()
+  }
 }
 
-public enum CreateScalarBoundaryMutation {
+public class CreateScalarBoundaryMutation {
+  let dataConnect: DataConnect
+
+  public init(dataConnect: DataConnect) {
+    self.dataConnect = dataConnect
+  }
+
   public static let OperationName = "createScalarBoundary"
 
   public typealias Ref = MutationRef<
@@ -476,9 +376,72 @@ public enum CreateScalarBoundaryMutation {
     public var
       scalarBoundary_insert: ScalarBoundaryKey
   }
+
+  public func ref(id: UUID,
+
+                  maxNumber: Int,
+
+                  minNumber: Int,
+
+                  maxDecimal: Double,
+
+                  minDecimal: Double)
+    -> MutationRef<CreateScalarBoundaryMutation.Data,
+      CreateScalarBoundaryMutation.Variables> {
+    let variables = CreateScalarBoundaryMutation.Variables(
+      id: id,
+      maxNumber: maxNumber,
+      minNumber: minNumber,
+      maxDecimal: maxDecimal,
+      minDecimal: minDecimal
+    )
+
+    let ref = dataConnect.mutation(
+      name: "createScalarBoundary",
+      variables: variables,
+      resultsDataType: CreateScalarBoundaryMutation.Data.self
+    )
+    return ref as MutationRef<
+      CreateScalarBoundaryMutation.Data,
+      CreateScalarBoundaryMutation.Variables
+    >
+  }
+
+  public func execute(id: UUID,
+
+                      maxNumber: Int,
+
+                      minNumber: Int,
+
+                      maxDecimal: Double,
+
+                      minDecimal: Double) async throws
+    -> OperationResult<CreateScalarBoundaryMutation.Data> {
+    let variables = CreateScalarBoundaryMutation.Variables(
+      id: id,
+      maxNumber: maxNumber,
+      minNumber: minNumber,
+      maxDecimal: maxDecimal,
+      minDecimal: minDecimal
+    )
+
+    let ref = dataConnect.mutation(
+      name: "createScalarBoundary",
+      variables: variables,
+      resultsDataType: CreateScalarBoundaryMutation.Data.self
+    )
+
+    return try await ref.execute()
+  }
 }
 
-public enum CreateLargeNumMutation {
+public class CreateLargeNumMutation {
+  let dataConnect: DataConnect
+
+  public init(dataConnect: DataConnect) {
+    self.dataConnect = dataConnect
+  }
+
   public static let OperationName = "createLargeNum"
 
   public typealias Ref = MutationRef<CreateLargeNumMutation.Data, CreateLargeNumMutation.Variables>
@@ -554,9 +517,61 @@ public enum CreateLargeNumMutation {
     public var
       largeIntType_insert: LargeIntTypeKey
   }
+
+  public func ref(id: UUID,
+
+                  num: Int64,
+
+                  maxNum: Int64,
+
+                  minNum: Int64)
+    -> MutationRef<CreateLargeNumMutation.Data, CreateLargeNumMutation.Variables> {
+    let variables = CreateLargeNumMutation.Variables(
+      id: id,
+      num: num,
+      maxNum: maxNum,
+      minNum: minNum
+    )
+
+    let ref = dataConnect.mutation(
+      name: "createLargeNum",
+      variables: variables,
+      resultsDataType: CreateLargeNumMutation.Data.self
+    )
+    return ref as MutationRef<CreateLargeNumMutation.Data, CreateLargeNumMutation.Variables>
+  }
+
+  public func execute(id: UUID,
+
+                      num: Int64,
+
+                      maxNum: Int64,
+
+                      minNum: Int64) async throws -> OperationResult<CreateLargeNumMutation.Data> {
+    let variables = CreateLargeNumMutation.Variables(
+      id: id,
+      num: num,
+      maxNum: maxNum,
+      minNum: minNum
+    )
+
+    let ref = dataConnect.mutation(
+      name: "createLargeNum",
+      variables: variables,
+      resultsDataType: CreateLargeNumMutation.Data.self
+    )
+
+    return try await ref.execute()
+  }
 }
 
-public enum CreateLocalDateMutation {
+public class CreateLocalDateMutation {
+  let dataConnect: DataConnect
+
+  public init(dataConnect: DataConnect) {
+    self.dataConnect = dataConnect
+  }
+
   public static let OperationName = "createLocalDate"
 
   public typealias Ref = MutationRef<
@@ -609,9 +624,45 @@ public enum CreateLocalDateMutation {
     public var
       localDateType_insert: LocalDateTypeKey
   }
+
+  public func ref(id: UUID,
+
+                  localDate: LocalDate)
+    -> MutationRef<CreateLocalDateMutation.Data,
+      CreateLocalDateMutation.Variables> {
+    let variables = CreateLocalDateMutation.Variables(id: id, localDate: localDate)
+
+    let ref = dataConnect.mutation(
+      name: "createLocalDate",
+      variables: variables,
+      resultsDataType: CreateLocalDateMutation.Data.self
+    )
+    return ref as MutationRef<CreateLocalDateMutation.Data, CreateLocalDateMutation.Variables>
+  }
+
+  public func execute(id: UUID,
+
+                      localDate: LocalDate) async throws
+    -> OperationResult<CreateLocalDateMutation.Data> {
+    let variables = CreateLocalDateMutation.Variables(id: id, localDate: localDate)
+
+    let ref = dataConnect.mutation(
+      name: "createLocalDate",
+      variables: variables,
+      resultsDataType: CreateLocalDateMutation.Data.self
+    )
+
+    return try await ref.execute()
+  }
 }
 
-public enum CreateAnyValueTypeMutation {
+public class CreateAnyValueTypeMutation {
+  let dataConnect: DataConnect
+
+  public init(dataConnect: DataConnect) {
+    self.dataConnect = dataConnect
+  }
+
   public static let OperationName = "createAnyValueType"
 
   public typealias Ref = MutationRef<
@@ -664,9 +715,49 @@ public enum CreateAnyValueTypeMutation {
     public var
       anyValueType_insert: AnyValueTypeKey
   }
+
+  public func ref(id: UUID,
+
+                  props: AnyValue) -> MutationRef<
+    CreateAnyValueTypeMutation.Data,
+    CreateAnyValueTypeMutation.Variables
+  > {
+    let variables = CreateAnyValueTypeMutation.Variables(id: id, props: props)
+
+    let ref = dataConnect.mutation(
+      name: "createAnyValueType",
+      variables: variables,
+      resultsDataType: CreateAnyValueTypeMutation.Data.self
+    )
+    return ref as MutationRef<
+      CreateAnyValueTypeMutation.Data,
+      CreateAnyValueTypeMutation.Variables
+    >
+  }
+
+  public func execute(id: UUID,
+
+                      props: AnyValue) async throws
+    -> OperationResult<CreateAnyValueTypeMutation.Data> {
+    let variables = CreateAnyValueTypeMutation.Variables(id: id, props: props)
+
+    let ref = dataConnect.mutation(
+      name: "createAnyValueType",
+      variables: variables,
+      resultsDataType: CreateAnyValueTypeMutation.Data.self
+    )
+
+    return try await ref.execute()
+  }
 }
 
-public enum GetStandardScalarQuery {
+public class GetStandardScalarQuery {
+  let dataConnect: DataConnect
+
+  public init(dataConnect: DataConnect) {
+    self.dataConnect = dataConnect
+  }
+
   public static let OperationName = "GetStandardScalar"
 
   public typealias Ref = QueryRefObservableObject<
@@ -757,9 +848,49 @@ public enum GetStandardScalarQuery {
     public var
       standardScalars: StandardScalars?
   }
+
+  public func ref(id: UUID)
+    -> QueryRefObservableObject<GetStandardScalarQuery.Data,
+      GetStandardScalarQuery.Variables> {
+    let variables = GetStandardScalarQuery.Variables(id: id)
+
+    let ref = dataConnect.query(
+      name: "GetStandardScalar",
+      variables: variables,
+      resultsDataType: GetStandardScalarQuery.Data.self,
+      publisher: .observableObject
+    )
+    return ref as! QueryRefObservableObject<
+      GetStandardScalarQuery.Data,
+      GetStandardScalarQuery.Variables
+    >
+  }
+
+  public func execute(id: UUID) async throws -> OperationResult<GetStandardScalarQuery.Data> {
+    let variables = GetStandardScalarQuery.Variables(id: id)
+
+    let ref = dataConnect.query(
+      name: "GetStandardScalar",
+      variables: variables,
+      resultsDataType: GetStandardScalarQuery.Data.self,
+      publisher: .observableObject
+    )
+
+    let refCast = ref as! QueryRefObservableObject<
+      GetStandardScalarQuery.Data,
+      GetStandardScalarQuery.Variables
+    >
+    return try await refCast.execute()
+  }
 }
 
-public enum GetScalarBoundaryQuery {
+public class GetScalarBoundaryQuery {
+  let dataConnect: DataConnect
+
+  public init(dataConnect: DataConnect) {
+    self.dataConnect = dataConnect
+  }
+
   public static let OperationName = "GetScalarBoundary"
 
   public typealias Ref = QueryRefObservableObject<
@@ -836,9 +967,49 @@ public enum GetScalarBoundaryQuery {
     public var
       scalarBoundary: ScalarBoundary?
   }
+
+  public func ref(id: UUID)
+    -> QueryRefObservableObject<GetScalarBoundaryQuery.Data,
+      GetScalarBoundaryQuery.Variables> {
+    let variables = GetScalarBoundaryQuery.Variables(id: id)
+
+    let ref = dataConnect.query(
+      name: "GetScalarBoundary",
+      variables: variables,
+      resultsDataType: GetScalarBoundaryQuery.Data.self,
+      publisher: .observableObject
+    )
+    return ref as! QueryRefObservableObject<
+      GetScalarBoundaryQuery.Data,
+      GetScalarBoundaryQuery.Variables
+    >
+  }
+
+  public func execute(id: UUID) async throws -> OperationResult<GetScalarBoundaryQuery.Data> {
+    let variables = GetScalarBoundaryQuery.Variables(id: id)
+
+    let ref = dataConnect.query(
+      name: "GetScalarBoundary",
+      variables: variables,
+      resultsDataType: GetScalarBoundaryQuery.Data.self,
+      publisher: .observableObject
+    )
+
+    let refCast = ref as! QueryRefObservableObject<
+      GetScalarBoundaryQuery.Data,
+      GetScalarBoundaryQuery.Variables
+    >
+    return try await refCast.execute()
+  }
 }
 
-public enum GetLargeNumQuery {
+public class GetLargeNumQuery {
+  let dataConnect: DataConnect
+
+  public init(dataConnect: DataConnect) {
+    self.dataConnect = dataConnect
+  }
+
   public static let OperationName = "GetLargeNum"
 
   public typealias Ref = QueryRefObservableObject<GetLargeNumQuery.Data, GetLargeNumQuery.Variables>
@@ -905,9 +1076,47 @@ public enum GetLargeNumQuery {
     public var
       largeIntType: LargeIntType?
   }
+
+  public func ref(id: UUID) -> QueryRefObservableObject<
+    GetLargeNumQuery.Data,
+    GetLargeNumQuery.Variables
+  > {
+    let variables = GetLargeNumQuery.Variables(id: id)
+
+    let ref = dataConnect.query(
+      name: "GetLargeNum",
+      variables: variables,
+      resultsDataType: GetLargeNumQuery.Data.self,
+      publisher: .observableObject
+    )
+    return ref as! QueryRefObservableObject<GetLargeNumQuery.Data, GetLargeNumQuery.Variables>
+  }
+
+  public func execute(id: UUID) async throws -> OperationResult<GetLargeNumQuery.Data> {
+    let variables = GetLargeNumQuery.Variables(id: id)
+
+    let ref = dataConnect.query(
+      name: "GetLargeNum",
+      variables: variables,
+      resultsDataType: GetLargeNumQuery.Data.self,
+      publisher: .observableObject
+    )
+
+    let refCast = ref as! QueryRefObservableObject<
+      GetLargeNumQuery.Data,
+      GetLargeNumQuery.Variables
+    >
+    return try await refCast.execute()
+  }
 }
 
-public enum GetLocalDateTypeQuery {
+public class GetLocalDateTypeQuery {
+  let dataConnect: DataConnect
+
+  public init(dataConnect: DataConnect) {
+    self.dataConnect = dataConnect
+  }
+
   public static let OperationName = "GetLocalDateType"
 
   public typealias Ref = QueryRefObservableObject<
@@ -967,9 +1176,50 @@ public enum GetLocalDateTypeQuery {
     public var
       localDateType: LocalDateType?
   }
+
+  public func ref(id: UUID) -> QueryRefObservableObject<
+    GetLocalDateTypeQuery.Data,
+    GetLocalDateTypeQuery.Variables
+  > {
+    let variables = GetLocalDateTypeQuery.Variables(id: id)
+
+    let ref = dataConnect.query(
+      name: "GetLocalDateType",
+      variables: variables,
+      resultsDataType: GetLocalDateTypeQuery.Data.self,
+      publisher: .observableObject
+    )
+    return ref as! QueryRefObservableObject<
+      GetLocalDateTypeQuery.Data,
+      GetLocalDateTypeQuery.Variables
+    >
+  }
+
+  public func execute(id: UUID) async throws -> OperationResult<GetLocalDateTypeQuery.Data> {
+    let variables = GetLocalDateTypeQuery.Variables(id: id)
+
+    let ref = dataConnect.query(
+      name: "GetLocalDateType",
+      variables: variables,
+      resultsDataType: GetLocalDateTypeQuery.Data.self,
+      publisher: .observableObject
+    )
+
+    let refCast = ref as! QueryRefObservableObject<
+      GetLocalDateTypeQuery.Data,
+      GetLocalDateTypeQuery.Variables
+    >
+    return try await refCast.execute()
+  }
 }
 
-public enum GetAnyValueTypeQuery {
+public class GetAnyValueTypeQuery {
+  let dataConnect: DataConnect
+
+  public init(dataConnect: DataConnect) {
+    self.dataConnect = dataConnect
+  }
+
   public static let OperationName = "GetAnyValueType"
 
   public typealias Ref = QueryRefObservableObject<
@@ -1024,5 +1274,40 @@ public enum GetAnyValueTypeQuery {
 
     public var
       anyValueType: AnyValueType?
+  }
+
+  public func ref(id: UUID) -> QueryRefObservableObject<
+    GetAnyValueTypeQuery.Data,
+    GetAnyValueTypeQuery.Variables
+  > {
+    let variables = GetAnyValueTypeQuery.Variables(id: id)
+
+    let ref = dataConnect.query(
+      name: "GetAnyValueType",
+      variables: variables,
+      resultsDataType: GetAnyValueTypeQuery.Data.self,
+      publisher: .observableObject
+    )
+    return ref as! QueryRefObservableObject<
+      GetAnyValueTypeQuery.Data,
+      GetAnyValueTypeQuery.Variables
+    >
+  }
+
+  public func execute(id: UUID) async throws -> OperationResult<GetAnyValueTypeQuery.Data> {
+    let variables = GetAnyValueTypeQuery.Variables(id: id)
+
+    let ref = dataConnect.query(
+      name: "GetAnyValueType",
+      variables: variables,
+      resultsDataType: GetAnyValueTypeQuery.Data.self,
+      publisher: .observableObject
+    )
+
+    let refCast = ref as! QueryRefObservableObject<
+      GetAnyValueTypeQuery.Data,
+      GetAnyValueTypeQuery.Variables
+    >
+    return try await refCast.execute()
   }
 }
