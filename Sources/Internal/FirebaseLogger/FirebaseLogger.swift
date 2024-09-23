@@ -15,44 +15,40 @@
 import Foundation
 import OSLog
 
+@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
 public class FirebaseLogger {
   let subsystem: String = "com.google.firebase"
 
   let category: String
 
-  private lazy var logger: FirebaseInternalLog = {
-    if #available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *) {
-      return FirebaseInternalLogger(subsystem: subsystem, category: category)
-    } else {
-      return OSLog(subsystem: subsystem, category: category)
-    }
-  }()
+  private let logger: Logger
 
   public init(category: String) {
     self.category = category
+    logger = Logger(subsystem: subsystem, category: category)
   }
 
   public func notice(_ message: String) {
-    logger.notice(message)
+    logger.notice("\(message)")
   }
 
   public func info(_ message: String) {
-    logger.info(message)
+    logger.info("\(message)")
   }
 
   public func debug(_ message: String) {
-    logger.debug(message)
+    logger.debug("\(message)")
   }
 
   public func warning(_ message: String) {
-    logger.warning(message)
+    logger.warning("\(message)")
   }
 
   public func error(_ message: String) {
-    logger.error(message)
+    logger.error("\(message)")
   }
 
   public func fault(_ message: String) {
-    logger.fault(message)
+    logger.fault("\(message)")
   }
 }

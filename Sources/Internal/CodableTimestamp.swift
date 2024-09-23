@@ -54,7 +54,7 @@ extension CodableTimestamp {
       nil else {
       FirebaseLogger.dataConnect
         .error(
-          "Timestamp string: \(timestampString) format doesn't support."
+          "Timestamp string format doesn't support."
         )
       throw DataConnectError.invalidTimestampFormat
     }

@@ -50,6 +50,9 @@ actor GrpcClient: CustomStringConvertible {
 
   private let callerSDKType: CallerSDKType
 
+  // Remove debug flag when logging privacy is properly handled.
+  private let debugEnable = false
+
   enum RequestHeaders {
     static let googRequestParamsHeader = "x-goog-request-params"
     static let authorizationHeader = "x-firebase-auth-token"
@@ -62,7 +65,11 @@ actor GrpcClient: CustomStringConvertible {
 
   private lazy var client: FirebaseDataConnectAsyncClient? = {
     do {
-      FirebaseLogger.dataConnect.debug("\(self.description) initialization starts.")
+      if (debugEnable == true) {
+        FirebaseLogger.dataConnect.debug("\(self.description) initialization starts.")
+      } else {
+        FirebaseLogger.dataConnect.debug("GrpcClient initialization starts.")
+      }
       let group = PlatformSupport.makeEventLoopGroup(loopCount: threadPoolSize)
       let channel = try GRPCChannelPool.with(
         target: .host(serverSettings.host, port: serverSettings.port),
@@ -71,10 +78,18 @@ actor GrpcClient: CustomStringConvertible {
           .plaintext,
         eventLoopGroup: group
       )
-      FirebaseLogger.dataConnect.debug("\(self.description) has been created.")
+      if (debugEnable == true) {
+        FirebaseLogger.dataConnect.debug("\(self.description) has been created.")
+      } else {
+        FirebaseLogger.dataConnect.debug("GrpcClient has been created.")
+      }
       return FirebaseDataConnectAsyncClient(channel: channel)
     } catch {
-      FirebaseLogger.dataConnect.error("Error:\(error) when creating \(self.description).")
+      if (debugEnable == true) {
+        FirebaseLogger.dataConnect.error("Error:\(error) when creating \(self.description).")
+      } else {
+        FirebaseLogger.dataConnect.debug("Error:\(error) when creating GrpcClient.")
+      }
       return nil
     }
   }()
@@ -142,25 +157,47 @@ actor GrpcClient: CustomStringConvertible {
     )
 
     do {
-      try FirebaseLogger.dataConnect
-        .debug("executeQuery() sends grpc request: \(grpcRequest.jsonString()).")
+      if (debugEnable == true) {
+        try FirebaseLogger.dataConnect
+          .debug("executeQuery() sends grpc request: \(grpcRequest.jsonString()).")
+      } else {
+        try FirebaseLogger.dataConnect
+          .debug("executeQuery() sends grpc request.")
+      }
       let results = try await client.executeQuery(grpcRequest, callOptions: createCallOptions())
-      try FirebaseLogger.dataConnect
-        .debug("executeQuery() receives response: \(results.jsonString()).")
+      if (debugEnable == true) {
+        try FirebaseLogger.dataConnect
+          .debug("executeQuery() receives response: \(results.jsonString()).")
+      } else {
+        try FirebaseLogger.dataConnect
+          .debug("executeQuery() receives response.")
+      }
       // Not doing error decoding here
       if let decodedResults = try codec.decode(result: results.data, asType: resultType) {
         return OperationResult(data: decodedResults)
       } else {
         // In future, set this as error in OperationResult
-        try FirebaseLogger.dataConnect
-          .error("executeQuery() response: \(results.jsonString()) decode failed.")
+        if (debugEnable == true) {
+          try FirebaseLogger.dataConnect
+            .error("executeQuery() response: \(results.jsonString()) decode failed.")
+        } else {
+          try FirebaseLogger.dataConnect
+            .error("executeQuery() response decode failed.")
+        }
         throw DataConnectError.decodeFailed
       }
     } catch {
-      try FirebaseLogger.dataConnect
-        .error(
-          "executeQuery() with request: \(grpcRequest.jsonString()) grpc call FAILED with \(error)."
-        )
+      if (debugEnable == true) {
+        try FirebaseLogger.dataConnect
+          .error(
+            "executeQuery() with request: \(grpcRequest.jsonString()) grpc call FAILED with \(error)."
+          )
+      } else {
+        try FirebaseLogger.dataConnect
+          .error(
+            "executeQuery() grpc call FAILED with \(error)."
+          )
+      }
       throw error
     }
   }
@@ -183,23 +220,45 @@ actor GrpcClient: CustomStringConvertible {
     )
 
     do {
-      try FirebaseLogger.dataConnect
-        .debug("executeMutation() sends grpc request: \(grpcRequest.jsonString()).")
+      if (debugEnable == true) {
+        try FirebaseLogger.dataConnect
+          .debug("executeMutation() sends grpc request: \(grpcRequest.jsonString()).")
+      } else {
+        try FirebaseLogger.dataConnect
+          .debug("executeMutation() sends grpc request.")
+      }
       let results = try await client.executeMutation(grpcRequest, callOptions: createCallOptions())
-      try FirebaseLogger.dataConnect
-        .debug("executeMutation() receives response: \(results.jsonString()).")
+      if (debugEnable == true) {
+        try FirebaseLogger.dataConnect
+          .debug("executeMutation() receives response: \(results.jsonString()).")
+      } else {
+        try FirebaseLogger.dataConnect
+          .debug("executeMutation() receives response.")
+      }
       if let decodedResults = try codec.decode(result: results.data, asType: resultType) {
         return OperationResult(data: decodedResults)
       } else {
-        try FirebaseLogger.dataConnect
-          .error("executeMutation() response: \(results.jsonString()) decode failed.")
+        if (debugEnable == true) {
+          try FirebaseLogger.dataConnect
+            .error("executeMutation() response: \(results.jsonString()) decode failed.")
+        } else {
+          try FirebaseLogger.dataConnect
+            .error("executeMutation() response decode failed.")
+        }
         throw DataConnectError.decodeFailed
       }
     } catch {
-      try FirebaseLogger.dataConnect
-        .error(
-          "executeMutation() with request: \(grpcRequest.jsonString()) grpc call FAILED with \(error)."
-        )
+      if (debugEnable == true) {
+        try FirebaseLogger.dataConnect
+          .error(
+            "executeMutation() with request: \(grpcRequest.jsonString()) grpc call FAILED with \(error)."
+          )
+      } else {
+        try FirebaseLogger.dataConnect
+          .error(
+            "executeMutation() grpc call FAILED with \(error)."
+          )
+      }
       throw error
     }
   }
@@ -215,8 +274,13 @@ actor GrpcClient: CustomStringConvertible {
     do {
       if let token = try await auth.currentUser?.getIDToken() {
         headers.add(name: RequestHeaders.authorizationHeader, value: "\(token)")
-        print("added Auth token \(token)")
-
+        if (debugEnable == true) {
+          FirebaseLogger.dataConnect
+            .debug("Auth token added: \(token)")
+        } else {
+          FirebaseLogger.dataConnect
+            .debug("Auth token added.")
+        }
       } else {
         FirebaseLogger.dataConnect.debug("No auth token available. Not adding auth header.")
       }
@@ -229,8 +293,13 @@ actor GrpcClient: CustomStringConvertible {
     do {
       if let token = try await appCheck?.token(forcingRefresh: false) {
         headers.add(name: RequestHeaders.appCheckHeader, value: token.token)
-        FirebaseLogger.dataConnect
-          .debug("App Check token added: \(token.token)")
+        if (debugEnable == true) {
+          FirebaseLogger.dataConnect
+            .debug("App Check token added: \(token.token)")
+        } else {
+          FirebaseLogger.dataConnect
+            .debug("App Check token added.")
+        }
       } else {
         FirebaseLogger.dataConnect
           .debug("App Check token unavailable. Not adding App Check header.")

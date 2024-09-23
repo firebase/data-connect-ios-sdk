@@ -39,7 +39,6 @@ final class AnyScalarTests: IntegrationTestBase {
       id: anyValueId,
       props: anyTestData
     ).execute()
-    print(anyValueId)
 
     let result = try await DataConnect.kitchenSinkConnector.getAnyValueTypeQuery.ref(id: anyValueId)
       .execute()
