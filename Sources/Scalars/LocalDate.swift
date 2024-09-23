@@ -19,7 +19,7 @@ import Foundation
 
  Essentially represents: https://the-guild.dev/graphql/scalars/docs/scalars/local-date
  */
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
+@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
 public struct LocalDate: Codable, Equatable, Comparable, CustomStringConvertible {
   private var calendar = Calendar(identifier: .gregorian)
   private var dateFormatter = DateFormatter()
@@ -76,7 +76,7 @@ public struct LocalDate: Codable, Equatable, Comparable, CustomStringConvertible
   }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
+@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
 public extension LocalDate {
   init(from decoder: any Decoder) throws {
     let container = try decoder.singleValueContainer()
@@ -96,7 +96,7 @@ public extension LocalDate {
 
 // MARK: Equatable, Comparable
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
+@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
 public extension LocalDate {
   static func < (lhs: LocalDate, rhs: LocalDate) -> Bool {
     return lhs.date < rhs.date
@@ -109,7 +109,7 @@ public extension LocalDate {
 
 // MARK: Hashable
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
+@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
 extension LocalDate: Hashable {
   public func hash(into hasher: inout Hasher) {
     hasher.combine(date)
