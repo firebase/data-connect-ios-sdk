@@ -17,7 +17,7 @@ import FirebaseCore
 import Foundation
 import XCTest
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
+@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
 class InstanceTests: XCTestCase {
   static var defaultApp: FirebaseApp?
   static var appTwo: FirebaseApp?

@@ -14,7 +14,7 @@
 
 import Foundation
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
+@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
 protocol CodableConverter {
   associatedtype E: Encodable
   associatedtype D: Decodable
@@ -23,7 +23,7 @@ protocol CodableConverter {
   func decode(input: D) throws -> E
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
+@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
 class Int64CodableConverter: CodableConverter {
   func encode(input: Int64?) throws -> String? {
     guard let input else {
@@ -46,7 +46,7 @@ class Int64CodableConverter: CodableConverter {
   }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
+@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
 class UUIDCodableConverter: CodableConverter {
   func encode(input: UUID?) throws -> String? {
     guard let input else {
