@@ -55,7 +55,7 @@ jobs:
       matrix:
         os: [macos-14]
         # GitHub actions' runners do not include visionOS. https://github.com/actions/runner-images/issues/10559
-        target: [iOS spm, tvOS spm, macOS spm, catalyst spm, visionOS spmbuildonly]
+        target: [iOS, tvOS, macOS, catalyst]
         xcode: [Xcode_15.2, Xcode_15.4, Xcode_16]
     runs-on: ${{ matrix.os }}
     env:
@@ -72,4 +72,4 @@ jobs:
     - name: Setup Scripts Directory
       run: ./setup-scripts.sh
     - name: Unit Tests
-      run: scripts/third_party/travis/retry.sh scripts/build.sh FirebaseDataConnect ${{ matrix.target }}
+      run: scripts/third_party/travis/retry.sh scripts/build.sh FirebaseDataConnect ${{ matrix.target }} spm
