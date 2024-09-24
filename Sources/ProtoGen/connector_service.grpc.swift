@@ -144,7 +144,7 @@ public struct Google_Firebase_Dataconnect_V1beta_ConnectorServiceNIOClient: Goog
   }
 }
 
-@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public protocol Google_Firebase_Dataconnect_V1beta_ConnectorServiceAsyncClientProtocol: GRPCClient {
   static var serviceDescriptor: GRPCServiceDescriptor { get }
   var interceptors: Google_Firebase_Dataconnect_V1beta_ConnectorServiceClientInterceptorFactoryProtocol? {
@@ -162,7 +162,7 @@ public protocol Google_Firebase_Dataconnect_V1beta_ConnectorServiceAsyncClientPr
       Google_Firebase_Dataconnect_V1beta_ExecuteMutationResponse>
 }
 
-@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public extension Google_Firebase_Dataconnect_V1beta_ConnectorServiceAsyncClientProtocol {
   static var serviceDescriptor: GRPCServiceDescriptor {
     return Google_Firebase_Dataconnect_V1beta_ConnectorServiceClientMetadata.serviceDescriptor
@@ -199,7 +199,7 @@ public extension Google_Firebase_Dataconnect_V1beta_ConnectorServiceAsyncClientP
   }
 }
 
-@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public extension Google_Firebase_Dataconnect_V1beta_ConnectorServiceAsyncClientProtocol {
   func executeQuery(_ request: Google_Firebase_Dataconnect_V1beta_ExecuteQueryRequest,
                     callOptions: CallOptions? = nil) async throws
@@ -226,7 +226,7 @@ public extension Google_Firebase_Dataconnect_V1beta_ConnectorServiceAsyncClientP
   }
 }
 
-@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public struct Google_Firebase_Dataconnect_V1beta_ConnectorServiceAsyncClient: Google_Firebase_Dataconnect_V1beta_ConnectorServiceAsyncClientProtocol {
   public var channel: GRPCChannel
   public var defaultCallOptions: CallOptions
@@ -343,7 +343,7 @@ public extension Google_Firebase_Dataconnect_V1beta_ConnectorServiceProvider {
 }
 
 /// To implement a server, implement an object which conforms to this protocol.
-@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public protocol Google_Firebase_Dataconnect_V1beta_ConnectorServiceAsyncProvider: CallHandlerProvider,
   Sendable {
   static var serviceDescriptor: GRPCServiceDescriptor { get }
@@ -362,7 +362,7 @@ public protocol Google_Firebase_Dataconnect_V1beta_ConnectorServiceAsyncProvider
     -> Google_Firebase_Dataconnect_V1beta_ExecuteMutationResponse
 }
 
-@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public extension Google_Firebase_Dataconnect_V1beta_ConnectorServiceAsyncProvider {
   static var serviceDescriptor: GRPCServiceDescriptor {
     return Google_Firebase_Dataconnect_V1beta_ConnectorServiceServerMetadata.serviceDescriptor
