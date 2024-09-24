@@ -42,8 +42,6 @@ class Codec {
 
       let resultAsType = try jsonDecoder.decode(asType, from: jsonData)
 
-      print("result as Type \(resultAsType)")
-
       return resultAsType
     }
   }
