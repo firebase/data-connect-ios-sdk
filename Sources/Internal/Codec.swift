@@ -17,9 +17,9 @@ import Foundation
 import SwiftProtobuf
 
 @available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
-typealias FirebaseDataConnectExecuteMutationRequest =
+public typealias FirebaseDataConnectExecuteMutationRequest =
   Google_Firebase_Dataconnect_V1beta_ExecuteMutationRequest
-typealias FirebaseDataConnectExecuteQueryRequest =
+public typealias FirebaseDataConnectExecuteQueryRequest =
   Google_Firebase_Dataconnect_V1beta_ExecuteQueryRequest
 
 @available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)

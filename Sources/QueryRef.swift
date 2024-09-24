@@ -25,24 +25,24 @@ public enum ResultsPublisherType {
 }
 
 @available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
-struct QueryRequest<Variable: OperationVariable>: OperationRequest, Hashable, Equatable {
-  private(set) var operationName: String
-  private(set) var variables: Variable?
+public struct QueryRequest<Variable: OperationVariable>: OperationRequest, Hashable, Equatable {
+  public private(set) var operationName: String
+  public private(set) var variables: Variable?
 
-  init(operationName: String, variables: Variable? = nil) {
+  public init(operationName: String, variables: Variable? = nil) {
     self.operationName = operationName
     self.variables = variables
   }
 
   // Hashable and Equatable implementation
-  func hash(into hasher: inout Hasher) {
+  public func hash(into hasher: inout Hasher) {
     hasher.combine(operationName)
     if let variables {
       hasher.combine(variables)
     }
   }
 
-  static func == (lhs: QueryRequest, rhs: QueryRequest) -> Bool {
+  public static func == (lhs: QueryRequest, rhs: QueryRequest) -> Bool {
     guard lhs.operationName == rhs.operationName else {
       return false
     }
@@ -72,7 +72,7 @@ actor GenericQueryRef<ResultData: Decodable, Variable: OperationVariable>: Query
   private var resultsPublisher = PassthroughSubject<Result<ResultData, DataConnectError>,
     Never>()
 
-  private var request: QueryRequest<Variable>
+  var request: QueryRequest<Variable>
 
   private var grpcClient: GrpcClient
 
@@ -121,6 +121,15 @@ public protocol ObservableQueryRef: QueryRef {
   // last error received. if last fetch was successful this is cleared
   var lastError: DataConnectError? { get }
 }
+
+/*
+ @available(iOS 15.0, macOS 11.0,  tvOS 15.0, watchOS 8.0, *)
+ extension ObservableQueryRef {
+   public func subscribe() async throws -> AnyPublisher<Result<ResultDataType, DataConnectError>, Never> {
+     //return Empty<Result<ResultDataType, DataConnectError>, Never>()
+   }
+ }
+ */
 
 // QueryRef class used with ObservableObject protocol
 // data: Published variable that contains bindable results of the query.
