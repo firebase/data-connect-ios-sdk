@@ -32,7 +32,7 @@ let package = Package(
     firebaseDependency(),
     .package(
       url: "https://github.com/grpc/grpc-swift.git",
-      exact: "1.23.1" 
+      exact: "1.23.1"
     ),
     .package(
       url: "https://github.com/google/GoogleUtilities.git",
