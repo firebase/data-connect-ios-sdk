@@ -23,12 +23,12 @@ import SwiftUI
 
 struct MoviesList: View {
   @Namespace var namespace
-  var listMovies = DataConnect.friendlyFlixConnector.listMoviesQuery.ref()
+  var listMovies = DataConnect.friendlyFlixConnector.listMoviesQuery
 
   var body: some View {
     NavigationStack {
       ScrollView {
-        if let movies = listMovies.data?.movies {
+        if let movies = listMovies.ref().data?.movies {
           ForEach(movies) { movie in
             NavigationLink(value: movie) {
               MovieCardView(showDetails: false, movie: movie)
@@ -50,7 +50,7 @@ struct MoviesList: View {
       }
     }
     .overlay {
-      if listMovies.data?.movies == nil {
+      if listMovies.ref().data?.movies == nil {
         ContentUnavailableView {
           Label("No Movies", systemImage: "video.slash")
         } description: {
