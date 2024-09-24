@@ -1,0 +1,71 @@
+extend type Query {
+  """
+  Look up a single Actor based on `id` or `key` and return selected fields (or `null` if not found).
+  """
+  actor(id: UUID, key: Actor_Key): Actor @fdc_generated(from: "Actor", purpose: QUERY_SINGLE)
+  """
+  Look up a single FavoriteActor based on `id` or `key` and return selected fields (or `null` if not found).
+  """
+  favorite_actor(key: FavoriteActor_Key): FavoriteActor @fdc_generated(from: "FavoriteActor", purpose: QUERY_SINGLE)
+  """
+  Look up a single FavoriteMovie based on `id` or `key` and return selected fields (or `null` if not found).
+  """
+  favorite_movie(key: FavoriteMovie_Key): FavoriteMovie @fdc_generated(from: "FavoriteMovie", purpose: QUERY_SINGLE)
+  """
+  Look up a single Movie based on `id` or `key` and return selected fields (or `null` if not found).
+  """
+  movie(id: UUID, key: Movie_Key): Movie @fdc_generated(from: "Movie", purpose: QUERY_SINGLE)
+  """
+  Look up a single MovieActor based on `id` or `key` and return selected fields (or `null` if not found).
+  """
+  movieActor(key: MovieActor_Key): MovieActor @fdc_generated(from: "MovieActor", purpose: QUERY_SINGLE)
+  """
+  Look up a single MovieMetadata based on `id` or `key` and return selected fields (or `null` if not found).
+  """
+  movieMetadata(id: UUID, key: MovieMetadata_Key): MovieMetadata @fdc_generated(from: "MovieMetadata", purpose: QUERY_SINGLE)
+  """
+  Look up a single Review based on `id` or `key` and return selected fields (or `null` if not found).
+  """
+  review(key: Review_Key): Review @fdc_generated(from: "Review", purpose: QUERY_SINGLE)
+  """
+  Look up a single User based on `id` or `key` and return selected fields (or `null` if not found).
+  """
+  user(id: String, id_expr: String_Expr, key: User_Key): User @fdc_generated(from: "User", purpose: QUERY_SINGLE)
+  """
+  List Actor entries in the table, optionally filtered by `where` conditions.
+  """
+  actors(where: Actor_Filter, orderBy: [Actor_Order!], offset: Int, limit: Int = 100): [Actor!]! @fdc_generated(from: "Actor", purpose: QUERY_MULTIPLE)
+  """
+  List FavoriteActor entries in the table, optionally filtered by `where` conditions.
+  """
+  favorite_actors(where: FavoriteActor_Filter, orderBy: [FavoriteActor_Order!], offset: Int, limit: Int = 100): [FavoriteActor!]! @fdc_generated(from: "FavoriteActor", purpose: QUERY_MULTIPLE)
+  """
+  List FavoriteMovie entries in the table, optionally filtered by `where` conditions.
+  """
+  favorite_movies(where: FavoriteMovie_Filter, orderBy: [FavoriteMovie_Order!], offset: Int, limit: Int = 100): [FavoriteMovie!]! @fdc_generated(from: "FavoriteMovie", purpose: QUERY_MULTIPLE)
+  """
+  List Movie entries in the table, optionally filtered by `where` conditions.
+  """
+  movies(where: Movie_Filter, orderBy: [Movie_Order!], offset: Int, limit: Int = 100): [Movie!]! @fdc_generated(from: "Movie", purpose: QUERY_MULTIPLE)
+  """
+  List MovieActor entries in the table, optionally filtered by `where` conditions.
+  """
+  movieActors(where: MovieActor_Filter, orderBy: [MovieActor_Order!], offset: Int, limit: Int = 100): [MovieActor!]! @fdc_generated(from: "MovieActor", purpose: QUERY_MULTIPLE)
+  """
+  List MovieMetadata entries in the table, optionally filtered by `where` conditions.
+  """
+  movieMetadatas(where: MovieMetadata_Filter, orderBy: [MovieMetadata_Order!], offset: Int, limit: Int = 100): [MovieMetadata!]! @fdc_generated(from: "MovieMetadata", purpose: QUERY_MULTIPLE)
+  """
+  List Review entries in the table, optionally filtered by `where` conditions.
+  """
+  reviews(where: Review_Filter, orderBy: [Review_Order!], offset: Int, limit: Int = 100): [Review!]! @fdc_generated(from: "Review", purpose: QUERY_MULTIPLE)
+  """
+  List User entries in the table, optionally filtered by `where` conditions.
+  """
+  users(where: User_Filter, orderBy: [User_Order!], offset: Int, limit: Int = 100): [User!]! @fdc_generated(from: "User", purpose: QUERY_MULTIPLE)
+  """
+  List Movie entries ordered by vector similarity between the `descriptionEmbedding` field and `compare_embed`.
+  (Alternatively, `compare` can be used if the input is a raw Vector.)
+  """
+  movies_descriptionEmbedding_similarity(compare: Vector, compare_embed: Vector_Embed, method: VectorSimilarityMethod = INNER_PRODUCT, within: Float, where: Movie_Filter, limit: Int = 100): [Movie!]! @fdc_generated(from: "Movie.descriptionEmbedding", purpose: QUERY_MULTIPLE_BY_SIMILARITY)
+}

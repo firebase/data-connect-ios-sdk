@@ -1,0 +1,11 @@
+specVersion: "v1alpha"
+serviceId: "friendly-flix-service"
+location: "us-central1"
+schema:
+  source: "./schema"
+  datasource:
+    postgresql:
+      database: "friendly-flix-database"
+      cloudSql:
+        instanceId: "my-cloud-sql"
+connectorDirs: ["./movie-connector"]

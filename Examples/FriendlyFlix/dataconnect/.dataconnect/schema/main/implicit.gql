@@ -1,0 +1,20 @@
+extend type FavoriteActor {
+  userId: String! @fdc_generated(from: "FavoriteActor.user", purpose: IMPLICIT_REF_FIELD)
+  actorId: UUID! @fdc_generated(from: "FavoriteActor.actor", purpose: IMPLICIT_REF_FIELD)
+}
+extend type FavoriteMovie {
+  userId: String! @fdc_generated(from: "FavoriteMovie.user", purpose: IMPLICIT_REF_FIELD)
+  movieId: UUID! @fdc_generated(from: "FavoriteMovie.movie", purpose: IMPLICIT_REF_FIELD)
+}
+extend type MovieActor {
+  movieId: UUID! @fdc_generated(from: "MovieActor.movie", purpose: IMPLICIT_REF_FIELD)
+  actorId: UUID! @fdc_generated(from: "MovieActor.actor", purpose: IMPLICIT_REF_FIELD)
+}
+extend type MovieMetadata {
+  id: UUID! @default(expr: "uuidV4()") @fdc_generated(from: "MovieMetadata", purpose: IMPLICIT_KEY_FIELD)
+  movieId: UUID! @fdc_generated(from: "MovieMetadata.movie", purpose: IMPLICIT_REF_FIELD)
+}
+extend type Review {
+  movieId: UUID! @fdc_generated(from: "Review.movie", purpose: IMPLICIT_REF_FIELD)
+  userId: String! @fdc_generated(from: "Review.user", purpose: IMPLICIT_REF_FIELD)
+}
