@@ -28,6 +28,7 @@ jobs:
     outputs:
       cache_key: ${{ steps.generate_cache_key.outputs.cache_key }}
     env:
+      FIREBASECI_USE_LATEST_GOOGLEAPPMEASUREMENT: 1
       FIREBASE_MAIN: 1
       DISABLE_INTEGRATION_TESTS: 1
     steps:
@@ -59,6 +60,7 @@ jobs:
         xcode: [Xcode_15.2, Xcode_15.4, Xcode_16]
     runs-on: ${{ matrix.os }}
     env:
+      FIREBASECI_USE_LATEST_GOOGLEAPPMEASUREMENT: 1
       FIREBASE_MAIN: 1
       DISABLE_INTEGRATION_TESTS: 1
     steps:
