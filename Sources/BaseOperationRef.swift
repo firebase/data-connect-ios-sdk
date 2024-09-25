@@ -14,23 +14,23 @@
 
 import Foundation
 
-@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct OperationResult<ResultData: Decodable> {
   public var data: ResultData
 }
 
 // notional protocol that denotes a variable.
-@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public protocol OperationVariable: Encodable, Hashable, Equatable {}
 
-@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 protocol OperationRequest: Hashable, Equatable {
   associatedtype Variable: OperationVariable
   var operationName: String { get } // Name within Connector definition
   var variables: Variable? { get }
 }
 
-@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public protocol OperationRef {
   associatedtype ResultData: Decodable
 

@@ -16,7 +16,7 @@ import Foundation
 
 import GoogleUtilities_Environment
 
-@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct Version {
   static let sdkVersion = "11.3.0-beta"
 

@@ -14,7 +14,7 @@
 
 import Foundation
 
-@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @propertyWrapper
 public struct OptionalVariable<Value> where Value: Encodable {
   public private(set) var isSet = false
@@ -44,7 +44,7 @@ public struct OptionalVariable<Value> where Value: Encodable {
   }
 }
 
-@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension OptionalVariable: Encodable {
   public func encode(to encoder: Encoder) throws {
     if isSet {

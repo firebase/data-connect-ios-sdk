@@ -18,7 +18,7 @@ import FirebaseAppCheck
 import FirebaseAuth
 import FirebaseCore
 
-@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class DataConnect {
   private var connectorConfig: ConnectorConfig
   private var app: FirebaseApp
@@ -132,7 +132,7 @@ public class DataConnect {
 }
 
 // This enum is public so the gen sdk can access it
-@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public enum CallerSDKType {
   case base // base sdk is directly used
   case generated // generated sdk is calling the base
@@ -142,7 +142,7 @@ public enum CallerSDKType {
 
 // Support for creating or reusing DataConnect instances.
 // Instances are keyed by ConnectorConfig and FirebaseApp (projectID)
-@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct InstanceKey: Hashable, Equatable {
   let config: ConnectorConfig
   let app: FirebaseApp
@@ -159,7 +159,7 @@ private struct InstanceKey: Hashable, Equatable {
   }
 }
 
-@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private class InstanceStore {
   let accessQ = DispatchQueue(
     label: "firebase.dataconnect.instanceQ",

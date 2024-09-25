@@ -14,7 +14,7 @@
 
 import Foundation
 
-@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct MutationRequest<Variable: OperationVariable>: OperationRequest {
   private(set) var operationName: String
   private(set) var variables: Variable?
@@ -25,7 +25,7 @@ struct MutationRequest<Variable: OperationVariable>: OperationRequest {
   }
 }
 
-@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class MutationRef<ResultData: Decodable, Variable: OperationVariable>: OperationRef {
   private var request: any OperationRequest
 

@@ -17,14 +17,14 @@ import Foundation
 import Combine
 import Observation
 
-@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public enum ResultsPublisherType {
   case auto // automatically determine ObservableQueryRef
   case observableObject // pre-iOS 17 ObservableObject
   case observableMacro // iOS 17+ Observation framework
 }
 
-@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct QueryRequest<Variable: OperationVariable>: OperationRequest, Hashable, Equatable {
   private(set) var operationName: String
   private(set) var variables: Variable?
@@ -61,13 +61,13 @@ struct QueryRequest<Variable: OperationVariable>: OperationRequest, Hashable, Eq
   }
 }
 
-@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public protocol QueryRef: OperationRef {
   // This call starts query execution and publishes data
   func subscribe() async throws -> AnyPublisher<Result<ResultData, DataConnectError>, Never>
 }
 
-@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 actor GenericQueryRef<ResultData: Decodable, Variable: OperationVariable>: QueryRef {
   private var resultsPublisher = PassthroughSubject<Result<ResultData, DataConnectError>,
     Never>()
@@ -113,7 +113,7 @@ actor GenericQueryRef<ResultData: Decodable, Variable: OperationVariable>: Query
   }
 }
 
-@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public protocol ObservableQueryRef: QueryRef {
   // results of fetch.
   var data: ResultData? { get }
@@ -126,7 +126,7 @@ public protocol ObservableQueryRef: QueryRef {
 // data: Published variable that contains bindable results of the query.
 // lastError: Published variable that contains DataConnectError if last fetch had error.
 //            If last fetch was successful, this variable is cleared
-@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class QueryRefObservableObject<
   ResultData: Decodable,
   Variable: OperationVariable
