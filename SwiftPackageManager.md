@@ -31,10 +31,10 @@ Then, select **Add Package**.
 Choose the product FirebaseDataConnect to install in your app.
 
 
-### Alternatively, add Firebase to a `Package.swift` manifest
+### Alternatively, add Firebase Data Connect to a `Package.swift` manifest
 
 To integrate via a `Package.swift` manifest instead of Xcode, you can add
-Firebase to the dependencies array of your package:
+Firebase Data Connect to the dependencies array of your package:
 
 ```swift
 dependencies: [
@@ -47,7 +47,7 @@ dependencies: [
 ],
 ```
 
-Then, in any target that depends on a Firebase product, add it to the `dependencies`
+Then, in any target that depends on Firebase Data Connect, add it to the `dependencies`
 array of that target:
 
 ```swift
