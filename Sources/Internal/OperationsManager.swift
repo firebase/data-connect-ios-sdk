@@ -18,6 +18,18 @@ import Foundation
 class OperationsManager {
   private var grpcClient: GrpcClient
 
+  private let queryRefAccessQueue = DispatchQueue(
+    label: "firebase.dataconnect.queryRef.AccessQ",
+    autoreleaseFrequency: .workItem
+  )
+  private var queryRefs = [AnyHashable: any ObservableQueryRef]()
+
+  private let mutationRefAccessQueue = DispatchQueue(
+    label: "firebase.dataconnect.mutRef.AccessQ",
+    autoreleaseFrequency: .workItem
+  )
+  private var mutationRefs = [AnyHashable: any OperationRef]()
+
   init(grpcClient: GrpcClient) {
     self.grpcClient = grpcClient
   }
@@ -28,34 +40,52 @@ class OperationsManager {
                                        .Type,
                                      publisher: ResultsPublisherType = .auto)
     -> any ObservableQueryRef {
-    switch publisher {
-    case .auto, .observableMacro:
-      if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *) {
-        return QueryRefObservation<ResultDataType, VariableType>(
-          request: request,
-          dataType: resultType,
-          grpcClient: self.grpcClient
-        ) as (any ObservableQueryRef)
-      } else {
-        return QueryRefObservableObject<ResultDataType, VariableType>(
-          request: request,
-          dataType: resultType,
-          grpcClient: grpcClient
-        ) as (any ObservableQueryRef)
+    queryRefAccessQueue.sync {
+      if let ref = queryRefs[AnyHashable(request)] {
+        return ref
       }
-    case .observableObject:
-      return QueryRefObservableObject<ResultDataType, VariableType>(
+
+      if publisher == .auto || publisher == .observableMacro {
+        if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *) {
+          let obsRef = QueryRefObservation<ResultDataType, VariableType>(
+            request: request,
+            dataType: resultType,
+            grpcClient: self.grpcClient
+          ) as (any ObservableQueryRef)
+          queryRefs[AnyHashable(request)] = obsRef
+          return obsRef
+        }
+      }
+
+      let refObsObject = QueryRefObservableObject<ResultDataType, VariableType>(
         request: request,
         dataType: resultType,
         grpcClient: grpcClient
       ) as (any ObservableQueryRef)
-    }
+      queryRefs[AnyHashable(request)] = refObsObject
+      return refObsObject
+    } // accessQueue.sync
   }
 
   func mutationRef<ResultDataType: Decodable,
     VariableType: OperationVariable>(for request: MutationRequest<VariableType>,
                                      with resultType: ResultDataType
                                        .Type) -> MutationRef<ResultDataType, VariableType> {
-    return MutationRef(request: request, grpcClient: grpcClient)
-  }
+    mutationRefAccessQueue.sync {
+      if let ref = mutationRefs[
+        AnyHashable(
+          request
+        )
+      ] as? MutationRef<ResultDataType, VariableType> {
+        return ref
+      }
+
+      let ref = MutationRef<ResultDataType, VariableType>(
+        request: request,
+        grpcClient: grpcClient
+      )
+      mutationRefs[AnyHashable(request)] = ref
+      return ref
+    }
+  } // accessQueue.sync
 }
