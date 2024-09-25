@@ -122,7 +122,7 @@ public class DataConnect {
     return operationsManager.queryRef(for: request, with: resultsDataType, publisher: publisher)
   }
 
-  /// Returns a Mutation Ref matching the name and specified variables. 
+  /// Returns a Mutation Ref matching the name and specified variables.
   public func mutation<ResultData: Decodable,
     Variable: OperationVariable>(name: String,
                                  variables: Variable,
