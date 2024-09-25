@@ -18,13 +18,13 @@ import Foundation
 class OperationsManager {
   private var grpcClient: GrpcClient
 
-  private let queryRefAccessQ = DispatchQueue(
+  private let queryRefAccessQueue = DispatchQueue(
     label: "firebase.dataconnect.queryRef.AccessQ",
     autoreleaseFrequency: .workItem
   )
   private var queryRefs = [AnyHashable: any ObservableQueryRef]()
 
-  private let mutationRefAccessQ = DispatchQueue(
+  private let mutationRefAccessQueue = DispatchQueue(
     label: "firebase.dataconnect.mutRef.AccessQ",
     autoreleaseFrequency: .workItem
   )
@@ -40,7 +40,7 @@ class OperationsManager {
                                        .Type,
                                      publisher: ResultsPublisherType = .auto)
     -> any ObservableQueryRef {
-    queryRefAccessQ.sync {
+    queryRefAccessQueue.sync {
       if let ref = queryRefs[AnyHashable(request)] {
         return ref
       }
@@ -64,14 +64,14 @@ class OperationsManager {
       ) as (any ObservableQueryRef)
       queryRefs[AnyHashable(request)] = refObsObject
       return refObsObject
-    } // accessQ.sync
+    } // accessQueue.sync
   }
 
   func mutationRef<ResultDataType: Decodable,
     VariableType: OperationVariable>(for request: MutationRequest<VariableType>,
                                      with resultType: ResultDataType
                                        .Type) -> MutationRef<ResultDataType, VariableType> {
-    mutationRefAccessQ.sync {
+    mutationRefAccessQueue.sync {
       if let ref = mutationRefs[
         AnyHashable(
           request
@@ -87,5 +87,5 @@ class OperationsManager {
       mutationRefs[AnyHashable(request)] = ref
       return ref
     }
-  } // accessQ.sync
+  } // accessQueue.sync
 }

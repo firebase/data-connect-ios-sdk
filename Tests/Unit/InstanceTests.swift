@@ -87,6 +87,13 @@ class InstanceTests: XCTestCase {
     var someNumber: Int
   }
 
+  struct VariableTypeTwo: OperationVariable {
+    var someDouble: Double
+    var someName: String
+    var someNumber: Int
+    var id: UUID
+  }
+
   // same query name, same variables, should return same instance
   func testSameQueryRefInstance() throws {
     let dc = DataConnect.dataConnect(connectorConfig: fakeConnectorConfigOne)
@@ -109,8 +116,7 @@ class InstanceTests: XCTestCase {
       publisher: .observableObject
     ) as! QueryRefObservableObject<Int, VariableTypeOne>
 
-    let isSameInstance = refOne === refTwo
-    XCTAssertTrue(isSameInstance)
+    XCTAssertTrue(refOne === refTwo)
   }
 
   // same query name but different variable values (same variable type).
@@ -136,8 +142,7 @@ class InstanceTests: XCTestCase {
       publisher: .observableObject
     ) as! QueryRefObservableObject<Int, VariableTypeOne>
 
-    let isDifferentInstance = refOne !== refTwo
-    XCTAssertTrue(isDifferentInstance)
+    XCTAssertTrue(refOne !== refTwo)
   }
 
   // different query names, same variables values
@@ -164,11 +169,40 @@ class InstanceTests: XCTestCase {
       publisher: .observableObject
     ) as! QueryRefObservableObject<Int, VariableTypeOne>
 
-    let isDifferentInstance = refOne !== refTwo
-    XCTAssertTrue(isDifferentInstance)
+    XCTAssertTrue(refOne !== refTwo)
   }
 
-  // same query name, same variables, should return same instance
+  func testQueryDifferentVariableTypes() throws {
+    let dc = DataConnect.dataConnect(connectorConfig: fakeConnectorConfigOne)
+
+    let queryNameOne = "someQueryOne"
+    let queryNameTwo = "someQueryTwo"
+    let variableOne = VariableTypeOne(email: "aa@g.com", handle: "aa@", someNumber: 12345)
+    let variableTwo = VariableTypeTwo(
+      someDouble: Double.random(in: 1 ... 1000),
+      someName: "aa",
+      someNumber: Int.random(in: 1 ... 1000),
+      id: UUID()
+    )
+
+    let refOne = dc.query(
+      name: queryNameOne,
+      variables: variableOne,
+      resultsDataType: Int.self,
+      publisher: .observableObject
+    ) as! QueryRefObservableObject<Int, VariableTypeOne>
+
+    let refTwo = dc.query(
+      name: queryNameTwo,
+      variables: variableTwo,
+      resultsDataType: Int.self,
+      publisher: .observableObject
+    ) as! QueryRefObservableObject<Int, VariableTypeTwo>
+
+    XCTAssertTrue(refOne !== refTwo)
+  }
+
+  // same mutation name, same variables, should return same instance
   func testSameMutationRefInstance() throws {
     let dc = DataConnect.dataConnect(connectorConfig: fakeConnectorConfigOne)
 
@@ -184,8 +218,7 @@ class InstanceTests: XCTestCase {
       resultsDataType: Int.self
     )
 
-    let isSameInstance = refOne === refTwo
-    XCTAssertTrue(isSameInstance)
+    XCTAssertTrue(refOne === refTwo)
   }
 
   // same mutation name but different variable values (same variable type).
@@ -209,8 +242,7 @@ class InstanceTests: XCTestCase {
       resultsDataType: Int.self
     )
 
-    let isDifferentInstance = refOne !== refTwo
-    XCTAssertTrue(isDifferentInstance)
+    XCTAssertTrue(refOne !== refTwo)
   }
 
   // different mutation names, same variables values
@@ -235,7 +267,34 @@ class InstanceTests: XCTestCase {
       resultsDataType: Int.self
     )
 
-    let isDifferentInstance = refOne !== refTwo
-    XCTAssertTrue(isDifferentInstance)
+    XCTAssertTrue(refOne !== refTwo)
+  }
+
+  func testMutationDifferentVariableTypes() throws {
+    let dc = DataConnect.dataConnect(connectorConfig: fakeConnectorConfigOne)
+
+    let nameOne = "someNameOne"
+    let nameTwo = "someNameTwo"
+    let variableOne = VariableTypeOne(email: "aa@g.com", handle: "aa@", someNumber: 12345)
+    let variableTwo = VariableTypeTwo(
+      someDouble: Double.random(in: 1 ... 1000),
+      someName: "aa",
+      someNumber: Int.random(in: 1 ... 1000),
+      id: UUID()
+    )
+
+    let refOne = dc.mutation(
+      name: nameOne,
+      variables: variableOne,
+      resultsDataType: Int.self
+    )
+
+    let refTwo = dc.mutation(
+      name: nameTwo,
+      variables: variableTwo,
+      resultsDataType: Int.self
+    )
+
+    XCTAssertTrue(refOne !== refTwo)
   }
 }
