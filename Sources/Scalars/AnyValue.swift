@@ -16,7 +16,7 @@ import Foundation
 
 /// AnyValue represents the Any graphql scalar, which represents Codable data -  scalar data (Int,
 /// Double, String, Bool,...) or a JSON object
-@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct AnyValue {
   public private(set) var value: Data
 
@@ -36,7 +36,7 @@ public struct AnyValue {
   }
 }
 
-@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension AnyValue: Codable {
   public init(from decoder: any Decoder) throws {
     let singleValueContainer = try decoder.singleValueContainer()
@@ -49,14 +49,14 @@ extension AnyValue: Codable {
   }
 }
 
-@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension AnyValue: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
     return lhs.value == rhs.value
   }
 }
 
-@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension AnyValue: Hashable {
   public func hash(into hasher: inout Hasher) {
     hasher.combine(value)

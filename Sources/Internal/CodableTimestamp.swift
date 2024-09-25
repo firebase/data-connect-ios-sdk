@@ -42,7 +42,7 @@ private enum TimestampKeys: String, CodingKey {
  * Note: this is implemented manually here because the Swift compiler can't synthesize these methods
  * when declaring an extension to conform to Codable.
  */
-@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension CodableTimestamp {
   public init(from decoder: any Swift.Decoder) throws {
     let container = try decoder.singleValueContainer()
@@ -75,7 +75,7 @@ extension CodableTimestamp {
 }
 
 /** Extends Timestamp to conform to Codable. */
-@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension Timestamp: CodableTimestamp {}
 
 class CodableTimestampHelper {

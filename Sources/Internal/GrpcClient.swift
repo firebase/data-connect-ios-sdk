@@ -24,11 +24,11 @@ import NIOPosix
 import OSLog
 import SwiftProtobuf
 
-@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 typealias FirebaseDataConnectAsyncClient =
   Google_Firebase_Dataconnect_V1beta_ConnectorServiceAsyncClient
 
-@available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 actor GrpcClient: CustomStringConvertible {
   nonisolated let description: String
 
