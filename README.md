@@ -16,7 +16,8 @@ Instructions for [Swift Package Manager](https://swift.org/package-manager/) sup
 found in the [SwiftPackageManager.md](SwiftPackageManager.md) Markdown file.
 
 ## Getting Started
-Here's a quick rundown of steps to get you started. Learn more about details at the official [Getting Started documentation](https://firebase.google.com/docs/data-connect/quickstart).
+
+Learn how to develop on Data Connect - [Quick Start](https://firebase.google.com/docs/data-connect/quickstart).
 
 ## Contributing
 
