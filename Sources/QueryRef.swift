@@ -138,8 +138,8 @@ public protocol ObservableQueryRef: QueryRef {
 /// ``DataConnect/dataConnect(...)`` function
 ///
 /// This class publishes two vars
-/// - `data`: Published variable that contains bindable results of the query.
-/// - `lastError`: Published variable that contains ``DataConnectError``  if last fetch had error.
+/// - ``data``: Published variable that contains bindable results of the query.
+/// - ``lastError``: Published variable that contains ``DataConnectError``  if last fetch had error.
 ///            If last fetch was successful, this variable is cleared
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class QueryRefObservableObject<
@@ -210,8 +210,8 @@ public class QueryRefObservableObject<
 /// ``DataConnect/dataConnect(...)`` function
 ///
 /// This class publishes two vars
-/// - `data`: Published variable that contains bindable results of the query.
-/// - `lastError`: Published variable that contains ``DataConnectError``  if last fetch had error.
+/// - ``data``: Published variable that contains bindable results of the query.
+/// - ``lastError``: Published variable that contains ``DataConnectError``  if last fetch had error.
 ///            If last fetch was successful, this variable is cleared
 @available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
 @Observable
