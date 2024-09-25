@@ -125,9 +125,11 @@ public protocol ObservableQueryRef: QueryRef {
 
 /// QueryRef class compatible with ObservableObject protocol
 ///
-/// When the  requested publisher is an ObservableObject, the returned query refs will be instances of this class
+/// When the  requested publisher is an ObservableObject, the returned query refs will be instances
+/// of this class
 ///
-/// This class cannot be instantiated directly. To get an instance, call the ``DataConnect/dataConnect(...)`` function
+/// This class cannot be instantiated directly. To get an instance, call the
+/// ``DataConnect/dataConnect(...)`` function
 ///
 /// This class publishes two vars
 /// - `data`: Published variable that contains bindable results of the query.
@@ -171,19 +173,22 @@ public class QueryRefObservableObject<
   /// data published by query of type `ResultData`
   @Published public private(set) var data: ResultData?
 
-  /// Error thrown if error occurs during execution of query. If the last fetch was successful the error is cleared
+  /// Error thrown if error occurs during execution of query. If the last fetch was successful the
+  /// error is cleared
   @Published public private(set) var lastError: DataConnectError?
 
   // QueryRef implementation
 
-  /// Executes the query and returns `ResultData`. This will also update the published `data` variable
+  /// Executes the query and returns `ResultData`. This will also update the published `data`
+  /// variable
   public func execute() async throws -> OperationResult<ResultData> {
     let result = try await baseRef.execute()
     return result
   }
 
   /// Returns the underlying results publisher.
-  /// Use this function ONLY if you plan to use the Query Ref outside of SwiftUI context - (UIKit, background updates,...)
+  /// Use this function ONLY if you plan to use the Query Ref outside of SwiftUI context - (UIKit,
+  /// background updates,...)
   public func subscribe() async throws
     -> AnyPublisher<Result<ResultData, DataConnectError>, Never> {
     return await baseRef.subscribe()
@@ -192,9 +197,11 @@ public class QueryRefObservableObject<
 
 /// QueryRef class compatible with the Observation framework introduced in iOS 17
 ///
-/// When the  requested publisher is an ObservableMacri, the returned query refs will be instances of this class
+/// When the  requested publisher is an ObservableMacri, the returned query refs will be instances
+/// of this class
 ///
-/// This class cannot be instantiated directly. To get an instance, call the ``DataConnect/dataConnect(...)`` function
+/// This class cannot be instantiated directly. To get an instance, call the
+/// ``DataConnect/dataConnect(...)`` function
 ///
 /// This class publishes two vars
 /// - `data`: Published variable that contains bindable results of the query.
@@ -242,19 +249,22 @@ public class QueryRefObservation<
   /// data published by query of type `ResultData`
   public private(set) var data: ResultData?
 
-  /// Error thrown if error occurs during execution of query. If the last fetch was successful the error is cleared
+  /// Error thrown if error occurs during execution of query. If the last fetch was successful the
+  /// error is cleared
   public private(set) var lastError: DataConnectError?
 
   // QueryRef implementation
 
-  /// Executes the query and returns `ResultData`. This will also update the published `data` variable
+  /// Executes the query and returns `ResultData`. This will also update the published `data`
+  /// variable
   public func execute() async throws -> OperationResult<ResultData> {
     let result = try await baseRef.execute()
     return result
   }
 
   /// Returns the underlying results publisher.
-  /// Use this function ONLY if you plan to use the Query Ref outside of SwiftUI context - (UIKit, background updates,...)
+  /// Use this function ONLY if you plan to use the Query Ref outside of SwiftUI context - (UIKit,
+  /// background updates,...)
   public func subscribe() async throws
     -> AnyPublisher<Result<ResultData, DataConnectError>, Never> {
     return await baseRef.subscribe()
