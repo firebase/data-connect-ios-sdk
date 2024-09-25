@@ -20,9 +20,15 @@ import Observation
 /// The type of publisher to use for the Query Ref
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public enum ResultsPublisherType {
-  case auto /// automatically determine ObservableQueryRef
-  case observableObject /// pre-iOS 17 ObservableObject
-  case observableMacro /// iOS 17+ Observation framework
+  /// automatically determine ObservableQueryRef.
+  /// Tries to pick the iOS 17+ Observation but falls back to ObservableObject
+  case auto
+
+  /// pre-iOS 17 ObservableObject
+  case observableObject
+
+  /// iOS 17+ Observation framework
+  case observableMacro
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
