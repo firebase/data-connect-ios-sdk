@@ -80,4 +80,162 @@ class InstanceTests: XCTestCase {
     let isDifferent = dcOne !== dcTwo
     XCTAssertTrue(isDifferent)
   }
+
+  struct VariableTypeOne: OperationVariable {
+    var email: String
+    var handle: String
+    var someNumber: Int
+  }
+
+  // same query name, same variables, should return same instance
+  func testSameQueryRefInstance() throws {
+    let dc = DataConnect.dataConnect(connectorConfig: fakeConnectorConfigOne)
+
+    let queryName = "someQuery"
+    let variableOne = VariableTypeOne(email: "aa@g.com", handle: "aa@", someNumber: 12345)
+    let variableTwo = VariableTypeOne(email: "aa@g.com", handle: "aa@", someNumber: 12345)
+
+    let refOne = dc.query(
+      name: queryName,
+      variables: variableOne,
+      resultsDataType: Int.self,
+      publisher: .observableObject
+    ) as! QueryRefObservableObject<Int, VariableTypeOne>
+
+    let refTwo = dc.query(
+      name: queryName,
+      variables: variableTwo,
+      resultsDataType: Int.self,
+      publisher: .observableObject
+    ) as! QueryRefObservableObject<Int, VariableTypeOne>
+
+    let isSameInstance = refOne === refTwo
+    XCTAssertTrue(isSameInstance)
+  }
+
+  // same query name but different variable values (same variable type).
+  // should return different instances
+  func testQueryDifferentVariablesDifferentRefInstance() throws {
+    let dc = DataConnect.dataConnect(connectorConfig: fakeConnectorConfigOne)
+
+    let queryName = "someQuery"
+    let variableOne = VariableTypeOne(email: "aa1@g.com", handle: "aa@", someNumber: 12345)
+    let variableTwo = VariableTypeOne(email: "aa2@g.com", handle: "aa@", someNumber: 12345)
+
+    let refOne = dc.query(
+      name: queryName,
+      variables: variableOne,
+      resultsDataType: Int.self,
+      publisher: .observableObject
+    ) as! QueryRefObservableObject<Int, VariableTypeOne>
+
+    let refTwo = dc.query(
+      name: queryName,
+      variables: variableTwo,
+      resultsDataType: Int.self,
+      publisher: .observableObject
+    ) as! QueryRefObservableObject<Int, VariableTypeOne>
+
+    let isDifferentInstance = refOne !== refTwo
+    XCTAssertTrue(isDifferentInstance)
+  }
+
+  // different query names, same variables values
+  // should return different instances
+  func testDifferentQueryNamesSameVariables() throws {
+    let dc = DataConnect.dataConnect(connectorConfig: fakeConnectorConfigOne)
+
+    let queryNameOne = "someQueryOne"
+    let queryNameTwo = "someQueryTwo"
+    let variableOne = VariableTypeOne(email: "aa@g.com", handle: "aa@", someNumber: 12345)
+    let variableTwo = VariableTypeOne(email: "aa@g.com", handle: "aa@", someNumber: 12345)
+
+    let refOne = dc.query(
+      name: queryNameOne,
+      variables: variableOne,
+      resultsDataType: Int.self,
+      publisher: .observableObject
+    ) as! QueryRefObservableObject<Int, VariableTypeOne>
+
+    let refTwo = dc.query(
+      name: queryNameTwo,
+      variables: variableTwo,
+      resultsDataType: Int.self,
+      publisher: .observableObject
+    ) as! QueryRefObservableObject<Int, VariableTypeOne>
+
+    let isDifferentInstance = refOne !== refTwo
+    XCTAssertTrue(isDifferentInstance)
+  }
+
+  // same query name, same variables, should return same instance
+  func testSameMutationRefInstance() throws {
+    let dc = DataConnect.dataConnect(connectorConfig: fakeConnectorConfigOne)
+
+    let name = "someMutation"
+    let variableOne = VariableTypeOne(email: "aa@g.com", handle: "aa@", someNumber: 12345)
+    let variableTwo = VariableTypeOne(email: "aa@g.com", handle: "aa@", someNumber: 12345)
+
+    let refOne = dc.mutation(name: name, variables: variableOne, resultsDataType: Int.self)
+
+    let refTwo = dc.mutation(
+      name: name,
+      variables: variableTwo,
+      resultsDataType: Int.self
+    )
+
+    let isSameInstance = refOne === refTwo
+    XCTAssertTrue(isSameInstance)
+  }
+
+  // same mutation name but different variable values (same variable type).
+  // should return different instances
+  func testMutationDifferentVariablesDifferentRefInstance() throws {
+    let dc = DataConnect.dataConnect(connectorConfig: fakeConnectorConfigOne)
+
+    let name = "someQuery"
+    let variableOne = VariableTypeOne(email: "aa1@g.com", handle: "aa@", someNumber: 12345)
+    let variableTwo = VariableTypeOne(email: "aa2@g.com", handle: "aa@", someNumber: 12345)
+
+    let refOne = dc.mutation(
+      name: name,
+      variables: variableOne,
+      resultsDataType: Int.self
+    )
+
+    let refTwo = dc.mutation(
+      name: name,
+      variables: variableTwo,
+      resultsDataType: Int.self
+    )
+
+    let isDifferentInstance = refOne !== refTwo
+    XCTAssertTrue(isDifferentInstance)
+  }
+
+  // different mutation names, same variables values
+  // should return different instances
+  func testDifferentMutationNamesSameVariables() throws {
+    let dc = DataConnect.dataConnect(connectorConfig: fakeConnectorConfigOne)
+
+    let nameOne = "someNameOne"
+    let nameTwo = "someNameTwo"
+    let variableOne = VariableTypeOne(email: "aa@g.com", handle: "aa@", someNumber: 12345)
+    let variableTwo = VariableTypeOne(email: "aa@g.com", handle: "aa@", someNumber: 12345)
+
+    let refOne = dc.mutation(
+      name: nameOne,
+      variables: variableOne,
+      resultsDataType: Int.self
+    )
+
+    let refTwo = dc.mutation(
+      name: nameTwo,
+      variables: variableTwo,
+      resultsDataType: Int.self
+    )
+
+    let isDifferentInstance = refOne !== refTwo
+    XCTAssertTrue(isDifferentInstance)
+  }
 }

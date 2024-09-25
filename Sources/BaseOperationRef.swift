@@ -24,7 +24,7 @@ public struct OperationResult<ResultData: Decodable> {
 public protocol OperationVariable: Encodable, Hashable, Equatable {}
 
 @available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
-protocol OperationRequest {
+protocol OperationRequest: Hashable, Equatable {
   associatedtype Variable: OperationVariable
   var operationName: String { get } // Name within Connector definition
   var variables: Variable? { get }
