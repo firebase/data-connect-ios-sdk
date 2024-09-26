@@ -38,6 +38,8 @@ public class DataConnect {
 
   // MARK: Static Creation
 
+  /// Returns an instance of DataConnect matching the parameters.
+  /// If a matching instance is found that is returned, otherwise a new instance is created.
   public class func dataConnect(app: FirebaseApp? = FirebaseApp.app(),
                                 connectorConfig: ConnectorConfig,
                                 settings: DataConnectSettings = DataConnectSettings(),
@@ -108,6 +110,7 @@ public class DataConnect {
 
   // MARK: Operations
 
+  /// Returns a query ref matching the name and variables.
   public func query<ResultData: Decodable,
     Variable: OperationVariable>(name: String,
                                  variables: Variable,
@@ -119,6 +122,7 @@ public class DataConnect {
     return operationsManager.queryRef(for: request, with: resultsDataType, publisher: publisher)
   }
 
+  /// Returns a Mutation Ref matching the name and specified variables.
   public func mutation<ResultData: Decodable,
     Variable: OperationVariable>(name: String,
                                  variables: Variable,

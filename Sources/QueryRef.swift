@@ -17,11 +17,18 @@ import Foundation
 import Combine
 import Observation
 
+/// The type of publisher to use for the Query Ref
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public enum ResultsPublisherType {
-  case auto // automatically determine ObservableQueryRef
-  case observableObject // pre-iOS 17 ObservableObject
-  case observableMacro // iOS 17+ Observation framework
+  /// automatically determine ObservableQueryRef.
+  /// Tries to pick the iOS 17+ Observation but falls back to ObservableObject
+  case auto
+
+  /// pre-iOS 17 ObservableObject
+  case observableObject
+
+  /// iOS 17+ Observation framework
+  case observableMacro
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -122,10 +129,18 @@ public protocol ObservableQueryRef: QueryRef {
   var lastError: DataConnectError? { get }
 }
 
-// QueryRef class used with ObservableObject protocol
-// data: Published variable that contains bindable results of the query.
-// lastError: Published variable that contains DataConnectError if last fetch had error.
-//            If last fetch was successful, this variable is cleared
+/// QueryRef class compatible with ObservableObject protocol
+///
+/// When the  requested publisher is an ObservableObject, the returned query refs will be instances
+/// of this class
+///
+/// This class cannot be instantiated directly. To get an instance, call the
+/// ``DataConnect/dataConnect(...)`` function
+///
+/// This class publishes two vars
+/// - ``data``: Published variable that contains bindable results of the query.
+/// - ``lastError``: Published variable that contains ``DataConnectError``  if last fetch had error.
+///            If last fetch was successful, this variable is cleared
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class QueryRefObservableObject<
   ResultData: Decodable,
@@ -161,27 +176,43 @@ public class QueryRefObservableObject<
 
   // ObservableQueryRef implementation
 
+  /// data published by query of type `ResultData`
   @Published public private(set) var data: ResultData?
 
+  /// Error thrown if error occurs during execution of query. If the last fetch was successful the
+  /// error is cleared
   @Published public private(set) var lastError: DataConnectError?
 
   // QueryRef implementation
 
+  /// Executes the query and returns `ResultData`. This will also update the published `data`
+  /// variable
   public func execute() async throws -> OperationResult<ResultData> {
     let result = try await baseRef.execute()
     return result
   }
 
+  /// Returns the underlying results publisher.
+  /// Use this function ONLY if you plan to use the Query Ref outside of SwiftUI context - (UIKit,
+  /// background updates,...)
   public func subscribe() async throws
     -> AnyPublisher<Result<ResultData, DataConnectError>, Never> {
     return await baseRef.subscribe()
   }
 }
 
-// QueryRef class compatible with the Observation framework introduced in iOS 17
-// data: Published variable that contains bindable results of the query.
-// lastError: Published variable that contains DataConnectError if last fetch had error.
-//            If last fetch was successful, this variable is cleared
+/// QueryRef class compatible with the Observation framework introduced in iOS 17
+///
+/// When the  requested publisher is an ObservableMacri, the returned query refs will be instances
+/// of this class
+///
+/// This class cannot be instantiated directly. To get an instance, call the
+/// ``DataConnect/dataConnect(...)`` function
+///
+/// This class publishes two vars
+/// - ``data``: Published variable that contains bindable results of the query.
+/// - ``lastError``: Published variable that contains ``DataConnectError``  if last fetch had error.
+///            If last fetch was successful, this variable is cleared
 @available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
 @Observable
 public class QueryRefObservation<
@@ -221,17 +252,25 @@ public class QueryRefObservation<
 
   // ObservableQueryRef implementation
 
+  /// data published by query of type `ResultData`
   public private(set) var data: ResultData?
 
+  /// Error thrown if error occurs during execution of query. If the last fetch was successful the
+  /// error is cleared
   public private(set) var lastError: DataConnectError?
 
   // QueryRef implementation
 
+  /// Executes the query and returns `ResultData`. This will also update the published `data`
+  /// variable
   public func execute() async throws -> OperationResult<ResultData> {
     let result = try await baseRef.execute()
     return result
   }
 
+  /// Returns the underlying results publisher.
+  /// Use this function ONLY if you plan to use the Query Ref outside of SwiftUI context - (UIKit,
+  /// background updates,...)
   public func subscribe() async throws
     -> AnyPublisher<Result<ResultData, DataConnectError>, Never> {
     return await baseRef.subscribe()

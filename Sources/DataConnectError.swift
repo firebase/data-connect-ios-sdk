@@ -14,22 +14,24 @@
 
 import Foundation
 
+/// Represents an error returned by the DataConnect service
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public enum DataConnectError: Error {
-  // no firebase app specified. configure not complete
+  /// no firebase app specified. configure not complete
   case appNotConfigured
 
+  /// failed to configure gRPC
   case grpcNotConfigured
 
-  // failed to decode results from server
+  /// failed to decode results from server
   case decodeFailed
 
-  // uuid string length is not correct.
+  /// Invalid uuid format during encoding / decoding of data
   case invalidUUID
 
-  // date components specified to initialize LocalDate are invalid
+  /// date components specified to initialize LocalDate are invalid
   case invalidLocalDateFormat
 
-  // timestamp components specified to initialize Timestamp are invalid
+  /// timestamp components specified to initialize Timestamp are invalid
   case invalidTimestampFormat
 }
