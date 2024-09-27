@@ -17,6 +17,7 @@ import Foundation
 import FirebaseAppCheck
 import FirebaseAuth
 import FirebaseCore
+import OSLog
 
 @available(iOS 15.0, macOS 11.0, tvOS 15.0, watchOS 8.0, *)
 public class DataConnect {
@@ -30,6 +31,8 @@ public class DataConnect {
   private var callerSDKType: CallerSDKType = .base
 
   private static var instanceStore = InstanceStore()
+
+  static let logger = Logger(subsystem: "com.google.firebase", category: "data_connect")
 
   public enum EmulatorDefaults {
     public static let host = "127.0.0.1"
