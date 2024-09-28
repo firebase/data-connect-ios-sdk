@@ -17,7 +17,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 import SwiftUI
 
 struct DetailsSection<Details: View>: View {
@@ -75,13 +74,13 @@ struct DetailsSection<Details: View>: View {
         .bold()
       ScrollView(.horizontal) {
         LazyHStack {
-          ForEach(0..<10) { i in
+          ForEach(0 ..< 10) { i in
             MovieReviewCard(
               title: "Great stuff",
               rating: 4.5,
               reviewerName: "John Doe",
               review:
-                "Incididunt reprehenderit ad elit et commodo. Sint magna Lorem eiusmod. Ea ut culpa cupidatat Lorem culpa ad cupidatat excepteur voluptate consectetur nostrud eu laborum."
+              "Incididunt reprehenderit ad elit et commodo. Sint magna Lorem eiusmod. Ea ut culpa cupidatat Lorem culpa ad cupidatat excepteur voluptate consectetur nostrud eu laborum."
             )
             .frame(width: 350)
           }

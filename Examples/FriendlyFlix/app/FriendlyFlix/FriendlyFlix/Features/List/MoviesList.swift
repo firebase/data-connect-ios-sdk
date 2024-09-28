@@ -45,8 +45,7 @@ struct MoviesList: View {
       .refreshable {
         do {
           let _ = try await listMovies.execute()
-        } catch {
-        }
+        } catch {}
       }
     }
     .overlay {
@@ -58,7 +57,6 @@ struct MoviesList: View {
         }
       }
     }
-
   }
 }
 

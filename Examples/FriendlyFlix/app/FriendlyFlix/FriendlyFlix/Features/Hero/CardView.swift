@@ -34,10 +34,9 @@ struct CardView<Hero: View, Title: View, Details: View>: View {
   var heroTitle: () -> Title
   var details: () -> Details
 
-  public init(
-    showDetails: Bool = false, @ViewBuilder heroView: @escaping () -> Hero,
-    @ViewBuilder heroTitle: @escaping () -> Title, @ViewBuilder details: @escaping () -> Details
-  ) {
+  public init(showDetails: Bool = false, @ViewBuilder heroView: @escaping () -> Hero,
+              @ViewBuilder heroTitle: @escaping () -> Title,
+              @ViewBuilder details: @escaping () -> Details) {
     self.showDetails = showDetails
     self.heroView = heroView
     self.heroTitle = heroTitle
@@ -80,8 +79,10 @@ struct CardView<Hero: View, Title: View, Details: View>: View {
             topLeading: cornerRadius,
             bottomLeading: showDetails ? 0 : 16,
             bottomTrailing: showDetails ? 0 : 16,
-            topTrailing: cornerRadius),
-          style: .continuous)
+            topTrailing: cornerRadius
+          ),
+          style: .continuous
+        )
       )
       .padding(showDetails ? 0 : 16)
       .shadow(radius: showDetails ? 0 : 8)

@@ -48,8 +48,11 @@ struct MovieReviewCard: View {
           topLeading: 16,
           bottomLeading: 16,
           bottomTrailing: 16,
-          topTrailing: 16),
-        style: .continuous))
+          topTrailing: 16
+        ),
+        style: .continuous
+      )
+    )
   }
 }
 
@@ -60,7 +63,7 @@ struct MovieReviewCard: View {
       rating: 4.5,
       reviewerName: "John Doe",
       review:
-        "Velit officia quis ut ut dolor velit voluptate magna Lorem. Sint do ex adipisicing laboris magna et duis aute fugiat culpa minim id culpa nulla do. Occaecat in anim ad Lorem eu aute consectetur excepteur fugiat laboris eiusmod. Et tempor Lorem quis eu magna cillum adipisicing consectetur."
+      "Velit officia quis ut ut dolor velit voluptate magna Lorem. Sint do ex adipisicing laboris magna et duis aute fugiat culpa minim id culpa nulla do. Occaecat in anim ad Lorem eu aute consectetur excepteur fugiat laboris eiusmod. Et tempor Lorem quis eu magna cillum adipisicing consectetur."
     )
     .padding()
   }

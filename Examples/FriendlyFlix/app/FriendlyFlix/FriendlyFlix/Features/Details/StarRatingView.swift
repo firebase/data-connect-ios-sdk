@@ -24,7 +24,7 @@ struct StarRatingView: View {
 
   var body: some View {
     HStack(spacing: 4) {
-      ForEach(0..<5) { index in
+      ForEach(0 ..< 5) { index in
         Image(systemName: self.starType(for: index))
           .foregroundColor(.yellow)
       }

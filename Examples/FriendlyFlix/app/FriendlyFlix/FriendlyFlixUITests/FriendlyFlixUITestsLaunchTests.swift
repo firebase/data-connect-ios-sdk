@@ -20,7 +20,6 @@
 import XCTest
 
 final class FriendlyFlixUITestsLaunchTests: XCTestCase {
-
   override class var runsForEachTargetApplicationUIConfiguration: Bool {
     true
   }

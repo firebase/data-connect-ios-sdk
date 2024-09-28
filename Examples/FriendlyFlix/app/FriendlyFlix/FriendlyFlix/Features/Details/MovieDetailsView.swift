@@ -1,5 +1,5 @@
 //
-//  for.swift
+//  MovieDetailsView.swift
 //  FriendlyFlix
 //
 //  Created by Peter Friese on 28.08.24.
@@ -21,7 +21,8 @@ import FirebaseDataConnect
 import FriendlyFlixSDK
 import SwiftUI
 
-// introduce a common protocol for movie actors, so we can use the same view for ActorMainActors and ActorSupportingActors
+// Introduce a common protocol for movie actors, so we can use the same
+// view for ActorMainActors and ActorSupportingActors
 protocol MovieActor {
   var id: UUID { get set }
   var name: String { get set }
@@ -64,7 +65,8 @@ struct MovieDetailsView: View {
       if let mainActors = movieDetailsRef.data?.movie?.mainActors, mainActors.count > 0 {
         actorsSection(title: "Main actors", actors: mainActors)
       }
-      if let supportingActors = movieDetailsRef.data?.movie?.supportingActors, supportingActors.count > 0 {
+      if let supportingActors = movieDetailsRef.data?.movie?.supportingActors,
+         supportingActors.count > 0 {
         actorsSection(title: "Supporting actors", actors: supportingActors)
       }
 
@@ -107,10 +109,10 @@ struct MovieDetailsView: View {
       }
 
       // Similar Movies
-      //      if let movie = movieRef.data?.movie {
-      //        let metadata = "\(movie.description) \nGenres: \(movie.genres.joined(separator: " "))"
-      //        RelatedSection(similarMoviesRef: DataConnect.moviesClient.listSimilarMoviesQueryRef(to: movie.id, metadata: metadata))
-      //      }
+      // if let movie = movieRef.data?.movie {
+      //   let metadata = "\(movie.description) \nGenres: \(movie.genres.joined(separator: " "))"
+      //   RelatedSection(similarMoviesRef: DataConnect.moviesClient.listSimilarMoviesQueryRef(to: movie.id, metadata: metadata))
+      // }
     }
     .padding(8)
   }
@@ -155,6 +157,6 @@ extension MovieDetailsView {
   }
 }
 
-//#Preview {
+// #Preview {
 //  MovieDetailsView(for: UUID())
-//}
+// }

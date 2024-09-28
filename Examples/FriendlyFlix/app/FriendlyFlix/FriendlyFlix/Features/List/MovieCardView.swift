@@ -71,6 +71,6 @@ struct MovieCardView: View {
   }
 }
 
-//#Preview {
+// #Preview {
 //  MovieCardView(showDetails: true, gradientConfiguration: GradienConfiguration.sample)
-//}
+// }

@@ -42,6 +42,8 @@ extension Color {
     let green = Double((rgbValue & 0x0000_FF00) >> 8) / 255.0
     let blue = Double(rgbValue & 0x0000_00FF) / 255.0
 
-    self.init(.sRGB, red: red, green: green, blue: blue, opacity: alpha)  // Use alpha instead of opacity
+    self
+      .init(.sRGB, red: red, green: green, blue: blue,
+            opacity: alpha) // Use alpha instead of opacity
   }
 }

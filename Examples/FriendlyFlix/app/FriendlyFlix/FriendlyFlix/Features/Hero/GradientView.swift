@@ -1,5 +1,5 @@
 //
-//  GradienConfiguration.swift
+//  GradientView.swift
 //  FriendlyFlix
 //
 //  Created by Peter Friese on 28.08.24.
@@ -88,7 +88,8 @@ extension GradienConfiguration {
         .red, .purple, .indigo,
         .orange, .white, .blue,
         .yellow, .green, .mint,
-      ]),
+      ]
+    ),
     .init(
       name: "Neon Sunset",
       tagLine: "Where the Day Meets the Night",
@@ -101,7 +102,8 @@ extension GradienConfiguration {
       colors: [
         .red, .indigo,
         .yellow, .blue,
-      ]),
+      ]
+    ),
     .init(
       name: "Serenity Dusk",
       tagLine: "Where tranquility meets vibrancy",
@@ -114,7 +116,8 @@ extension GradienConfiguration {
       colors: [
         Color(hex: "#5a82e5"), Color(hex: "#ce6a7e"),
         Color(hex: "#5084e9"), Color(hex: "#d66871"),
-      ]),
+      ]
+    ),
   ]
 
   static let sample = Self.samples[0]
