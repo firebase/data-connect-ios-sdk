@@ -52,10 +52,9 @@ enum LogPrivacy: Int {
 
 extension DefaultStringInterpolation {
   mutating func appendInterpolation(_ value: String, privacy: LogPrivacy = .public) {
-    switch privacy {
-    case .private:
+    if privacy == .private, DataConnect.logLevel.rawValue > LogLevel.DEBUG.rawValue {
       appendLiteral("<private>")
-    default:
+    } else {
       appendLiteral(value)
     }
   }
