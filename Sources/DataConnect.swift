@@ -32,12 +32,12 @@ public class DataConnect {
 
   private static var instanceStore = InstanceStore()
 
-  static let logger = Logger(subsystem: "com.google.firebase", category: "data_connect")
-
   public enum EmulatorDefaults {
     public static let host = "127.0.0.1"
     public static let port = 9399
   }
+
+  public static var logLevel = LogLevel.WARN
 
   // MARK: Static Creation
 

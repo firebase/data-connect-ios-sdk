@@ -18,10 +18,10 @@ import FirebaseAppCheck
 import FirebaseAuth
 import FirebaseCore
 import GRPC
+import Logging
 import NIOCore
 import NIOHPACK
 import NIOPosix
-import OSLog
 import SwiftProtobuf
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -62,7 +62,7 @@ actor GrpcClient: CustomStringConvertible {
 
   private lazy var client: FirebaseDataConnectAsyncClient? = {
     do {
-      DataConnect.logger
+      DataConnectLogger
         .debug("GrpcClient \(self.description, privacy: .private) initialization starts.")
       let group = PlatformSupport.makeEventLoopGroup(loopCount: threadPoolSize)
       let channel = try GRPCChannelPool.with(
@@ -72,10 +72,10 @@ actor GrpcClient: CustomStringConvertible {
           .plaintext,
         eventLoopGroup: group
       )
-      DataConnect.logger.debug("GrpcClient\(self.description, privacy: .private) has been created.")
+      DataConnectLogger.debug("GrpcClient\(self.description, privacy: .private) has been created.")
       return FirebaseDataConnectAsyncClient(channel: channel)
     } catch {
-      DataConnect.logger
+      DataConnectLogger
         .debug("Error:\(error) when creating GrpcClient\(self.description, privacy: .private).")
       return nil
     }
@@ -131,8 +131,7 @@ actor GrpcClient: CustomStringConvertible {
                                        .Type)
     async throws -> OperationResult<ResultType> {
     guard let client else {
-      DataConnect.logger
-        .error("When calling executeQuery(), grpc client has not been configured.")
+      DataConnectLogger.error("When calling executeQuery(), grpc client has not been configured.")
       throw DataConnectError.grpcNotConfigured
     }
 
@@ -144,26 +143,25 @@ actor GrpcClient: CustomStringConvertible {
     let requestString = try ": " + grpcRequest.jsonString()
 
     do {
-      DataConnect.logger
+      DataConnectLogger
         .debug("executeQuery() sends grpc request\(requestString, privacy: .private).")
       let results = try await client.executeQuery(grpcRequest, callOptions: createCallOptions())
       let resultsString = try ": " + results.jsonString()
-      DataConnect.logger
+      DataConnectLogger
         .debug("executeQuery() receives response\(resultsString, privacy: .private).")
       // Not doing error decoding here
       if let decodedResults = try codec.decode(result: results.data, asType: resultType) {
         return OperationResult(data: decodedResults)
       } else {
         // In future, set this as error in OperationResult
-        DataConnect.logger
+        DataConnectLogger
           .debug("executeQuery() response\(resultsString, privacy: .private) decode failed.")
         throw DataConnectError.decodeFailed
       }
     } catch {
-      DataConnect.logger
-        .error(
-          "executeQuery()\(requestString, privacy: .private) grpc call FAILED with \(error)."
-        )
+      DataConnectLogger.error(
+        "executeQuery()\(requestString, privacy: .private) grpc call FAILED with \(error)."
+      )
       throw error
     }
   }
@@ -174,7 +172,7 @@ actor GrpcClient: CustomStringConvertible {
                                        .Type)
     async throws -> OperationResult<ResultType> {
     guard let client else {
-      DataConnect.logger
+      DataConnectLogger
         .error("When calling executeMutation(), grpc client has not been configured.")
       throw DataConnectError.grpcNotConfigured
     }
@@ -188,24 +186,23 @@ actor GrpcClient: CustomStringConvertible {
     let requestString = try ": " + grpcRequest.jsonString()
 
     do {
-      DataConnect.logger
+      DataConnectLogger
         .debug("executeMutation() sends grpc request \(requestString, privacy: .private).")
       let results = try await client.executeMutation(grpcRequest, callOptions: createCallOptions())
       let resultsString = try ": " + results.jsonString()
-      DataConnect.logger
+      DataConnectLogger
         .debug("executeMutation() receives response\(resultsString, privacy: .private).")
       if let decodedResults = try codec.decode(result: results.data, asType: resultType) {
         return OperationResult(data: decodedResults)
       } else {
-        DataConnect.logger
+        DataConnectLogger
           .debug("executeMutation() response\(resultsString, privacy: .private) decode failed.")
         throw DataConnectError.decodeFailed
       }
     } catch {
-      DataConnect.logger
-        .error(
-          "executeMutation()\(requestString, privacy: .private) grpc call FAILED with \(error)."
-        )
+      DataConnectLogger.error(
+        "executeMutation()\(requestString, privacy: .private) grpc call FAILED with \(error)."
+      )
       throw error
     }
   }
@@ -221,13 +218,12 @@ actor GrpcClient: CustomStringConvertible {
     do {
       if let token = try await auth.currentUser?.getIDToken() {
         headers.add(name: RequestHeaders.authorizationHeader, value: "\(token)")
-        DataConnect.logger
-          .debug("Auth token added \(token, privacy: .private)")
+        DataConnectLogger.debug("Auth token added")
       } else {
-        DataConnect.logger.debug("No auth token available. Not adding auth header.")
+        DataConnectLogger.debug("No auth token available. Not adding auth header.")
       }
     } catch {
-      DataConnect.logger
+      DataConnectLogger
         .debug("Cannot get auth token successfully due to: \(error). Not adding auth header.")
     }
 
@@ -235,20 +231,26 @@ actor GrpcClient: CustomStringConvertible {
     do {
       if let token = try await appCheck?.token(forcingRefresh: false) {
         headers.add(name: RequestHeaders.appCheckHeader, value: token.token)
-        DataConnect.logger
-          .debug("App Check token added \(token.token)")
+        DataConnectLogger.debug("App Check token added")
       } else {
-        DataConnect.logger
-          .debug("App Check token unavailable. Not adding App Check header.")
+        DataConnectLogger.debug("App Check token unavailable. Not adding App Check header.")
       }
     } catch {
-      DataConnect.logger
-        .debug(
-          "Cannot get App Check token successfully due to: \(error). Not adding App Check header."
-        )
+      DataConnectLogger.debug(
+        "Cannot get App Check token successfully due to: \(error). Not adding App Check header."
+      )
     }
 
-    let options = CallOptions(customMetadata: headers)
+    var options = CallOptions(customMetadata: headers)
+
+    // Enable GRPC tracing
+    if DataConnect.logLevel.rawValue <= LogLevel.DEBUG.rawValue {
+      var logger = Logger(label: "com.google.firebase.dataconnect.grpc")
+      logger.logLevel = .trace
+      options.logger = logger
+      options.requestIDProvider = .autogenerated
+    }
+
     return options
   }
 }
