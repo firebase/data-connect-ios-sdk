@@ -292,7 +292,7 @@ DataConnect.friendlyFlixConnector.searchAllQuery.execute(...)
 
 let username: String = ...
 ```
- 
+
 
 ### One-shot execute
 ```
@@ -308,7 +308,7 @@ DataConnect.friendlyFlixConnector.upsertUserMutation.execute(...)
 
 let movieId: UUID = ...
 ```
- 
+
 
 ### One-shot execute
 ```
@@ -324,7 +324,7 @@ DataConnect.friendlyFlixConnector.addFavoritedMovieMutation.execute(...)
 
 let movieId: UUID = ...
 ```
- 
+
 
 ### One-shot execute
 ```
@@ -342,7 +342,7 @@ let movieId: UUID = ...
 let rating: Int = ...
 let reviewText: String = ...
 ```
- 
+
 
 ### One-shot execute
 ```
@@ -360,7 +360,7 @@ let movieId: UUID = ...
 let rating: Int = ...
 let reviewText: String = ...
 ```
- 
+
 
 ### One-shot execute
 ```
@@ -376,7 +376,7 @@ DataConnect.friendlyFlixConnector.updateReviewMutation.execute(...)
 
 let movieId: UUID = ...
 ```
- 
+
 
 ### One-shot execute
 ```
