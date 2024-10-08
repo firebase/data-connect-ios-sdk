@@ -54,8 +54,8 @@ enum LogPrivacy: Int {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension DefaultStringInterpolation {
   mutating func appendInterpolation(_ value: String, privacy: LogPrivacy = .public) {
-    if privacy == .private, DataConnect.logLevel.rawValue > LogLevel.DEBUG.rawValue {
-      appendLiteral("<private>")
+    if privacy == .private, DataConnect.ArgumentFlag.enablePrivacyLogging {
+      appendLiteral(" <private>")
     } else {
       appendLiteral(value)
     }

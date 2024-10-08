@@ -63,7 +63,7 @@ actor GrpcClient: CustomStringConvertible {
   private lazy var client: FirebaseDataConnectAsyncClient? = {
     do {
       DataConnectLogger
-        .debug("GrpcClient \(self.description, privacy: .private) initialization starts.")
+        .debug("GrpcClient\(self.description, privacy: .private) initialization starts.")
       let group = PlatformSupport.makeEventLoopGroup(loopCount: threadPoolSize)
       let channel = try GRPCChannelPool.with(
         target: .host(serverSettings.host, port: serverSettings.port),
@@ -244,7 +244,8 @@ actor GrpcClient: CustomStringConvertible {
     var options = CallOptions(customMetadata: headers)
 
     // Enable GRPC tracing
-    if DataConnect.logLevel.rawValue <= LogLevel.DEBUG.rawValue {
+    if DataConnect.logLevel.rawValue <= LogLevel.DEBUG.rawValue,
+       DataConnect.ArgumentFlag.enablePrivacyLogging == false {
       var logger = Logger(label: "com.google.firebase.dataconnect.grpc")
       logger.logLevel = .trace
       options.logger = logger

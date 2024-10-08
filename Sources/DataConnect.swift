@@ -19,6 +19,8 @@ import FirebaseAuth
 import FirebaseCore
 import OSLog
 
+let kFIRPrivateLogDisabledArgument = "-FIRPrivateLogDisabled"
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class DataConnect {
   private var connectorConfig: ConnectorConfig
@@ -37,7 +39,26 @@ public class DataConnect {
     public static let port = 9399
   }
 
-  public static var logLevel = LogLevel.WARN
+  class ArgumentFlag {
+    static var enablePrivacyLogging = true
+  }
+
+  private static let logLevelQueue = DispatchQueue(
+    label: "com.google.firebase.dataconnect.logLevel",
+    attributes: .concurrent
+  )
+  private static var _logLevel: LogLevel = .WARN
+
+  public static var logLevel: LogLevel {
+    get {
+      return logLevelQueue.sync { _logLevel }
+    }
+    set {
+      logLevelQueue.async(flags: .barrier) {
+        _logLevel = newValue
+      }
+    }
+  }
 
   // MARK: Static Creation
 
@@ -109,6 +130,18 @@ public class DataConnect {
       callerSDKType: self.callerSDKType
     )
     operationsManager = OperationsManager(grpcClient: grpcClient)
+
+    LoadArgument()
+  }
+
+  private func LoadArgument() {
+    let arguments = ProcessInfo.processInfo.arguments
+    if arguments.contains(kFIRPrivateLogDisabledArgument) {
+      ArgumentFlag.enablePrivacyLogging = false
+      DataConnectLogger.debug("DataConnect privacy logging disabled.")
+    } else {
+      DataConnectLogger.debug("DataConnect privacy logging enabled.")
+    }
   }
 
   // MARK: Operations
