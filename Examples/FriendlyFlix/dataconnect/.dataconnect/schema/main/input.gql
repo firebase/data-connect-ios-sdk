@@ -1,5 +1,4 @@
 scalar Actor_Key
-scalar FavoriteActor_Key
 scalar FavoriteMovie_Key
 scalar Movie_Key
 scalar MovieActor_Key
@@ -21,10 +20,8 @@ input Actor_Filter {
   id: UUID_Filter
   imageUrl: String_Filter
   name: String_Filter
-  favorite_actors_on_actor: FavoriteActor_ListFilter
   movieActors_on_actor: MovieActor_ListFilter
   movies_via_MovieActor: Movie_ListFilter
-  users_via_FavoriteActor: User_ListFilter
 }
 input Actor_ListFilter {
   count: Int_Filter = {gt:0}
@@ -34,33 +31,6 @@ input Actor_Order {
   id: OrderDirection
   imageUrl: OrderDirection
   name: OrderDirection
-}
-input FavoriteActor_Data {
-  userId: String
-  userId_expr: String_Expr
-  actorId: UUID
-  actorId_expr: UUID_Expr
-  actor: Actor_Key
-  user: User_Key
-}
-input FavoriteActor_Filter {
-  _and: [FavoriteActor_Filter!]
-  _not: FavoriteActor_Filter
-  _or: [FavoriteActor_Filter!]
-  userId: String_Filter
-  actorId: UUID_Filter
-  actor: Actor_Filter
-  user: User_Filter
-}
-input FavoriteActor_ListFilter {
-  count: Int_Filter = {gt:0}
-  exist: FavoriteActor_Filter
-}
-input FavoriteActor_Order {
-  userId: OrderDirection
-  actorId: OrderDirection
-  actor: Actor_Order
-  user: User_Order
 }
 input FavoriteMovie_Data {
   userId: String
@@ -94,8 +64,6 @@ input Movie_Data {
   id_expr: UUID_Expr
   description: String
   description_expr: String_Expr
-  descriptionEmbedding: Vector
-  descriptionEmbedding_embed: Vector_Embed
   genre: String
   genre_expr: String_Expr
   imageUrl: String
@@ -112,7 +80,6 @@ input Movie_Filter {
   _or: [Movie_Filter!]
   id: UUID_Filter
   description: String_Filter
-  descriptionEmbedding: Vector_Filter
   genre: String_Filter
   imageUrl: String_Filter
   rating: Float_Filter
@@ -134,7 +101,6 @@ input Movie_ListFilter {
 input Movie_Order {
   id: OrderDirection
   description: OrderDirection
-  descriptionEmbedding: OrderDirection
   genre: OrderDirection
   imageUrl: OrderDirection
   rating: OrderDirection
@@ -255,10 +221,8 @@ input User_Filter {
   _or: [User_Filter!]
   id: String_Filter
   username: String_Filter
-  favorite_actors_on_user: FavoriteActor_ListFilter
   favorite_movies_on_user: FavoriteMovie_ListFilter
   reviews_on_user: Review_ListFilter
-  actors_via_FavoriteActor: Actor_ListFilter
   movies_via_FavoriteMovie: Movie_ListFilter
   movies_via_Review: Movie_ListFilter
 }

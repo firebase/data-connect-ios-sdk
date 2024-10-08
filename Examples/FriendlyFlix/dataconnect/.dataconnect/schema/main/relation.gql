@@ -1,9 +1,5 @@
 extend type Actor {
   """
-  ✨ List FavoriteActor entries in a one-to-many relationship with this object (i.e. where `FavoriteActor.actor` equals this object).
-  """
-  favorite_actors_on_actor(where: FavoriteActor_Filter, orderBy: [FavoriteActor_Order!], offset: Int, limit: Int = 100): [FavoriteActor!]! @fdc_generated(from: "FavoriteActor.actor", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
-  """
   ✨ List MovieActor entries in a one-to-many relationship with this object (i.e. where `MovieActor.actor` equals this object).
   """
   movieActors_on_actor(where: MovieActor_Filter, orderBy: [MovieActor_Order!], offset: Int, limit: Int = 100): [MovieActor!]! @fdc_generated(from: "MovieActor.actor", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
@@ -11,10 +7,6 @@ extend type Actor {
   ✨ List related Movie entries using MovieActor as a join table (i.e. where an entry of MovieActor exists whose `actor` == this and `movie` == that).
   """
   movies_via_MovieActor(where: MovieActor_Filter, orderBy: [MovieActor_Order!], offset: Int, limit: Int = 100): [Movie!]! @fdc_generated(from: "MovieActor", purpose: QUERY_MULTIPLE_MANY_TO_MANY)
-  """
-  ✨ List related User entries using FavoriteActor as a join table (i.e. where an entry of FavoriteActor exists whose `actor` == this and `user` == that).
-  """
-  users_via_FavoriteActor(where: FavoriteActor_Filter, orderBy: [FavoriteActor_Order!], offset: Int, limit: Int = 100): [User!]! @fdc_generated(from: "FavoriteActor", purpose: QUERY_MULTIPLE_MANY_TO_MANY)
 }
 extend type Movie {
   """
@@ -48,10 +40,6 @@ extend type Movie {
 }
 extend type User {
   """
-  ✨ List FavoriteActor entries in a one-to-many relationship with this object (i.e. where `FavoriteActor.user` equals this object).
-  """
-  favorite_actors_on_user(where: FavoriteActor_Filter, orderBy: [FavoriteActor_Order!], offset: Int, limit: Int = 100): [FavoriteActor!]! @fdc_generated(from: "FavoriteActor.user", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
-  """
   ✨ List FavoriteMovie entries in a one-to-many relationship with this object (i.e. where `FavoriteMovie.user` equals this object).
   """
   favorite_movies_on_user(where: FavoriteMovie_Filter, orderBy: [FavoriteMovie_Order!], offset: Int, limit: Int = 100): [FavoriteMovie!]! @fdc_generated(from: "FavoriteMovie.user", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
@@ -59,10 +47,6 @@ extend type User {
   ✨ List Review entries in a one-to-many relationship with this object (i.e. where `Review.user` equals this object).
   """
   reviews_on_user(where: Review_Filter, orderBy: [Review_Order!], offset: Int, limit: Int = 100): [Review!]! @fdc_generated(from: "Review.user", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
-  """
-  ✨ List related Actor entries using FavoriteActor as a join table (i.e. where an entry of FavoriteActor exists whose `user` == this and `actor` == that).
-  """
-  actors_via_FavoriteActor(where: FavoriteActor_Filter, orderBy: [FavoriteActor_Order!], offset: Int, limit: Int = 100): [Actor!]! @fdc_generated(from: "FavoriteActor", purpose: QUERY_MULTIPLE_MANY_TO_MANY)
   """
   ✨ List related Movie entries using FavoriteMovie as a join table (i.e. where an entry of FavoriteMovie exists whose `user` == this and `movie` == that).
   """

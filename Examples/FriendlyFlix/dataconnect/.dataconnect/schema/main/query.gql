@@ -4,10 +4,6 @@ extend type Query {
   """
   actor(id: UUID, key: Actor_Key): Actor @fdc_generated(from: "Actor", purpose: QUERY_SINGLE)
   """
-  Look up a single FavoriteActor based on `id` or `key` and return selected fields (or `null` if not found).
-  """
-  favorite_actor(key: FavoriteActor_Key): FavoriteActor @fdc_generated(from: "FavoriteActor", purpose: QUERY_SINGLE)
-  """
   Look up a single FavoriteMovie based on `id` or `key` and return selected fields (or `null` if not found).
   """
   favorite_movie(key: FavoriteMovie_Key): FavoriteMovie @fdc_generated(from: "FavoriteMovie", purpose: QUERY_SINGLE)
@@ -36,10 +32,6 @@ extend type Query {
   """
   actors(where: Actor_Filter, orderBy: [Actor_Order!], offset: Int, limit: Int = 100): [Actor!]! @fdc_generated(from: "Actor", purpose: QUERY_MULTIPLE)
   """
-  List FavoriteActor entries in the table, optionally filtered by `where` conditions.
-  """
-  favorite_actors(where: FavoriteActor_Filter, orderBy: [FavoriteActor_Order!], offset: Int, limit: Int = 100): [FavoriteActor!]! @fdc_generated(from: "FavoriteActor", purpose: QUERY_MULTIPLE)
-  """
   List FavoriteMovie entries in the table, optionally filtered by `where` conditions.
   """
   favorite_movies(where: FavoriteMovie_Filter, orderBy: [FavoriteMovie_Order!], offset: Int, limit: Int = 100): [FavoriteMovie!]! @fdc_generated(from: "FavoriteMovie", purpose: QUERY_MULTIPLE)
@@ -63,9 +55,4 @@ extend type Query {
   List User entries in the table, optionally filtered by `where` conditions.
   """
   users(where: User_Filter, orderBy: [User_Order!], offset: Int, limit: Int = 100): [User!]! @fdc_generated(from: "User", purpose: QUERY_MULTIPLE)
-  """
-  List Movie entries ordered by vector similarity between the `descriptionEmbedding` field and `compare_embed`.
-  (Alternatively, `compare` can be used if the input is a raw Vector.)
-  """
-  movies_descriptionEmbedding_similarity(compare: Vector, compare_embed: Vector_Embed, method: VectorSimilarityMethod = INNER_PRODUCT, within: Float, where: Movie_Filter, limit: Int = 100): [Movie!]! @fdc_generated(from: "Movie.descriptionEmbedding", purpose: QUERY_MULTIPLE_BY_SIMILARITY)
 }

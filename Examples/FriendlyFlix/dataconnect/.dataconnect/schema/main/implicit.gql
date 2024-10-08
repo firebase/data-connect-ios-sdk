@@ -1,7 +1,3 @@
-extend type FavoriteActor {
-  userId: String! @fdc_generated(from: "FavoriteActor.user", purpose: IMPLICIT_REF_FIELD)
-  actorId: UUID! @fdc_generated(from: "FavoriteActor.actor", purpose: IMPLICIT_REF_FIELD)
-}
 extend type FavoriteMovie {
   userId: String! @fdc_generated(from: "FavoriteMovie.user", purpose: IMPLICIT_REF_FIELD)
   movieId: UUID! @fdc_generated(from: "FavoriteMovie.movie", purpose: IMPLICIT_REF_FIELD)

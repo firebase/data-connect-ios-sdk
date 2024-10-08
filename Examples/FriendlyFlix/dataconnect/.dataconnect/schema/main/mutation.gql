@@ -4,10 +4,6 @@ extend type Mutation {
   """
   actor_insert(data: Actor_Data!): Actor_Key! @fdc_generated(from: "Actor", purpose: INSERT_SINGLE)
   """
-  Insert a single FavoriteActor into the table. Columns not specified in `data` will receive defaults (e.g. `null`).
-  """
-  favorite_actor_insert(data: FavoriteActor_Data!): FavoriteActor_Key! @fdc_generated(from: "FavoriteActor", purpose: INSERT_SINGLE)
-  """
   Insert a single FavoriteMovie into the table. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   favorite_movie_insert(data: FavoriteMovie_Data!): FavoriteMovie_Key! @fdc_generated(from: "FavoriteMovie", purpose: INSERT_SINGLE)
@@ -35,10 +31,6 @@ extend type Mutation {
   Insert Actor entries into the table. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   actor_insertMany(data: [Actor_Data!]!): [Actor_Key!]! @fdc_generated(from: "Actor", purpose: INSERT_MULTIPLE)
-  """
-  Insert FavoriteActor entries into the table. Columns not specified in `data` will receive defaults (e.g. `null`).
-  """
-  favorite_actor_insertMany(data: [FavoriteActor_Data!]!): [FavoriteActor_Key!]! @fdc_generated(from: "FavoriteActor", purpose: INSERT_MULTIPLE)
   """
   Insert FavoriteMovie entries into the table. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -68,10 +60,6 @@ extend type Mutation {
   """
   actor_upsert(data: Actor_Data!): Actor_Key! @fdc_generated(from: "Actor", purpose: UPSERT_SINGLE)
   """
-  Insert or update a single FavoriteActor into the table, based on the primary key. Returns the key of the newly inserted FavoriteActor.
-  """
-  favorite_actor_upsert(data: FavoriteActor_Data!): FavoriteActor_Key! @fdc_generated(from: "FavoriteActor", purpose: UPSERT_SINGLE)
-  """
   Insert or update a single FavoriteMovie into the table, based on the primary key. Returns the key of the newly inserted FavoriteMovie.
   """
   favorite_movie_upsert(data: FavoriteMovie_Data!): FavoriteMovie_Key! @fdc_generated(from: "FavoriteMovie", purpose: UPSERT_SINGLE)
@@ -99,10 +87,6 @@ extend type Mutation {
   Insert or update Actor entries into the table, based on the primary key. Returns the key of the newly inserted Actor.
   """
   actor_upsertMany(data: [Actor_Data!]): [Actor_Key!]! @fdc_generated(from: "Actor", purpose: UPSERT_MULTIPLE)
-  """
-  Insert or update FavoriteActor entries into the table, based on the primary key. Returns the key of the newly inserted FavoriteActor.
-  """
-  favorite_actor_upsertMany(data: [FavoriteActor_Data!]): [FavoriteActor_Key!]! @fdc_generated(from: "FavoriteActor", purpose: UPSERT_MULTIPLE)
   """
   Insert or update FavoriteMovie entries into the table, based on the primary key. Returns the key of the newly inserted FavoriteMovie.
   """
@@ -132,10 +116,6 @@ extend type Mutation {
   """
   actor_update(id: UUID, key: Actor_Key, data: Actor_Data!): Actor_Key @fdc_generated(from: "Actor", purpose: UPDATE_SINGLE)
   """
-  Update a single FavoriteActor based on `id` or `key`, setting columns specified in `data`. Returns `null` if not found.
-  """
-  favorite_actor_update(key: FavoriteActor_Key, data: FavoriteActor_Data!): FavoriteActor_Key @fdc_generated(from: "FavoriteActor", purpose: UPDATE_SINGLE)
-  """
   Update a single FavoriteMovie based on `id` or `key`, setting columns specified in `data`. Returns `null` if not found.
   """
   favorite_movie_update(key: FavoriteMovie_Key, data: FavoriteMovie_Data!): FavoriteMovie_Key @fdc_generated(from: "FavoriteMovie", purpose: UPDATE_SINGLE)
@@ -163,10 +143,6 @@ extend type Mutation {
   Update Actor entries matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   actor_updateMany(where: Actor_Filter, all: Boolean = false, data: Actor_Data!): Int! @fdc_generated(from: "Actor", purpose: UPDATE_MULTIPLE)
-  """
-  Update FavoriteActor entries matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
-  """
-  favorite_actor_updateMany(where: FavoriteActor_Filter, all: Boolean = false, data: FavoriteActor_Data!): Int! @fdc_generated(from: "FavoriteActor", purpose: UPDATE_MULTIPLE)
   """
   Update FavoriteMovie entries matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
@@ -196,10 +172,6 @@ extend type Mutation {
   """
   actor_delete(id: UUID, key: Actor_Key): Actor_Key @fdc_generated(from: "Actor", purpose: DELETE_SINGLE)
   """
-  Delete a single FavoriteActor based on `id` or `key` and return its key (or `null` if not found).
-  """
-  favorite_actor_delete(key: FavoriteActor_Key): FavoriteActor_Key @fdc_generated(from: "FavoriteActor", purpose: DELETE_SINGLE)
-  """
   Delete a single FavoriteMovie based on `id` or `key` and return its key (or `null` if not found).
   """
   favorite_movie_delete(key: FavoriteMovie_Key): FavoriteMovie_Key @fdc_generated(from: "FavoriteMovie", purpose: DELETE_SINGLE)
@@ -227,10 +199,6 @@ extend type Mutation {
   Delete Actor entries matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
   actor_deleteMany(where: Actor_Filter, all: Boolean = false): Int! @fdc_generated(from: "Actor", purpose: DELETE_MULTIPLE)
-  """
-  Delete FavoriteActor entries matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
-  """
-  favorite_actor_deleteMany(where: FavoriteActor_Filter, all: Boolean = false): Int! @fdc_generated(from: "FavoriteActor", purpose: DELETE_MULTIPLE)
   """
   Delete FavoriteMovie entries matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """

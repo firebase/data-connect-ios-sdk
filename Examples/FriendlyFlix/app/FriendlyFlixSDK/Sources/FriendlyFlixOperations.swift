@@ -37,7 +37,7 @@ public enum OrderDirection: String, Codable {
 
 
 
-public class CreateMovieMutation{
+public class UpsertUserMutation{
 
   let dataConnect: DataConnect
 
@@ -45,45 +45,15 @@ public class CreateMovieMutation{
     self.dataConnect = dataConnect
   }
 
-  public static let OperationName = "CreateMovie"
+  public static let OperationName = "UpsertUser"
 
-  public typealias Ref = MutationRef<CreateMovieMutation.Data,CreateMovieMutation.Variables>
+  public typealias Ref = MutationRef<UpsertUserMutation.Data,UpsertUserMutation.Variables>
 
   public struct Variables: OperationVariable {
   
         
         public var
-title: String
-
-  
-        
-        public var
-releaseYear: Int
-
-  
-        
-        public var
-genre: String
-
-  
-        @OptionalVariable
-        public var
-rating: Double?
-
-  
-        @OptionalVariable
-        public var
-description: String?
-
-  
-        
-        public var
-imageUrl: String
-
-  
-        @OptionalVariable
-        public var
-tags: [String]?
+username: String
 
 
     
@@ -91,81 +61,32 @@ tags: [String]?
     
     public init (
         
-title: String
-,
-        
-releaseYear: Int
-,
-        
-genre: String
-,
-        
-imageUrl: String
+username: String
 
         
-        
-        ,
-        _ optionalVars: ((inout Variables)->())? = nil
         ) {
-        self.title = title
-        self.releaseYear = releaseYear
-        self.genre = genre
-        self.imageUrl = imageUrl
+        self.username = username
         
 
-        
-        if let optionalVars {
-            optionalVars(&self)
-        }
         
     }
 
     public static func == (lhs: Variables, rhs: Variables) -> Bool {
       
-        return lhs.title == rhs.title && 
-              lhs.releaseYear == rhs.releaseYear && 
-              lhs.genre == rhs.genre && 
-              lhs.rating == rhs.rating && 
-              lhs.description == rhs.description && 
-              lhs.imageUrl == rhs.imageUrl && 
-              lhs.tags == rhs.tags
+        return lhs.username == rhs.username
               
     }
 
     
 public func hash(into hasher: inout Hasher) {
   
-  hasher.combine(title)
-  
-  hasher.combine(releaseYear)
-  
-  hasher.combine(genre)
-  
-  hasher.combine(rating)
-  
-  hasher.combine(description)
-  
-  hasher.combine(imageUrl)
-  
-  hasher.combine(tags)
+  hasher.combine(username)
   
 }
 
     enum CodingKeys: String, CodingKey {
       
-      case title
-      
-      case releaseYear
-      
-      case genre
-      
-      case rating
-      
-      case description
-      
-      case imageUrl
-      
-      case tags
+      case username
       
     }
 
@@ -174,32 +95,8 @@ public func hash(into hasher: inout Hasher) {
       let codecHelper = CodecHelper<CodingKeys>()
       
       
-      try codecHelper.encode(title, forKey: .title, container: &container)
+      try codecHelper.encode(username, forKey: .username, container: &container)
       
-      
-      
-      try codecHelper.encode(releaseYear, forKey: .releaseYear, container: &container)
-      
-      
-      
-      try codecHelper.encode(genre, forKey: .genre, container: &container)
-      
-      
-      if $rating.isSet { 
-      try codecHelper.encode(rating, forKey: .rating, container: &container)
-      }
-      
-      if $description.isSet { 
-      try codecHelper.encode(description, forKey: .description, container: &container)
-      }
-      
-      
-      try codecHelper.encode(imageUrl, forKey: .imageUrl, container: &container)
-      
-      
-      if $tags.isSet { 
-      try codecHelper.encode(tags, forKey: .tags, container: &container)
-      }
       
     }
 
@@ -210,57 +107,31 @@ public func hash(into hasher: inout Hasher) {
 
 
 public var 
-movie_insert: MovieKey
+user_upsert: UserKey
 
   }
 
   public func ref(
         
-title: String
-,
-releaseYear: Int
-,
-genre: String
-,
-imageUrl: String
+username: String
 
-        
-        ,
-        _ optionalVars: ((inout CreateMovieMutation.Variables)->())? = nil
-        ) -> MutationRef<CreateMovieMutation.Data,CreateMovieMutation.Variables>  {
-        var variables = CreateMovieMutation.Variables(title:title,releaseYear:releaseYear,genre:genre,imageUrl:imageUrl)
-        
-        if let optionalVars {
-            optionalVars(&variables)
-        }
+        ) -> MutationRef<UpsertUserMutation.Data,UpsertUserMutation.Variables>  {
+        var variables = UpsertUserMutation.Variables(username:username)
         
 
-        let ref = dataConnect.mutation(name: "CreateMovie", variables: variables, resultsDataType:CreateMovieMutation.Data.self)
-        return ref as MutationRef<CreateMovieMutation.Data,CreateMovieMutation.Variables>
+        let ref = dataConnect.mutation(name: "UpsertUser", variables: variables, resultsDataType:UpsertUserMutation.Data.self)
+        return ref as MutationRef<UpsertUserMutation.Data,UpsertUserMutation.Variables>
    }
 
    public func execute(
         
-title: String
-,
-releaseYear: Int
-,
-genre: String
-,
-imageUrl: String
+username: String
 
-        
-        ,
-        _ optionalVars: ((inout CreateMovieMutation.Variables)->())? = nil
-        ) async throws -> OperationResult<CreateMovieMutation.Data> {
-        var variables = CreateMovieMutation.Variables(title:title,releaseYear:releaseYear,genre:genre,imageUrl:imageUrl)
-        
-        if let optionalVars {
-            optionalVars(&variables)
-        }
+        ) async throws -> OperationResult<UpsertUserMutation.Data> {
+        var variables = UpsertUserMutation.Variables(username:username)
         
         
-        let ref = dataConnect.mutation(name: "CreateMovie", variables: variables, resultsDataType:CreateMovieMutation.Data.self)
+        let ref = dataConnect.mutation(name: "UpsertUser", variables: variables, resultsDataType:UpsertUserMutation.Data.self)
         
         return try await ref.execute()
         
@@ -484,218 +355,6 @@ movieId: UUID
 
 
 
-public class AddFavoritedActorMutation{
-
-  let dataConnect: DataConnect
-
-  public init(dataConnect: DataConnect) {
-    self.dataConnect = dataConnect
-  }
-
-  public static let OperationName = "AddFavoritedActor"
-
-  public typealias Ref = MutationRef<AddFavoritedActorMutation.Data,AddFavoritedActorMutation.Variables>
-
-  public struct Variables: OperationVariable {
-  
-        
-        public var
-actorId: UUID
-
-
-    
-    
-    
-    public init (
-        
-actorId: UUID
-
-        
-        ) {
-        self.actorId = actorId
-        
-
-        
-    }
-
-    public static func == (lhs: Variables, rhs: Variables) -> Bool {
-      
-        return lhs.actorId == rhs.actorId
-              
-    }
-
-    
-public func hash(into hasher: inout Hasher) {
-  
-  hasher.combine(actorId)
-  
-}
-
-    enum CodingKeys: String, CodingKey {
-      
-      case actorId
-      
-    }
-
-    public func encode(to encoder: Encoder) throws {
-      var container = encoder.container(keyedBy: CodingKeys.self)
-      let codecHelper = CodecHelper<CodingKeys>()
-      
-      
-      try codecHelper.encode(actorId, forKey: .actorId, container: &container)
-      
-      
-    }
-
-  }
-
-  public struct Data: Decodable {
-
-
-
-public var 
-favorite_actor_upsert: FavoriteActorKey
-
-  }
-
-  public func ref(
-        
-actorId: UUID
-
-        ) -> MutationRef<AddFavoritedActorMutation.Data,AddFavoritedActorMutation.Variables>  {
-        var variables = AddFavoritedActorMutation.Variables(actorId:actorId)
-        
-
-        let ref = dataConnect.mutation(name: "AddFavoritedActor", variables: variables, resultsDataType:AddFavoritedActorMutation.Data.self)
-        return ref as MutationRef<AddFavoritedActorMutation.Data,AddFavoritedActorMutation.Variables>
-   }
-
-   public func execute(
-        
-actorId: UUID
-
-        ) async throws -> OperationResult<AddFavoritedActorMutation.Data> {
-        var variables = AddFavoritedActorMutation.Variables(actorId:actorId)
-        
-        
-        let ref = dataConnect.mutation(name: "AddFavoritedActor", variables: variables, resultsDataType:AddFavoritedActorMutation.Data.self)
-        
-        return try await ref.execute()
-        
-   }
-}
-
-
-
-
-
-
-public class DeleteFavoritedActorMutation{
-
-  let dataConnect: DataConnect
-
-  public init(dataConnect: DataConnect) {
-    self.dataConnect = dataConnect
-  }
-
-  public static let OperationName = "DeleteFavoritedActor"
-
-  public typealias Ref = MutationRef<DeleteFavoritedActorMutation.Data,DeleteFavoritedActorMutation.Variables>
-
-  public struct Variables: OperationVariable {
-  
-        
-        public var
-actorId: UUID
-
-
-    
-    
-    
-    public init (
-        
-actorId: UUID
-
-        
-        ) {
-        self.actorId = actorId
-        
-
-        
-    }
-
-    public static func == (lhs: Variables, rhs: Variables) -> Bool {
-      
-        return lhs.actorId == rhs.actorId
-              
-    }
-
-    
-public func hash(into hasher: inout Hasher) {
-  
-  hasher.combine(actorId)
-  
-}
-
-    enum CodingKeys: String, CodingKey {
-      
-      case actorId
-      
-    }
-
-    public func encode(to encoder: Encoder) throws {
-      var container = encoder.container(keyedBy: CodingKeys.self)
-      let codecHelper = CodecHelper<CodingKeys>()
-      
-      
-      try codecHelper.encode(actorId, forKey: .actorId, container: &container)
-      
-      
-    }
-
-  }
-
-  public struct Data: Decodable {
-
-
-
-public var 
-favorite_actor_delete: FavoriteActorKey?
-
-  }
-
-  public func ref(
-        
-actorId: UUID
-
-        ) -> MutationRef<DeleteFavoritedActorMutation.Data,DeleteFavoritedActorMutation.Variables>  {
-        var variables = DeleteFavoritedActorMutation.Variables(actorId:actorId)
-        
-
-        let ref = dataConnect.mutation(name: "DeleteFavoritedActor", variables: variables, resultsDataType:DeleteFavoritedActorMutation.Data.self)
-        return ref as MutationRef<DeleteFavoritedActorMutation.Data,DeleteFavoritedActorMutation.Variables>
-   }
-
-   public func execute(
-        
-actorId: UUID
-
-        ) async throws -> OperationResult<DeleteFavoritedActorMutation.Data> {
-        var variables = DeleteFavoritedActorMutation.Variables(actorId:actorId)
-        
-        
-        let ref = dataConnect.mutation(name: "DeleteFavoritedActor", variables: variables, resultsDataType:DeleteFavoritedActorMutation.Data.self)
-        
-        return try await ref.execute()
-        
-   }
-}
-
-
-
-
-
-
 public class AddReviewMutation{
 
   let dataConnect: DataConnect
@@ -802,7 +461,7 @@ public func hash(into hasher: inout Hasher) {
 
 
 public var 
-review_upsert: ReviewKey
+review_insert: ReviewKey
 
   }
 
@@ -835,6 +494,156 @@ reviewText: String
         
         
         let ref = dataConnect.mutation(name: "AddReview", variables: variables, resultsDataType:AddReviewMutation.Data.self)
+        
+        return try await ref.execute()
+        
+   }
+}
+
+
+
+
+
+
+public class UpdateReviewMutation{
+
+  let dataConnect: DataConnect
+
+  public init(dataConnect: DataConnect) {
+    self.dataConnect = dataConnect
+  }
+
+  public static let OperationName = "UpdateReview"
+
+  public typealias Ref = MutationRef<UpdateReviewMutation.Data,UpdateReviewMutation.Variables>
+
+  public struct Variables: OperationVariable {
+  
+        
+        public var
+movieId: UUID
+
+  
+        
+        public var
+rating: Int
+
+  
+        
+        public var
+reviewText: String
+
+
+    
+    
+    
+    public init (
+        
+movieId: UUID
+,
+        
+rating: Int
+,
+        
+reviewText: String
+
+        
+        ) {
+        self.movieId = movieId
+        self.rating = rating
+        self.reviewText = reviewText
+        
+
+        
+    }
+
+    public static func == (lhs: Variables, rhs: Variables) -> Bool {
+      
+        return lhs.movieId == rhs.movieId && 
+              lhs.rating == rhs.rating && 
+              lhs.reviewText == rhs.reviewText
+              
+    }
+
+    
+public func hash(into hasher: inout Hasher) {
+  
+  hasher.combine(movieId)
+  
+  hasher.combine(rating)
+  
+  hasher.combine(reviewText)
+  
+}
+
+    enum CodingKeys: String, CodingKey {
+      
+      case movieId
+      
+      case rating
+      
+      case reviewText
+      
+    }
+
+    public func encode(to encoder: Encoder) throws {
+      var container = encoder.container(keyedBy: CodingKeys.self)
+      let codecHelper = CodecHelper<CodingKeys>()
+      
+      
+      try codecHelper.encode(movieId, forKey: .movieId, container: &container)
+      
+      
+      
+      try codecHelper.encode(rating, forKey: .rating, container: &container)
+      
+      
+      
+      try codecHelper.encode(reviewText, forKey: .reviewText, container: &container)
+      
+      
+    }
+
+  }
+
+  public struct Data: Decodable {
+
+
+
+public var 
+review_update: ReviewKey?
+
+  }
+
+  public func ref(
+        
+movieId: UUID
+,
+rating: Int
+,
+reviewText: String
+
+        ) -> MutationRef<UpdateReviewMutation.Data,UpdateReviewMutation.Variables>  {
+        var variables = UpdateReviewMutation.Variables(movieId:movieId,rating:rating,reviewText:reviewText)
+        
+
+        let ref = dataConnect.mutation(name: "UpdateReview", variables: variables, resultsDataType:UpdateReviewMutation.Data.self)
+        return ref as MutationRef<UpdateReviewMutation.Data,UpdateReviewMutation.Variables>
+   }
+
+   public func execute(
+        
+movieId: UUID
+,
+rating: Int
+,
+reviewText: String
+
+        ) async throws -> OperationResult<UpdateReviewMutation.Data> {
+        var variables = UpdateReviewMutation.Variables(movieId:movieId,rating:rating,reviewText:reviewText)
+        
+        
+        let ref = dataConnect.mutation(name: "UpdateReview", variables: variables, resultsDataType:UpdateReviewMutation.Data.self)
         
         return try await ref.execute()
         
@@ -952,548 +761,6 @@ movieId: UUID
 
 
 
-public class UpsertUserMutation{
-
-  let dataConnect: DataConnect
-
-  public init(dataConnect: DataConnect) {
-    self.dataConnect = dataConnect
-  }
-
-  public static let OperationName = "UpsertUser"
-
-  public typealias Ref = MutationRef<UpsertUserMutation.Data,UpsertUserMutation.Variables>
-
-  public struct Variables: OperationVariable {
-  
-        
-        public var
-username: String
-
-
-    
-    
-    
-    public init (
-        
-username: String
-
-        
-        ) {
-        self.username = username
-        
-
-        
-    }
-
-    public static func == (lhs: Variables, rhs: Variables) -> Bool {
-      
-        return lhs.username == rhs.username
-              
-    }
-
-    
-public func hash(into hasher: inout Hasher) {
-  
-  hasher.combine(username)
-  
-}
-
-    enum CodingKeys: String, CodingKey {
-      
-      case username
-      
-    }
-
-    public func encode(to encoder: Encoder) throws {
-      var container = encoder.container(keyedBy: CodingKeys.self)
-      let codecHelper = CodecHelper<CodingKeys>()
-      
-      
-      try codecHelper.encode(username, forKey: .username, container: &container)
-      
-      
-    }
-
-  }
-
-  public struct Data: Decodable {
-
-
-
-public var 
-user_upsert: UserKey
-
-  }
-
-  public func ref(
-        
-username: String
-
-        ) -> MutationRef<UpsertUserMutation.Data,UpsertUserMutation.Variables>  {
-        var variables = UpsertUserMutation.Variables(username:username)
-        
-
-        let ref = dataConnect.mutation(name: "UpsertUser", variables: variables, resultsDataType:UpsertUserMutation.Data.self)
-        return ref as MutationRef<UpsertUserMutation.Data,UpsertUserMutation.Variables>
-   }
-
-   public func execute(
-        
-username: String
-
-        ) async throws -> OperationResult<UpsertUserMutation.Data> {
-        var variables = UpsertUserMutation.Variables(username:username)
-        
-        
-        let ref = dataConnect.mutation(name: "UpsertUser", variables: variables, resultsDataType:UpsertUserMutation.Data.self)
-        
-        return try await ref.execute()
-        
-   }
-}
-
-
-
-
-
-
-public class UpdateMovieMutation{
-
-  let dataConnect: DataConnect
-
-  public init(dataConnect: DataConnect) {
-    self.dataConnect = dataConnect
-  }
-
-  public static let OperationName = "UpdateMovie"
-
-  public typealias Ref = MutationRef<UpdateMovieMutation.Data,UpdateMovieMutation.Variables>
-
-  public struct Variables: OperationVariable {
-  
-        
-        public var
-id: UUID
-
-  
-        @OptionalVariable
-        public var
-title: String?
-
-  
-        @OptionalVariable
-        public var
-releaseYear: Int?
-
-  
-        @OptionalVariable
-        public var
-genre: String?
-
-  
-        @OptionalVariable
-        public var
-rating: Double?
-
-  
-        @OptionalVariable
-        public var
-description: String?
-
-  
-        @OptionalVariable
-        public var
-imageUrl: String?
-
-  
-        @OptionalVariable
-        public var
-tags: [String]?
-
-
-    
-    
-    
-    public init (
-        
-id: UUID
-
-        
-        
-        ,
-        _ optionalVars: ((inout Variables)->())? = nil
-        ) {
-        self.id = id
-        
-
-        
-        if let optionalVars {
-            optionalVars(&self)
-        }
-        
-    }
-
-    public static func == (lhs: Variables, rhs: Variables) -> Bool {
-      
-        return lhs.id == rhs.id && 
-              lhs.title == rhs.title && 
-              lhs.releaseYear == rhs.releaseYear && 
-              lhs.genre == rhs.genre && 
-              lhs.rating == rhs.rating && 
-              lhs.description == rhs.description && 
-              lhs.imageUrl == rhs.imageUrl && 
-              lhs.tags == rhs.tags
-              
-    }
-
-    
-public func hash(into hasher: inout Hasher) {
-  
-  hasher.combine(id)
-  
-  hasher.combine(title)
-  
-  hasher.combine(releaseYear)
-  
-  hasher.combine(genre)
-  
-  hasher.combine(rating)
-  
-  hasher.combine(description)
-  
-  hasher.combine(imageUrl)
-  
-  hasher.combine(tags)
-  
-}
-
-    enum CodingKeys: String, CodingKey {
-      
-      case id
-      
-      case title
-      
-      case releaseYear
-      
-      case genre
-      
-      case rating
-      
-      case description
-      
-      case imageUrl
-      
-      case tags
-      
-    }
-
-    public func encode(to encoder: Encoder) throws {
-      var container = encoder.container(keyedBy: CodingKeys.self)
-      let codecHelper = CodecHelper<CodingKeys>()
-      
-      
-      try codecHelper.encode(id, forKey: .id, container: &container)
-      
-      
-      if $title.isSet { 
-      try codecHelper.encode(title, forKey: .title, container: &container)
-      }
-      
-      if $releaseYear.isSet { 
-      try codecHelper.encode(releaseYear, forKey: .releaseYear, container: &container)
-      }
-      
-      if $genre.isSet { 
-      try codecHelper.encode(genre, forKey: .genre, container: &container)
-      }
-      
-      if $rating.isSet { 
-      try codecHelper.encode(rating, forKey: .rating, container: &container)
-      }
-      
-      if $description.isSet { 
-      try codecHelper.encode(description, forKey: .description, container: &container)
-      }
-      
-      if $imageUrl.isSet { 
-      try codecHelper.encode(imageUrl, forKey: .imageUrl, container: &container)
-      }
-      
-      if $tags.isSet { 
-      try codecHelper.encode(tags, forKey: .tags, container: &container)
-      }
-      
-    }
-
-  }
-
-  public struct Data: Decodable {
-
-
-
-public var 
-movie_update: MovieKey?
-
-  }
-
-  public func ref(
-        
-id: UUID
-
-        
-        ,
-        _ optionalVars: ((inout UpdateMovieMutation.Variables)->())? = nil
-        ) -> MutationRef<UpdateMovieMutation.Data,UpdateMovieMutation.Variables>  {
-        var variables = UpdateMovieMutation.Variables(id:id)
-        
-        if let optionalVars {
-            optionalVars(&variables)
-        }
-        
-
-        let ref = dataConnect.mutation(name: "UpdateMovie", variables: variables, resultsDataType:UpdateMovieMutation.Data.self)
-        return ref as MutationRef<UpdateMovieMutation.Data,UpdateMovieMutation.Variables>
-   }
-
-   public func execute(
-        
-id: UUID
-
-        
-        ,
-        _ optionalVars: ((inout UpdateMovieMutation.Variables)->())? = nil
-        ) async throws -> OperationResult<UpdateMovieMutation.Data> {
-        var variables = UpdateMovieMutation.Variables(id:id)
-        
-        if let optionalVars {
-            optionalVars(&variables)
-        }
-        
-        
-        let ref = dataConnect.mutation(name: "UpdateMovie", variables: variables, resultsDataType:UpdateMovieMutation.Data.self)
-        
-        return try await ref.execute()
-        
-   }
-}
-
-
-
-
-
-
-public class DeleteMovieMutation{
-
-  let dataConnect: DataConnect
-
-  public init(dataConnect: DataConnect) {
-    self.dataConnect = dataConnect
-  }
-
-  public static let OperationName = "DeleteMovie"
-
-  public typealias Ref = MutationRef<DeleteMovieMutation.Data,DeleteMovieMutation.Variables>
-
-  public struct Variables: OperationVariable {
-  
-        
-        public var
-id: UUID
-
-
-    
-    
-    
-    public init (
-        
-id: UUID
-
-        
-        ) {
-        self.id = id
-        
-
-        
-    }
-
-    public static func == (lhs: Variables, rhs: Variables) -> Bool {
-      
-        return lhs.id == rhs.id
-              
-    }
-
-    
-public func hash(into hasher: inout Hasher) {
-  
-  hasher.combine(id)
-  
-}
-
-    enum CodingKeys: String, CodingKey {
-      
-      case id
-      
-    }
-
-    public func encode(to encoder: Encoder) throws {
-      var container = encoder.container(keyedBy: CodingKeys.self)
-      let codecHelper = CodecHelper<CodingKeys>()
-      
-      
-      try codecHelper.encode(id, forKey: .id, container: &container)
-      
-      
-    }
-
-  }
-
-  public struct Data: Decodable {
-
-
-
-public var 
-movie_delete: MovieKey?
-
-  }
-
-  public func ref(
-        
-id: UUID
-
-        ) -> MutationRef<DeleteMovieMutation.Data,DeleteMovieMutation.Variables>  {
-        var variables = DeleteMovieMutation.Variables(id:id)
-        
-
-        let ref = dataConnect.mutation(name: "DeleteMovie", variables: variables, resultsDataType:DeleteMovieMutation.Data.self)
-        return ref as MutationRef<DeleteMovieMutation.Data,DeleteMovieMutation.Variables>
-   }
-
-   public func execute(
-        
-id: UUID
-
-        ) async throws -> OperationResult<DeleteMovieMutation.Data> {
-        var variables = DeleteMovieMutation.Variables(id:id)
-        
-        
-        let ref = dataConnect.mutation(name: "DeleteMovie", variables: variables, resultsDataType:DeleteMovieMutation.Data.self)
-        
-        return try await ref.execute()
-        
-   }
-}
-
-
-
-
-
-
-public class DeleteUnpopularMoviesMutation{
-
-  let dataConnect: DataConnect
-
-  public init(dataConnect: DataConnect) {
-    self.dataConnect = dataConnect
-  }
-
-  public static let OperationName = "DeleteUnpopularMovies"
-
-  public typealias Ref = MutationRef<DeleteUnpopularMoviesMutation.Data,DeleteUnpopularMoviesMutation.Variables>
-
-  public struct Variables: OperationVariable {
-  
-        
-        public var
-minRating: Double
-
-
-    
-    
-    
-    public init (
-        
-minRating: Double
-
-        
-        ) {
-        self.minRating = minRating
-        
-
-        
-    }
-
-    public static func == (lhs: Variables, rhs: Variables) -> Bool {
-      
-        return lhs.minRating == rhs.minRating
-              
-    }
-
-    
-public func hash(into hasher: inout Hasher) {
-  
-  hasher.combine(minRating)
-  
-}
-
-    enum CodingKeys: String, CodingKey {
-      
-      case minRating
-      
-    }
-
-    public func encode(to encoder: Encoder) throws {
-      var container = encoder.container(keyedBy: CodingKeys.self)
-      let codecHelper = CodecHelper<CodingKeys>()
-      
-      
-      try codecHelper.encode(minRating, forKey: .minRating, container: &container)
-      
-      
-    }
-
-  }
-
-  public struct Data: Decodable {
-
-
-public var 
-movie_deleteMany: Int
-
-  }
-
-  public func ref(
-        
-minRating: Double
-
-        ) -> MutationRef<DeleteUnpopularMoviesMutation.Data,DeleteUnpopularMoviesMutation.Variables>  {
-        var variables = DeleteUnpopularMoviesMutation.Variables(minRating:minRating)
-        
-
-        let ref = dataConnect.mutation(name: "DeleteUnpopularMovies", variables: variables, resultsDataType:DeleteUnpopularMoviesMutation.Data.self)
-        return ref as MutationRef<DeleteUnpopularMoviesMutation.Data,DeleteUnpopularMoviesMutation.Variables>
-   }
-
-   public func execute(
-        
-minRating: Double
-
-        ) async throws -> OperationResult<DeleteUnpopularMoviesMutation.Data> {
-        var variables = DeleteUnpopularMoviesMutation.Variables(minRating:minRating)
-        
-        
-        let ref = dataConnect.mutation(name: "DeleteUnpopularMovies", variables: variables, resultsDataType:DeleteUnpopularMoviesMutation.Data.self)
-        
-        return try await ref.execute()
-        
-   }
-}
-
-
-
-
-
-
 public class ListMoviesQuery{
 
   let dataConnect: DataConnect
@@ -1507,6 +774,16 @@ public class ListMoviesQuery{
   public typealias Ref = QueryRefObservation<ListMoviesQuery.Data,ListMoviesQuery.Variables>
 
   public struct Variables: OperationVariable {
+  
+        @OptionalVariable
+        public var
+orderByRating: OrderDirection?
+
+  
+        @OptionalVariable
+        public var
+orderByReleaseYear: OrderDirection?
+
   
         @OptionalVariable
         public var
@@ -1533,18 +810,28 @@ limit: Int?
 
     public static func == (lhs: Variables, rhs: Variables) -> Bool {
       
-        return lhs.limit == rhs.limit
+        return lhs.orderByRating == rhs.orderByRating && 
+              lhs.orderByReleaseYear == rhs.orderByReleaseYear && 
+              lhs.limit == rhs.limit
               
     }
 
     
 public func hash(into hasher: inout Hasher) {
   
+  hasher.combine(orderByRating)
+  
+  hasher.combine(orderByReleaseYear)
+  
   hasher.combine(limit)
   
 }
 
     enum CodingKeys: String, CodingKey {
+      
+      case orderByRating
+      
+      case orderByReleaseYear
       
       case limit
       
@@ -1553,6 +840,14 @@ public func hash(into hasher: inout Hasher) {
     public func encode(to encoder: Encoder) throws {
       var container = encoder.container(keyedBy: CodingKeys.self)
       let codecHelper = CodecHelper<CodingKeys>()
+      
+      if $orderByRating.isSet { 
+      try codecHelper.encode(orderByRating, forKey: .orderByRating, container: &container)
+      }
+      
+      if $orderByReleaseYear.isSet { 
+      try codecHelper.encode(orderByReleaseYear, forKey: .orderByReleaseYear, container: &container)
+      }
       
       if $limit.isSet { 
       try codecHelper.encode(limit, forKey: .limit, container: &container)
@@ -1729,303 +1024,6 @@ movies: [Movie]
         let ref = dataConnect.query(name: "ListMovies", variables: variables, resultsDataType:ListMoviesQuery.Data.self, publisher: .observableMacro)
         
         let refCast = ref as! QueryRefObservation<ListMoviesQuery.Data,ListMoviesQuery.Variables>
-        return try await refCast.execute()
-        
-   }
-}
-
-
-
-
-
-
-public class ListMoviesByGenreQuery{
-
-  let dataConnect: DataConnect
-
-  public init(dataConnect: DataConnect) {
-    self.dataConnect = dataConnect
-  }
-
-  public static let OperationName = "ListMoviesByGenre"
-
-  public typealias Ref = QueryRefObservation<ListMoviesByGenreQuery.Data,ListMoviesByGenreQuery.Variables>
-
-  public struct Variables: OperationVariable {
-  
-        
-        public var
-genre: String
-
-
-    
-    
-    
-    public init (
-        
-genre: String
-
-        
-        ) {
-        self.genre = genre
-        
-
-        
-    }
-
-    public static func == (lhs: Variables, rhs: Variables) -> Bool {
-      
-        return lhs.genre == rhs.genre
-              
-    }
-
-    
-public func hash(into hasher: inout Hasher) {
-  
-  hasher.combine(genre)
-  
-}
-
-    enum CodingKeys: String, CodingKey {
-      
-      case genre
-      
-    }
-
-    public func encode(to encoder: Encoder) throws {
-      var container = encoder.container(keyedBy: CodingKeys.self)
-      let codecHelper = CodecHelper<CodingKeys>()
-      
-      
-      try codecHelper.encode(genre, forKey: .genre, container: &container)
-      
-      
-    }
-
-  }
-
-  public struct Data: Decodable {
-
-
-
-
-public struct MovieMostPopular: Decodable ,Hashable, Equatable, Identifiable {
-  
-
-
-public var 
-id: UUID
-
-
-
-public var 
-title: String
-
-
-
-public var 
-imageUrl: String
-
-
-
-public var 
-rating: Double?
-
-
-
-public var 
-tags: [String]?
-
-
-  
-  public var movieMostPopularKey: MovieKey {
-    return MovieKey(
-      
-      id: id
-    )
-  }
-
-  
-public func hash(into hasher: inout Hasher) {
-  
-  hasher.combine(id)
-  
-}
-public static func == (lhs: MovieMostPopular, rhs: MovieMostPopular) -> Bool {
-    
-    return lhs.id == rhs.id 
-        
-  }
-
-  
-
-  
-  enum CodingKeys: String, CodingKey {
-    
-    case id
-    
-    case title
-    
-    case imageUrl
-    
-    case rating
-    
-    case tags
-    
-  }
-
-  public init(from decoder: any Decoder) throws {
-    var container = try decoder.container(keyedBy: CodingKeys.self)
-    let codecHelper = CodecHelper<CodingKeys>()
-
-    
-    
-    self.id = try codecHelper.decode(UUID.self, forKey: .id, container: &container)
-    
-    
-    
-    self.title = try codecHelper.decode(String.self, forKey: .title, container: &container)
-    
-    
-    
-    self.imageUrl = try codecHelper.decode(String.self, forKey: .imageUrl, container: &container)
-    
-    
-    
-    self.rating = try codecHelper.decode(Double?.self, forKey: .rating, container: &container)
-    
-    
-    self.tags = try codecHelper.decode([String].self, forKey: .tags, container: &container)
-    
-    
-  }
-}
-public var 
-mostPopular: [MovieMostPopular]
-
-
-
-
-
-public struct MovieMostRecent: Decodable ,Hashable, Equatable, Identifiable {
-  
-
-
-public var 
-id: UUID
-
-
-
-public var 
-title: String
-
-
-
-public var 
-imageUrl: String
-
-
-
-public var 
-rating: Double?
-
-
-
-public var 
-tags: [String]?
-
-
-  
-  public var movieMostRecentKey: MovieKey {
-    return MovieKey(
-      
-      id: id
-    )
-  }
-
-  
-public func hash(into hasher: inout Hasher) {
-  
-  hasher.combine(id)
-  
-}
-public static func == (lhs: MovieMostRecent, rhs: MovieMostRecent) -> Bool {
-    
-    return lhs.id == rhs.id 
-        
-  }
-
-  
-
-  
-  enum CodingKeys: String, CodingKey {
-    
-    case id
-    
-    case title
-    
-    case imageUrl
-    
-    case rating
-    
-    case tags
-    
-  }
-
-  public init(from decoder: any Decoder) throws {
-    var container = try decoder.container(keyedBy: CodingKeys.self)
-    let codecHelper = CodecHelper<CodingKeys>()
-
-    
-    
-    self.id = try codecHelper.decode(UUID.self, forKey: .id, container: &container)
-    
-    
-    
-    self.title = try codecHelper.decode(String.self, forKey: .title, container: &container)
-    
-    
-    
-    self.imageUrl = try codecHelper.decode(String.self, forKey: .imageUrl, container: &container)
-    
-    
-    
-    self.rating = try codecHelper.decode(Double?.self, forKey: .rating, container: &container)
-    
-    
-    self.tags = try codecHelper.decode([String].self, forKey: .tags, container: &container)
-    
-    
-  }
-}
-public var 
-mostRecent: [MovieMostRecent]
-
-  }
-
-  public func ref(
-        
-genre: String
-
-        ) -> QueryRefObservation<ListMoviesByGenreQuery.Data,ListMoviesByGenreQuery.Variables>  {
-        var variables = ListMoviesByGenreQuery.Variables(genre:genre)
-        
-
-        let ref = dataConnect.query(name: "ListMoviesByGenre", variables: variables, resultsDataType:ListMoviesByGenreQuery.Data.self, publisher: .observableMacro)
-        return ref as! QueryRefObservation<ListMoviesByGenreQuery.Data,ListMoviesByGenreQuery.Variables>
-   }
-
-   public func execute(
-        
-genre: String
-
-        ) async throws -> OperationResult<ListMoviesByGenreQuery.Data> {
-        var variables = ListMoviesByGenreQuery.Variables(genre:genre)
-        
-        
-        let ref = dataConnect.query(name: "ListMoviesByGenre", variables: variables, resultsDataType:ListMoviesByGenreQuery.Data.self, publisher: .observableMacro)
-        
-        let refCast = ref as! QueryRefObservation<ListMoviesByGenreQuery.Data,ListMoviesByGenreQuery.Variables>
         return try await refCast.execute()
         
    }
@@ -3378,113 +2376,6 @@ public var
 favoriteMovies: [FavoriteMovieFavoriteMovies]
 
 
-
-
-
-public struct FavoriteActorFavoriteActors: Decodable  {
-  
-
-
-
-
-public struct Actor: Decodable ,Hashable, Equatable, Identifiable {
-  
-
-
-public var 
-id: UUID
-
-
-
-public var 
-name: String
-
-
-
-public var 
-imageUrl: String
-
-
-  
-  public var actorKey: ActorKey {
-    return ActorKey(
-      
-      id: id
-    )
-  }
-
-  
-public func hash(into hasher: inout Hasher) {
-  
-  hasher.combine(id)
-  
-}
-public static func == (lhs: Actor, rhs: Actor) -> Bool {
-    
-    return lhs.id == rhs.id 
-        
-  }
-
-  
-
-  
-  enum CodingKeys: String, CodingKey {
-    
-    case id
-    
-    case name
-    
-    case imageUrl
-    
-  }
-
-  public init(from decoder: any Decoder) throws {
-    var container = try decoder.container(keyedBy: CodingKeys.self)
-    let codecHelper = CodecHelper<CodingKeys>()
-
-    
-    
-    self.id = try codecHelper.decode(UUID.self, forKey: .id, container: &container)
-    
-    
-    
-    self.name = try codecHelper.decode(String.self, forKey: .name, container: &container)
-    
-    
-    
-    self.imageUrl = try codecHelper.decode(String.self, forKey: .imageUrl, container: &container)
-    
-    
-  }
-}
-public var 
-actor: Actor
-
-
-  
-
-  
-  enum CodingKeys: String, CodingKey {
-    
-    case actor
-    
-  }
-
-  public init(from decoder: any Decoder) throws {
-    var container = try decoder.container(keyedBy: CodingKeys.self)
-    let codecHelper = CodecHelper<CodingKeys>()
-
-    
-    
-    self.actor = try codecHelper.decode(Actor.self, forKey: .actor, container: &container)
-    
-    
-  }
-}
-public var 
-favoriteActors: [FavoriteActorFavoriteActors]
-
-
   
   public var userKey: UserKey {
     return UserKey(
@@ -3518,8 +2409,6 @@ public static func == (lhs: User, rhs: User) -> Bool {
     
     case favoriteMovies
     
-    case favoriteActors
-    
   }
 
   public init(from decoder: any Decoder) throws {
@@ -3539,9 +2428,6 @@ public static func == (lhs: User, rhs: User) -> Bool {
     
     
     self.favoriteMovies = try codecHelper.decode([FavoriteMovieFavoriteMovies].self, forKey: .favoriteMovies, container: &container)
-    
-    
-    self.favoriteActors = try codecHelper.decode([FavoriteActorFavoriteActors].self, forKey: .favoriteActors, container: &container)
     
     
   }
@@ -3706,142 +2592,6 @@ movieId: UUID
         let ref = dataConnect.query(name: "GetIfFavoritedMovie", variables: variables, resultsDataType:GetIfFavoritedMovieQuery.Data.self, publisher: .observableMacro)
         
         let refCast = ref as! QueryRefObservation<GetIfFavoritedMovieQuery.Data,GetIfFavoritedMovieQuery.Variables>
-        return try await refCast.execute()
-        
-   }
-}
-
-
-
-
-
-
-public class GetIfFavoritedActorQuery{
-
-  let dataConnect: DataConnect
-
-  public init(dataConnect: DataConnect) {
-    self.dataConnect = dataConnect
-  }
-
-  public static let OperationName = "GetIfFavoritedActor"
-
-  public typealias Ref = QueryRefObservation<GetIfFavoritedActorQuery.Data,GetIfFavoritedActorQuery.Variables>
-
-  public struct Variables: OperationVariable {
-  
-        
-        public var
-actorId: UUID
-
-
-    
-    
-    
-    public init (
-        
-actorId: UUID
-
-        
-        ) {
-        self.actorId = actorId
-        
-
-        
-    }
-
-    public static func == (lhs: Variables, rhs: Variables) -> Bool {
-      
-        return lhs.actorId == rhs.actorId
-              
-    }
-
-    
-public func hash(into hasher: inout Hasher) {
-  
-  hasher.combine(actorId)
-  
-}
-
-    enum CodingKeys: String, CodingKey {
-      
-      case actorId
-      
-    }
-
-    public func encode(to encoder: Encoder) throws {
-      var container = encoder.container(keyedBy: CodingKeys.self)
-      let codecHelper = CodecHelper<CodingKeys>()
-      
-      
-      try codecHelper.encode(actorId, forKey: .actorId, container: &container)
-      
-      
-    }
-
-  }
-
-  public struct Data: Decodable {
-
-
-
-
-public struct FavoriteActor: Decodable  {
-  
-
-
-public var 
-actorId: UUID
-
-
-  
-
-  
-  enum CodingKeys: String, CodingKey {
-    
-    case actorId
-    
-  }
-
-  public init(from decoder: any Decoder) throws {
-    var container = try decoder.container(keyedBy: CodingKeys.self)
-    let codecHelper = CodecHelper<CodingKeys>()
-
-    
-    
-    self.actorId = try codecHelper.decode(UUID.self, forKey: .actorId, container: &container)
-    
-    
-  }
-}
-public var 
-favorite_actor: FavoriteActor?
-
-  }
-
-  public func ref(
-        
-actorId: UUID
-
-        ) -> QueryRefObservation<GetIfFavoritedActorQuery.Data,GetIfFavoritedActorQuery.Variables>  {
-        var variables = GetIfFavoritedActorQuery.Variables(actorId:actorId)
-        
-
-        let ref = dataConnect.query(name: "GetIfFavoritedActor", variables: variables, resultsDataType:GetIfFavoritedActorQuery.Data.self, publisher: .observableMacro)
-        return ref as! QueryRefObservation<GetIfFavoritedActorQuery.Data,GetIfFavoritedActorQuery.Variables>
-   }
-
-   public func execute(
-        
-actorId: UUID
-
-        ) async throws -> OperationResult<GetIfFavoritedActorQuery.Data> {
-        var variables = GetIfFavoritedActorQuery.Variables(actorId:actorId)
-        
-        
-        let ref = dataConnect.query(name: "GetIfFavoritedActor", variables: variables, resultsDataType:GetIfFavoritedActorQuery.Data.self, publisher: .observableMacro)
-        
-        let refCast = ref as! QueryRefObservation<GetIfFavoritedActorQuery.Data,GetIfFavoritedActorQuery.Variables>
         return try await refCast.execute()
         
    }
@@ -4553,1764 +3303,6 @@ genre: String
         let ref = dataConnect.query(name: "SearchAll", variables: variables, resultsDataType:SearchAllQuery.Data.self, publisher: .observableMacro)
         
         let refCast = ref as! QueryRefObservation<SearchAllQuery.Data,SearchAllQuery.Variables>
-        return try await refCast.execute()
-        
-   }
-}
-
-
-
-
-
-
-public class SearchMovieDescriptionUsingL2similarityQuery{
-
-  let dataConnect: DataConnect
-
-  public init(dataConnect: DataConnect) {
-    self.dataConnect = dataConnect
-  }
-
-  public static let OperationName = "SearchMovieDescriptionUsingL2Similarity"
-
-  public typealias Ref = QueryRefObservation<SearchMovieDescriptionUsingL2similarityQuery.Data,SearchMovieDescriptionUsingL2similarityQuery.Variables>
-
-  public struct Variables: OperationVariable {
-  
-        
-        public var
-query: String
-
-
-    
-    
-    
-    public init (
-        
-query: String
-
-        
-        ) {
-        self.query = query
-        
-
-        
-    }
-
-    public static func == (lhs: Variables, rhs: Variables) -> Bool {
-      
-        return lhs.query == rhs.query
-              
-    }
-
-    
-public func hash(into hasher: inout Hasher) {
-  
-  hasher.combine(query)
-  
-}
-
-    enum CodingKeys: String, CodingKey {
-      
-      case query
-      
-    }
-
-    public func encode(to encoder: Encoder) throws {
-      var container = encoder.container(keyedBy: CodingKeys.self)
-      let codecHelper = CodecHelper<CodingKeys>()
-      
-      
-      try codecHelper.encode(query, forKey: .query, container: &container)
-      
-      
-    }
-
-  }
-
-  public struct Data: Decodable {
-
-
-
-
-public struct Movie: Decodable ,Hashable, Equatable, Identifiable {
-  
-
-
-public var 
-id: UUID
-
-
-
-public var 
-title: String
-
-
-
-public var 
-description: String?
-
-
-
-public var 
-tags: [String]?
-
-
-
-public var 
-rating: Double?
-
-
-
-public var 
-imageUrl: String
-
-
-  
-  public var movieKey: MovieKey {
-    return MovieKey(
-      
-      id: id
-    )
-  }
-
-  
-public func hash(into hasher: inout Hasher) {
-  
-  hasher.combine(id)
-  
-}
-public static func == (lhs: Movie, rhs: Movie) -> Bool {
-    
-    return lhs.id == rhs.id 
-        
-  }
-
-  
-
-  
-  enum CodingKeys: String, CodingKey {
-    
-    case id
-    
-    case title
-    
-    case description
-    
-    case tags
-    
-    case rating
-    
-    case imageUrl
-    
-  }
-
-  public init(from decoder: any Decoder) throws {
-    var container = try decoder.container(keyedBy: CodingKeys.self)
-    let codecHelper = CodecHelper<CodingKeys>()
-
-    
-    
-    self.id = try codecHelper.decode(UUID.self, forKey: .id, container: &container)
-    
-    
-    
-    self.title = try codecHelper.decode(String.self, forKey: .title, container: &container)
-    
-    
-    
-    self.description = try codecHelper.decode(String?.self, forKey: .description, container: &container)
-    
-    
-    self.tags = try codecHelper.decode([String].self, forKey: .tags, container: &container)
-    
-    
-    
-    self.rating = try codecHelper.decode(Double?.self, forKey: .rating, container: &container)
-    
-    
-    
-    self.imageUrl = try codecHelper.decode(String.self, forKey: .imageUrl, container: &container)
-    
-    
-  }
-}
-public var 
-movies_descriptionEmbedding_similarity: [Movie]
-
-  }
-
-  public func ref(
-        
-query: String
-
-        ) -> QueryRefObservation<SearchMovieDescriptionUsingL2similarityQuery.Data,SearchMovieDescriptionUsingL2similarityQuery.Variables>  {
-        var variables = SearchMovieDescriptionUsingL2similarityQuery.Variables(query:query)
-        
-
-        let ref = dataConnect.query(name: "SearchMovieDescriptionUsingL2Similarity", variables: variables, resultsDataType:SearchMovieDescriptionUsingL2similarityQuery.Data.self, publisher: .observableMacro)
-        return ref as! QueryRefObservation<SearchMovieDescriptionUsingL2similarityQuery.Data,SearchMovieDescriptionUsingL2similarityQuery.Variables>
-   }
-
-   public func execute(
-        
-query: String
-
-        ) async throws -> OperationResult<SearchMovieDescriptionUsingL2similarityQuery.Data> {
-        var variables = SearchMovieDescriptionUsingL2similarityQuery.Variables(query:query)
-        
-        
-        let ref = dataConnect.query(name: "SearchMovieDescriptionUsingL2Similarity", variables: variables, resultsDataType:SearchMovieDescriptionUsingL2similarityQuery.Data.self, publisher: .observableMacro)
-        
-        let refCast = ref as! QueryRefObservation<SearchMovieDescriptionUsingL2similarityQuery.Data,SearchMovieDescriptionUsingL2similarityQuery.Variables>
-        return try await refCast.execute()
-        
-   }
-}
-
-
-
-
-
-
-public class ListMoviesByPartialTitleQuery{
-
-  let dataConnect: DataConnect
-
-  public init(dataConnect: DataConnect) {
-    self.dataConnect = dataConnect
-  }
-
-  public static let OperationName = "ListMoviesByPartialTitle"
-
-  public typealias Ref = QueryRefObservation<ListMoviesByPartialTitleQuery.Data,ListMoviesByPartialTitleQuery.Variables>
-
-  public struct Variables: OperationVariable {
-  
-        
-        public var
-input: String
-
-
-    
-    
-    
-    public init (
-        
-input: String
-
-        
-        ) {
-        self.input = input
-        
-
-        
-    }
-
-    public static func == (lhs: Variables, rhs: Variables) -> Bool {
-      
-        return lhs.input == rhs.input
-              
-    }
-
-    
-public func hash(into hasher: inout Hasher) {
-  
-  hasher.combine(input)
-  
-}
-
-    enum CodingKeys: String, CodingKey {
-      
-      case input
-      
-    }
-
-    public func encode(to encoder: Encoder) throws {
-      var container = encoder.container(keyedBy: CodingKeys.self)
-      let codecHelper = CodecHelper<CodingKeys>()
-      
-      
-      try codecHelper.encode(input, forKey: .input, container: &container)
-      
-      
-    }
-
-  }
-
-  public struct Data: Decodable {
-
-
-
-
-public struct Movie: Decodable ,Hashable, Equatable, Identifiable {
-  
-
-
-public var 
-id: UUID
-
-
-
-public var 
-title: String
-
-
-
-public var 
-genre: String?
-
-
-
-public var 
-rating: Double?
-
-
-
-public var 
-imageUrl: String
-
-
-  
-  public var movieKey: MovieKey {
-    return MovieKey(
-      
-      id: id
-    )
-  }
-
-  
-public func hash(into hasher: inout Hasher) {
-  
-  hasher.combine(id)
-  
-}
-public static func == (lhs: Movie, rhs: Movie) -> Bool {
-    
-    return lhs.id == rhs.id 
-        
-  }
-
-  
-
-  
-  enum CodingKeys: String, CodingKey {
-    
-    case id
-    
-    case title
-    
-    case genre
-    
-    case rating
-    
-    case imageUrl
-    
-  }
-
-  public init(from decoder: any Decoder) throws {
-    var container = try decoder.container(keyedBy: CodingKeys.self)
-    let codecHelper = CodecHelper<CodingKeys>()
-
-    
-    
-    self.id = try codecHelper.decode(UUID.self, forKey: .id, container: &container)
-    
-    
-    
-    self.title = try codecHelper.decode(String.self, forKey: .title, container: &container)
-    
-    
-    
-    self.genre = try codecHelper.decode(String?.self, forKey: .genre, container: &container)
-    
-    
-    
-    self.rating = try codecHelper.decode(Double?.self, forKey: .rating, container: &container)
-    
-    
-    
-    self.imageUrl = try codecHelper.decode(String.self, forKey: .imageUrl, container: &container)
-    
-    
-  }
-}
-public var 
-movies: [Movie]
-
-  }
-
-  public func ref(
-        
-input: String
-
-        ) -> QueryRefObservation<ListMoviesByPartialTitleQuery.Data,ListMoviesByPartialTitleQuery.Variables>  {
-        var variables = ListMoviesByPartialTitleQuery.Variables(input:input)
-        
-
-        let ref = dataConnect.query(name: "ListMoviesByPartialTitle", variables: variables, resultsDataType:ListMoviesByPartialTitleQuery.Data.self, publisher: .observableMacro)
-        return ref as! QueryRefObservation<ListMoviesByPartialTitleQuery.Data,ListMoviesByPartialTitleQuery.Variables>
-   }
-
-   public func execute(
-        
-input: String
-
-        ) async throws -> OperationResult<ListMoviesByPartialTitleQuery.Data> {
-        var variables = ListMoviesByPartialTitleQuery.Variables(input:input)
-        
-        
-        let ref = dataConnect.query(name: "ListMoviesByPartialTitle", variables: variables, resultsDataType:ListMoviesByPartialTitleQuery.Data.self, publisher: .observableMacro)
-        
-        let refCast = ref as! QueryRefObservation<ListMoviesByPartialTitleQuery.Data,ListMoviesByPartialTitleQuery.Variables>
-        return try await refCast.execute()
-        
-   }
-}
-
-
-
-
-
-
-public class ListMoviesByTagQuery{
-
-  let dataConnect: DataConnect
-
-  public init(dataConnect: DataConnect) {
-    self.dataConnect = dataConnect
-  }
-
-  public static let OperationName = "ListMoviesByTag"
-
-  public typealias Ref = QueryRefObservation<ListMoviesByTagQuery.Data,ListMoviesByTagQuery.Variables>
-
-  public struct Variables: OperationVariable {
-  
-        
-        public var
-tag: String
-
-
-    
-    
-    
-    public init (
-        
-tag: String
-
-        
-        ) {
-        self.tag = tag
-        
-
-        
-    }
-
-    public static func == (lhs: Variables, rhs: Variables) -> Bool {
-      
-        return lhs.tag == rhs.tag
-              
-    }
-
-    
-public func hash(into hasher: inout Hasher) {
-  
-  hasher.combine(tag)
-  
-}
-
-    enum CodingKeys: String, CodingKey {
-      
-      case tag
-      
-    }
-
-    public func encode(to encoder: Encoder) throws {
-      var container = encoder.container(keyedBy: CodingKeys.self)
-      let codecHelper = CodecHelper<CodingKeys>()
-      
-      
-      try codecHelper.encode(tag, forKey: .tag, container: &container)
-      
-      
-    }
-
-  }
-
-  public struct Data: Decodable {
-
-
-
-
-public struct Movie: Decodable ,Hashable, Equatable, Identifiable {
-  
-
-
-public var 
-id: UUID
-
-
-
-public var 
-title: String
-
-
-
-public var 
-imageUrl: String
-
-
-
-public var 
-genre: String?
-
-
-
-public var 
-rating: Double?
-
-
-  
-  public var movieKey: MovieKey {
-    return MovieKey(
-      
-      id: id
-    )
-  }
-
-  
-public func hash(into hasher: inout Hasher) {
-  
-  hasher.combine(id)
-  
-}
-public static func == (lhs: Movie, rhs: Movie) -> Bool {
-    
-    return lhs.id == rhs.id 
-        
-  }
-
-  
-
-  
-  enum CodingKeys: String, CodingKey {
-    
-    case id
-    
-    case title
-    
-    case imageUrl
-    
-    case genre
-    
-    case rating
-    
-  }
-
-  public init(from decoder: any Decoder) throws {
-    var container = try decoder.container(keyedBy: CodingKeys.self)
-    let codecHelper = CodecHelper<CodingKeys>()
-
-    
-    
-    self.id = try codecHelper.decode(UUID.self, forKey: .id, container: &container)
-    
-    
-    
-    self.title = try codecHelper.decode(String.self, forKey: .title, container: &container)
-    
-    
-    
-    self.imageUrl = try codecHelper.decode(String.self, forKey: .imageUrl, container: &container)
-    
-    
-    
-    self.genre = try codecHelper.decode(String?.self, forKey: .genre, container: &container)
-    
-    
-    
-    self.rating = try codecHelper.decode(Double?.self, forKey: .rating, container: &container)
-    
-    
-  }
-}
-public var 
-movies: [Movie]
-
-  }
-
-  public func ref(
-        
-tag: String
-
-        ) -> QueryRefObservation<ListMoviesByTagQuery.Data,ListMoviesByTagQuery.Variables>  {
-        var variables = ListMoviesByTagQuery.Variables(tag:tag)
-        
-
-        let ref = dataConnect.query(name: "ListMoviesByTag", variables: variables, resultsDataType:ListMoviesByTagQuery.Data.self, publisher: .observableMacro)
-        return ref as! QueryRefObservation<ListMoviesByTagQuery.Data,ListMoviesByTagQuery.Variables>
-   }
-
-   public func execute(
-        
-tag: String
-
-        ) async throws -> OperationResult<ListMoviesByTagQuery.Data> {
-        var variables = ListMoviesByTagQuery.Variables(tag:tag)
-        
-        
-        let ref = dataConnect.query(name: "ListMoviesByTag", variables: variables, resultsDataType:ListMoviesByTagQuery.Data.self, publisher: .observableMacro)
-        
-        let refCast = ref as! QueryRefObservation<ListMoviesByTagQuery.Data,ListMoviesByTagQuery.Variables>
-        return try await refCast.execute()
-        
-   }
-}
-
-
-
-
-
-
-public class MoviesByReleaseYearQuery{
-
-  let dataConnect: DataConnect
-
-  public init(dataConnect: DataConnect) {
-    self.dataConnect = dataConnect
-  }
-
-  public static let OperationName = "MoviesByReleaseYear"
-
-  public typealias Ref = QueryRefObservation<MoviesByReleaseYearQuery.Data,MoviesByReleaseYearQuery.Variables>
-
-  public struct Variables: OperationVariable {
-  
-        @OptionalVariable
-        public var
-min: Int?
-
-  
-        @OptionalVariable
-        public var
-max: Int?
-
-
-    
-    
-    
-    public init (
-        
-        
-        
-        _ optionalVars: ((inout Variables)->())? = nil
-        ) {
-        
-
-        
-        if let optionalVars {
-            optionalVars(&self)
-        }
-        
-    }
-
-    public static func == (lhs: Variables, rhs: Variables) -> Bool {
-      
-        return lhs.min == rhs.min && 
-              lhs.max == rhs.max
-              
-    }
-
-    
-public func hash(into hasher: inout Hasher) {
-  
-  hasher.combine(min)
-  
-  hasher.combine(max)
-  
-}
-
-    enum CodingKeys: String, CodingKey {
-      
-      case min
-      
-      case max
-      
-    }
-
-    public func encode(to encoder: Encoder) throws {
-      var container = encoder.container(keyedBy: CodingKeys.self)
-      let codecHelper = CodecHelper<CodingKeys>()
-      
-      if $min.isSet { 
-      try codecHelper.encode(min, forKey: .min, container: &container)
-      }
-      
-      if $max.isSet { 
-      try codecHelper.encode(max, forKey: .max, container: &container)
-      }
-      
-    }
-
-  }
-
-  public struct Data: Decodable {
-
-
-
-
-public struct Movie: Decodable ,Hashable, Equatable, Identifiable {
-  
-
-
-public var 
-id: UUID
-
-
-
-public var 
-rating: Double?
-
-
-
-public var 
-title: String
-
-
-
-public var 
-imageUrl: String
-
-
-  
-  public var movieKey: MovieKey {
-    return MovieKey(
-      
-      id: id
-    )
-  }
-
-  
-public func hash(into hasher: inout Hasher) {
-  
-  hasher.combine(id)
-  
-}
-public static func == (lhs: Movie, rhs: Movie) -> Bool {
-    
-    return lhs.id == rhs.id 
-        
-  }
-
-  
-
-  
-  enum CodingKeys: String, CodingKey {
-    
-    case id
-    
-    case rating
-    
-    case title
-    
-    case imageUrl
-    
-  }
-
-  public init(from decoder: any Decoder) throws {
-    var container = try decoder.container(keyedBy: CodingKeys.self)
-    let codecHelper = CodecHelper<CodingKeys>()
-
-    
-    
-    self.id = try codecHelper.decode(UUID.self, forKey: .id, container: &container)
-    
-    
-    
-    self.rating = try codecHelper.decode(Double?.self, forKey: .rating, container: &container)
-    
-    
-    
-    self.title = try codecHelper.decode(String.self, forKey: .title, container: &container)
-    
-    
-    
-    self.imageUrl = try codecHelper.decode(String.self, forKey: .imageUrl, container: &container)
-    
-    
-  }
-}
-public var 
-movies: [Movie]
-
-  }
-
-  public func ref(
-        
-        
-        
-        _ optionalVars: ((inout MoviesByReleaseYearQuery.Variables)->())? = nil
-        ) -> QueryRefObservation<MoviesByReleaseYearQuery.Data,MoviesByReleaseYearQuery.Variables>  {
-        var variables = MoviesByReleaseYearQuery.Variables()
-        
-        if let optionalVars {
-            optionalVars(&variables)
-        }
-        
-
-        let ref = dataConnect.query(name: "MoviesByReleaseYear", variables: variables, resultsDataType:MoviesByReleaseYearQuery.Data.self, publisher: .observableMacro)
-        return ref as! QueryRefObservation<MoviesByReleaseYearQuery.Data,MoviesByReleaseYearQuery.Variables>
-   }
-
-   public func execute(
-        
-        
-        
-        _ optionalVars: ((inout MoviesByReleaseYearQuery.Variables)->())? = nil
-        ) async throws -> OperationResult<MoviesByReleaseYearQuery.Data> {
-        var variables = MoviesByReleaseYearQuery.Variables()
-        
-        if let optionalVars {
-            optionalVars(&variables)
-        }
-        
-        
-        let ref = dataConnect.query(name: "MoviesByReleaseYear", variables: variables, resultsDataType:MoviesByReleaseYearQuery.Data.self, publisher: .observableMacro)
-        
-        let refCast = ref as! QueryRefObservation<MoviesByReleaseYearQuery.Data,MoviesByReleaseYearQuery.Variables>
-        return try await refCast.execute()
-        
-   }
-}
-
-
-
-
-
-
-public class SearchMovieOrQuery{
-
-  let dataConnect: DataConnect
-
-  public init(dataConnect: DataConnect) {
-    self.dataConnect = dataConnect
-  }
-
-  public static let OperationName = "SearchMovieOr"
-
-  public typealias Ref = QueryRefObservation<SearchMovieOrQuery.Data,SearchMovieOrQuery.Variables>
-
-  public struct Variables: OperationVariable {
-  
-        @OptionalVariable
-        public var
-minRating: Double?
-
-  
-        @OptionalVariable
-        public var
-maxRating: Double?
-
-  
-        @OptionalVariable
-        public var
-genre: String?
-
-  
-        @OptionalVariable
-        public var
-tag: String?
-
-  
-        @OptionalVariable
-        public var
-input: String?
-
-
-    
-    
-    
-    public init (
-        
-        
-        
-        _ optionalVars: ((inout Variables)->())? = nil
-        ) {
-        
-
-        
-        if let optionalVars {
-            optionalVars(&self)
-        }
-        
-    }
-
-    public static func == (lhs: Variables, rhs: Variables) -> Bool {
-      
-        return lhs.minRating == rhs.minRating && 
-              lhs.maxRating == rhs.maxRating && 
-              lhs.genre == rhs.genre && 
-              lhs.tag == rhs.tag && 
-              lhs.input == rhs.input
-              
-    }
-
-    
-public func hash(into hasher: inout Hasher) {
-  
-  hasher.combine(minRating)
-  
-  hasher.combine(maxRating)
-  
-  hasher.combine(genre)
-  
-  hasher.combine(tag)
-  
-  hasher.combine(input)
-  
-}
-
-    enum CodingKeys: String, CodingKey {
-      
-      case minRating
-      
-      case maxRating
-      
-      case genre
-      
-      case tag
-      
-      case input
-      
-    }
-
-    public func encode(to encoder: Encoder) throws {
-      var container = encoder.container(keyedBy: CodingKeys.self)
-      let codecHelper = CodecHelper<CodingKeys>()
-      
-      if $minRating.isSet { 
-      try codecHelper.encode(minRating, forKey: .minRating, container: &container)
-      }
-      
-      if $maxRating.isSet { 
-      try codecHelper.encode(maxRating, forKey: .maxRating, container: &container)
-      }
-      
-      if $genre.isSet { 
-      try codecHelper.encode(genre, forKey: .genre, container: &container)
-      }
-      
-      if $tag.isSet { 
-      try codecHelper.encode(tag, forKey: .tag, container: &container)
-      }
-      
-      if $input.isSet { 
-      try codecHelper.encode(input, forKey: .input, container: &container)
-      }
-      
-    }
-
-  }
-
-  public struct Data: Decodable {
-
-
-
-
-public struct Movie: Decodable ,Hashable, Equatable, Identifiable {
-  
-
-
-public var 
-id: UUID
-
-
-
-public var 
-rating: Double?
-
-
-
-public var 
-title: String
-
-
-
-public var 
-imageUrl: String
-
-
-  
-  public var movieKey: MovieKey {
-    return MovieKey(
-      
-      id: id
-    )
-  }
-
-  
-public func hash(into hasher: inout Hasher) {
-  
-  hasher.combine(id)
-  
-}
-public static func == (lhs: Movie, rhs: Movie) -> Bool {
-    
-    return lhs.id == rhs.id 
-        
-  }
-
-  
-
-  
-  enum CodingKeys: String, CodingKey {
-    
-    case id
-    
-    case rating
-    
-    case title
-    
-    case imageUrl
-    
-  }
-
-  public init(from decoder: any Decoder) throws {
-    var container = try decoder.container(keyedBy: CodingKeys.self)
-    let codecHelper = CodecHelper<CodingKeys>()
-
-    
-    
-    self.id = try codecHelper.decode(UUID.self, forKey: .id, container: &container)
-    
-    
-    
-    self.rating = try codecHelper.decode(Double?.self, forKey: .rating, container: &container)
-    
-    
-    
-    self.title = try codecHelper.decode(String.self, forKey: .title, container: &container)
-    
-    
-    
-    self.imageUrl = try codecHelper.decode(String.self, forKey: .imageUrl, container: &container)
-    
-    
-  }
-}
-public var 
-movies: [Movie]
-
-  }
-
-  public func ref(
-        
-        
-        
-        _ optionalVars: ((inout SearchMovieOrQuery.Variables)->())? = nil
-        ) -> QueryRefObservation<SearchMovieOrQuery.Data,SearchMovieOrQuery.Variables>  {
-        var variables = SearchMovieOrQuery.Variables()
-        
-        if let optionalVars {
-            optionalVars(&variables)
-        }
-        
-
-        let ref = dataConnect.query(name: "SearchMovieOr", variables: variables, resultsDataType:SearchMovieOrQuery.Data.self, publisher: .observableMacro)
-        return ref as! QueryRefObservation<SearchMovieOrQuery.Data,SearchMovieOrQuery.Variables>
-   }
-
-   public func execute(
-        
-        
-        
-        _ optionalVars: ((inout SearchMovieOrQuery.Variables)->())? = nil
-        ) async throws -> OperationResult<SearchMovieOrQuery.Data> {
-        var variables = SearchMovieOrQuery.Variables()
-        
-        if let optionalVars {
-            optionalVars(&variables)
-        }
-        
-        
-        let ref = dataConnect.query(name: "SearchMovieOr", variables: variables, resultsDataType:SearchMovieOrQuery.Data.self, publisher: .observableMacro)
-        
-        let refCast = ref as! QueryRefObservation<SearchMovieOrQuery.Data,SearchMovieOrQuery.Variables>
-        return try await refCast.execute()
-        
-   }
-}
-
-
-
-
-
-
-public class SearchMovieAndQuery{
-
-  let dataConnect: DataConnect
-
-  public init(dataConnect: DataConnect) {
-    self.dataConnect = dataConnect
-  }
-
-  public static let OperationName = "SearchMovieAnd"
-
-  public typealias Ref = QueryRefObservation<SearchMovieAndQuery.Data,SearchMovieAndQuery.Variables>
-
-  public struct Variables: OperationVariable {
-  
-        @OptionalVariable
-        public var
-minRating: Double?
-
-  
-        @OptionalVariable
-        public var
-maxRating: Double?
-
-  
-        @OptionalVariable
-        public var
-genre: String?
-
-  
-        @OptionalVariable
-        public var
-tag: String?
-
-  
-        @OptionalVariable
-        public var
-input: String?
-
-
-    
-    
-    
-    public init (
-        
-        
-        
-        _ optionalVars: ((inout Variables)->())? = nil
-        ) {
-        
-
-        
-        if let optionalVars {
-            optionalVars(&self)
-        }
-        
-    }
-
-    public static func == (lhs: Variables, rhs: Variables) -> Bool {
-      
-        return lhs.minRating == rhs.minRating && 
-              lhs.maxRating == rhs.maxRating && 
-              lhs.genre == rhs.genre && 
-              lhs.tag == rhs.tag && 
-              lhs.input == rhs.input
-              
-    }
-
-    
-public func hash(into hasher: inout Hasher) {
-  
-  hasher.combine(minRating)
-  
-  hasher.combine(maxRating)
-  
-  hasher.combine(genre)
-  
-  hasher.combine(tag)
-  
-  hasher.combine(input)
-  
-}
-
-    enum CodingKeys: String, CodingKey {
-      
-      case minRating
-      
-      case maxRating
-      
-      case genre
-      
-      case tag
-      
-      case input
-      
-    }
-
-    public func encode(to encoder: Encoder) throws {
-      var container = encoder.container(keyedBy: CodingKeys.self)
-      let codecHelper = CodecHelper<CodingKeys>()
-      
-      if $minRating.isSet { 
-      try codecHelper.encode(minRating, forKey: .minRating, container: &container)
-      }
-      
-      if $maxRating.isSet { 
-      try codecHelper.encode(maxRating, forKey: .maxRating, container: &container)
-      }
-      
-      if $genre.isSet { 
-      try codecHelper.encode(genre, forKey: .genre, container: &container)
-      }
-      
-      if $tag.isSet { 
-      try codecHelper.encode(tag, forKey: .tag, container: &container)
-      }
-      
-      if $input.isSet { 
-      try codecHelper.encode(input, forKey: .input, container: &container)
-      }
-      
-    }
-
-  }
-
-  public struct Data: Decodable {
-
-
-
-
-public struct Movie: Decodable ,Hashable, Equatable, Identifiable {
-  
-
-
-public var 
-id: UUID
-
-
-
-public var 
-rating: Double?
-
-
-
-public var 
-title: String
-
-
-
-public var 
-imageUrl: String
-
-
-  
-  public var movieKey: MovieKey {
-    return MovieKey(
-      
-      id: id
-    )
-  }
-
-  
-public func hash(into hasher: inout Hasher) {
-  
-  hasher.combine(id)
-  
-}
-public static func == (lhs: Movie, rhs: Movie) -> Bool {
-    
-    return lhs.id == rhs.id 
-        
-  }
-
-  
-
-  
-  enum CodingKeys: String, CodingKey {
-    
-    case id
-    
-    case rating
-    
-    case title
-    
-    case imageUrl
-    
-  }
-
-  public init(from decoder: any Decoder) throws {
-    var container = try decoder.container(keyedBy: CodingKeys.self)
-    let codecHelper = CodecHelper<CodingKeys>()
-
-    
-    
-    self.id = try codecHelper.decode(UUID.self, forKey: .id, container: &container)
-    
-    
-    
-    self.rating = try codecHelper.decode(Double?.self, forKey: .rating, container: &container)
-    
-    
-    
-    self.title = try codecHelper.decode(String.self, forKey: .title, container: &container)
-    
-    
-    
-    self.imageUrl = try codecHelper.decode(String.self, forKey: .imageUrl, container: &container)
-    
-    
-  }
-}
-public var 
-movies: [Movie]
-
-  }
-
-  public func ref(
-        
-        
-        
-        _ optionalVars: ((inout SearchMovieAndQuery.Variables)->())? = nil
-        ) -> QueryRefObservation<SearchMovieAndQuery.Data,SearchMovieAndQuery.Variables>  {
-        var variables = SearchMovieAndQuery.Variables()
-        
-        if let optionalVars {
-            optionalVars(&variables)
-        }
-        
-
-        let ref = dataConnect.query(name: "SearchMovieAnd", variables: variables, resultsDataType:SearchMovieAndQuery.Data.self, publisher: .observableMacro)
-        return ref as! QueryRefObservation<SearchMovieAndQuery.Data,SearchMovieAndQuery.Variables>
-   }
-
-   public func execute(
-        
-        
-        
-        _ optionalVars: ((inout SearchMovieAndQuery.Variables)->())? = nil
-        ) async throws -> OperationResult<SearchMovieAndQuery.Data> {
-        var variables = SearchMovieAndQuery.Variables()
-        
-        if let optionalVars {
-            optionalVars(&variables)
-        }
-        
-        
-        let ref = dataConnect.query(name: "SearchMovieAnd", variables: variables, resultsDataType:SearchMovieAndQuery.Data.self, publisher: .observableMacro)
-        
-        let refCast = ref as! QueryRefObservation<SearchMovieAndQuery.Data,SearchMovieAndQuery.Variables>
-        return try await refCast.execute()
-        
-   }
-}
-
-
-
-
-
-
-public class GetFavoriteActorsQuery{
-
-  let dataConnect: DataConnect
-
-  public init(dataConnect: DataConnect) {
-    self.dataConnect = dataConnect
-  }
-
-  public static let OperationName = "GetFavoriteActors"
-
-  public typealias Ref = QueryRefObservation<GetFavoriteActorsQuery.Data,GetFavoriteActorsQuery.Variables>
-
-  public struct Variables: OperationVariable {
-
-    
-    
-  }
-
-  public struct Data: Decodable {
-
-
-
-
-public struct User: Decodable  {
-  
-
-
-
-
-public struct FavoriteActor: Decodable  {
-  
-
-
-
-
-public struct Actor: Decodable ,Hashable, Equatable, Identifiable {
-  
-
-
-public var 
-id: UUID
-
-
-
-public var 
-name: String
-
-
-
-public var 
-imageUrl: String
-
-
-  
-  public var actorKey: ActorKey {
-    return ActorKey(
-      
-      id: id
-    )
-  }
-
-  
-public func hash(into hasher: inout Hasher) {
-  
-  hasher.combine(id)
-  
-}
-public static func == (lhs: Actor, rhs: Actor) -> Bool {
-    
-    return lhs.id == rhs.id 
-        
-  }
-
-  
-
-  
-  enum CodingKeys: String, CodingKey {
-    
-    case id
-    
-    case name
-    
-    case imageUrl
-    
-  }
-
-  public init(from decoder: any Decoder) throws {
-    var container = try decoder.container(keyedBy: CodingKeys.self)
-    let codecHelper = CodecHelper<CodingKeys>()
-
-    
-    
-    self.id = try codecHelper.decode(UUID.self, forKey: .id, container: &container)
-    
-    
-    
-    self.name = try codecHelper.decode(String.self, forKey: .name, container: &container)
-    
-    
-    
-    self.imageUrl = try codecHelper.decode(String.self, forKey: .imageUrl, container: &container)
-    
-    
-  }
-}
-public var 
-actor: Actor
-
-
-  
-
-  
-  enum CodingKeys: String, CodingKey {
-    
-    case actor
-    
-  }
-
-  public init(from decoder: any Decoder) throws {
-    var container = try decoder.container(keyedBy: CodingKeys.self)
-    let codecHelper = CodecHelper<CodingKeys>()
-
-    
-    
-    self.actor = try codecHelper.decode(Actor.self, forKey: .actor, container: &container)
-    
-    
-  }
-}
-public var 
-favorite_actors_on_user: [FavoriteActor]
-
-
-  
-
-  
-  enum CodingKeys: String, CodingKey {
-    
-    case favorite_actors_on_user
-    
-  }
-
-  public init(from decoder: any Decoder) throws {
-    var container = try decoder.container(keyedBy: CodingKeys.self)
-    let codecHelper = CodecHelper<CodingKeys>()
-
-    
-    self.favorite_actors_on_user = try codecHelper.decode([FavoriteActor].self, forKey: .favorite_actors_on_user, container: &container)
-    
-    
-  }
-}
-public var 
-user: User?
-
-  }
-
-  public func ref(
-        
-        ) -> QueryRefObservation<GetFavoriteActorsQuery.Data,GetFavoriteActorsQuery.Variables>  {
-        var variables = GetFavoriteActorsQuery.Variables()
-        
-
-        let ref = dataConnect.query(name: "GetFavoriteActors", variables: variables, resultsDataType:GetFavoriteActorsQuery.Data.self, publisher: .observableMacro)
-        return ref as! QueryRefObservation<GetFavoriteActorsQuery.Data,GetFavoriteActorsQuery.Variables>
-   }
-
-   public func execute(
-        
-        ) async throws -> OperationResult<GetFavoriteActorsQuery.Data> {
-        var variables = GetFavoriteActorsQuery.Variables()
-        
-        
-        let ref = dataConnect.query(name: "GetFavoriteActors", variables: variables, resultsDataType:GetFavoriteActorsQuery.Data.self, publisher: .observableMacro)
-        
-        let refCast = ref as! QueryRefObservation<GetFavoriteActorsQuery.Data,GetFavoriteActorsQuery.Variables>
-        return try await refCast.execute()
-        
-   }
-}
-
-
-
-
-
-
-public class GetUserFavoriteMoviesQuery{
-
-  let dataConnect: DataConnect
-
-  public init(dataConnect: DataConnect) {
-    self.dataConnect = dataConnect
-  }
-
-  public static let OperationName = "GetUserFavoriteMovies"
-
-  public typealias Ref = QueryRefObservation<GetUserFavoriteMoviesQuery.Data,GetUserFavoriteMoviesQuery.Variables>
-
-  public struct Variables: OperationVariable {
-
-    
-    
-  }
-
-  public struct Data: Decodable {
-
-
-
-
-public struct User: Decodable  {
-  
-
-
-
-
-public struct FavoriteMovie: Decodable  {
-  
-
-
-
-
-public struct Movie: Decodable ,Hashable, Equatable, Identifiable {
-  
-
-
-public var 
-id: UUID
-
-
-
-public var 
-title: String
-
-
-
-public var 
-genre: String?
-
-
-
-public var 
-imageUrl: String
-
-
-
-public var 
-releaseYear: Int?
-
-
-
-public var 
-rating: Double?
-
-
-
-public var 
-description: String?
-
-
-  
-  public var movieKey: MovieKey {
-    return MovieKey(
-      
-      id: id
-    )
-  }
-
-  
-public func hash(into hasher: inout Hasher) {
-  
-  hasher.combine(id)
-  
-}
-public static func == (lhs: Movie, rhs: Movie) -> Bool {
-    
-    return lhs.id == rhs.id 
-        
-  }
-
-  
-
-  
-  enum CodingKeys: String, CodingKey {
-    
-    case id
-    
-    case title
-    
-    case genre
-    
-    case imageUrl
-    
-    case releaseYear
-    
-    case rating
-    
-    case description
-    
-  }
-
-  public init(from decoder: any Decoder) throws {
-    var container = try decoder.container(keyedBy: CodingKeys.self)
-    let codecHelper = CodecHelper<CodingKeys>()
-
-    
-    
-    self.id = try codecHelper.decode(UUID.self, forKey: .id, container: &container)
-    
-    
-    
-    self.title = try codecHelper.decode(String.self, forKey: .title, container: &container)
-    
-    
-    
-    self.genre = try codecHelper.decode(String?.self, forKey: .genre, container: &container)
-    
-    
-    
-    self.imageUrl = try codecHelper.decode(String.self, forKey: .imageUrl, container: &container)
-    
-    
-    
-    self.releaseYear = try codecHelper.decode(Int?.self, forKey: .releaseYear, container: &container)
-    
-    
-    
-    self.rating = try codecHelper.decode(Double?.self, forKey: .rating, container: &container)
-    
-    
-    
-    self.description = try codecHelper.decode(String?.self, forKey: .description, container: &container)
-    
-    
-  }
-}
-public var 
-movie: Movie
-
-
-  
-
-  
-  enum CodingKeys: String, CodingKey {
-    
-    case movie
-    
-  }
-
-  public init(from decoder: any Decoder) throws {
-    var container = try decoder.container(keyedBy: CodingKeys.self)
-    let codecHelper = CodecHelper<CodingKeys>()
-
-    
-    
-    self.movie = try codecHelper.decode(Movie.self, forKey: .movie, container: &container)
-    
-    
-  }
-}
-public var 
-favorite_movies_on_user: [FavoriteMovie]
-
-
-  
-
-  
-  enum CodingKeys: String, CodingKey {
-    
-    case favorite_movies_on_user
-    
-  }
-
-  public init(from decoder: any Decoder) throws {
-    var container = try decoder.container(keyedBy: CodingKeys.self)
-    let codecHelper = CodecHelper<CodingKeys>()
-
-    
-    self.favorite_movies_on_user = try codecHelper.decode([FavoriteMovie].self, forKey: .favorite_movies_on_user, container: &container)
-    
-    
-  }
-}
-public var 
-user: User?
-
-  }
-
-  public func ref(
-        
-        ) -> QueryRefObservation<GetUserFavoriteMoviesQuery.Data,GetUserFavoriteMoviesQuery.Variables>  {
-        var variables = GetUserFavoriteMoviesQuery.Variables()
-        
-
-        let ref = dataConnect.query(name: "GetUserFavoriteMovies", variables: variables, resultsDataType:GetUserFavoriteMoviesQuery.Data.self, publisher: .observableMacro)
-        return ref as! QueryRefObservation<GetUserFavoriteMoviesQuery.Data,GetUserFavoriteMoviesQuery.Variables>
-   }
-
-   public func execute(
-        
-        ) async throws -> OperationResult<GetUserFavoriteMoviesQuery.Data> {
-        var variables = GetUserFavoriteMoviesQuery.Variables()
-        
-        
-        let ref = dataConnect.query(name: "GetUserFavoriteMovies", variables: variables, resultsDataType:GetUserFavoriteMoviesQuery.Data.self, publisher: .observableMacro)
-        
-        let refCast = ref as! QueryRefObservation<GetUserFavoriteMoviesQuery.Data,GetUserFavoriteMoviesQuery.Variables>
         return try await refCast.execute()
         
    }
