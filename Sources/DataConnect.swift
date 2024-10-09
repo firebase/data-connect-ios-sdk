@@ -40,7 +40,7 @@ public class DataConnect {
   }
 
   class ArgumentFlag {
-    static var enablePrivacyLogging = true
+    static var privateLoggingEnabled = true
   }
 
   // MARK: Static Creation
@@ -114,16 +114,16 @@ public class DataConnect {
     )
     operationsManager = OperationsManager(grpcClient: grpcClient)
 
-    LoadArgument()
+    LoadArguments()
   }
 
-  private func LoadArgument() {
+  private func LoadArguments() {
     let arguments = ProcessInfo.processInfo.arguments
     if arguments.contains(kFIRPrivateLogDisabledArgument) {
-      ArgumentFlag.enablePrivacyLogging = false
-      DataConnectLogger.debug("DataConnect privacy logging disabled.")
+      ArgumentFlag.privateLoggingEnabled = false
+      DataConnectLogger.debug("DataConnect private logging disabled.")
     } else {
-      DataConnectLogger.debug("DataConnect privacy logging enabled.")
+      DataConnectLogger.debug("DataConnect private logging enabled.")
     }
   }
 

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import OSLog
 import FirebaseCore
+import OSLog
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class DataConnectLogger {
@@ -23,39 +23,39 @@ class DataConnectLogger {
   )
 
   private static let logPrefix = "\(Version.sdkVersion) - [FirebaseDataConnect]"
-  
+
   static let logLevel = FirebaseConfiguration.shared.loggerLevel()
-  
+
   static func error(_ message: String, code: MessageCode = .placeHolder) {
-    if logLevel.rawValue <= FirebaseLoggerLevel.debug.rawValue {
+    if logLevel.rawValue >= FirebaseLoggerLevel.error.rawValue {
       let messageCode = String(format: "I-FDC%06d", code.rawValue)
       logger.error("\(logPrefix)[\(messageCode)] \(message)")
     }
   }
-  
+
   static func warning(_ message: String, code: MessageCode = .placeHolder) {
-    if logLevel.rawValue <= FirebaseLoggerLevel.warning.rawValue {
+    if logLevel.rawValue >= FirebaseLoggerLevel.warning.rawValue {
       let messageCode = String(format: "I-FDC%06d", code.rawValue)
       logger.warning("\(logPrefix)[\(messageCode)] \(message)")
     }
   }
-  
+
   static func notice(_ message: String, code: MessageCode = .placeHolder) {
-    if logLevel.rawValue <= FirebaseLoggerLevel.notice.rawValue {
+    if logLevel.rawValue >= FirebaseLoggerLevel.notice.rawValue {
       let messageCode = String(format: "I-FDC%06d", code.rawValue)
       logger.notice("\(logPrefix)[\(messageCode)] \(message)")
     }
   }
-  
+
   static func info(_ message: String, code: MessageCode = .placeHolder) {
-    if logLevel.rawValue <= FirebaseLoggerLevel.info.rawValue {
+    if logLevel.rawValue >= FirebaseLoggerLevel.info.rawValue {
       let messageCode = String(format: "I-FDC%06d", code.rawValue)
       logger.info("\(logPrefix)[\(messageCode)] \(message)")
     }
   }
-  
+
   static func debug(_ message: String, code: MessageCode = .placeHolder) {
-    if logLevel.rawValue <= FirebaseLoggerLevel.debug.rawValue {
+    if logLevel.rawValue >= FirebaseLoggerLevel.debug.rawValue {
       let messageCode = String(format: "I-FDC%06d", code.rawValue)
       logger.debug("\(logPrefix)[\(messageCode)] \(message)")
     }
@@ -71,7 +71,7 @@ enum LogPrivacy: Int {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension DefaultStringInterpolation {
   mutating func appendInterpolation(_ value: String, privacy: LogPrivacy = .public) {
-    if privacy == .private, DataConnect.ArgumentFlag.enablePrivacyLogging {
+    if privacy == .private, DataConnect.ArgumentFlag.privateLoggingEnabled {
       appendLiteral(" <private>")
     } else {
       appendLiteral(value)

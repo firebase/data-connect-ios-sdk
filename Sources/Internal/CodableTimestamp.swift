@@ -53,7 +53,7 @@ extension CodableTimestamp {
                                                       length: timestampString.count)) !=
       nil else {
       DataConnectLogger.error(
-        "Timestamp string \(timestampString, privacy: .private) format doesn't support."
+        "Timestamp string \(timestampString) format doesn't support."
       )
       throw DataConnectError.invalidTimestampFormat
     }
