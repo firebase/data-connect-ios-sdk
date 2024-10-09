@@ -43,23 +43,6 @@ public class DataConnect {
     static var enablePrivacyLogging = true
   }
 
-  private static let logLevelQueue = DispatchQueue(
-    label: "com.google.firebase.dataconnect.logLevel",
-    attributes: .concurrent
-  )
-  private static var _logLevel: LogLevel = .WARN
-
-  public static var logLevel: LogLevel {
-    get {
-      return logLevelQueue.sync { _logLevel }
-    }
-    set {
-      logLevelQueue.async(flags: .barrier) {
-        _logLevel = newValue
-      }
-    }
-  }
-
   // MARK: Static Creation
 
   /// Returns an instance of DataConnect matching the parameters.
