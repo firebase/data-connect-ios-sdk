@@ -24,7 +24,9 @@ class DataConnectLogger {
 
   private static let logPrefix = "\(Version.sdkVersion) - [FirebaseDataConnect]"
 
-  static let logLevel = FirebaseConfiguration.shared.loggerLevel()
+  static var logLevel: FirebaseLoggerLevel {
+    return FirebaseConfiguration.shared.loggerLevel()
+  }
 
   static func error(_ message: String, code: MessageCode = .placeHolder) {
     if logLevel.rawValue >= FirebaseLoggerLevel.error.rawValue {
