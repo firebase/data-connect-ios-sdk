@@ -52,10 +52,9 @@ extension CodableTimestamp {
       .firstMatch(in: timestampString, range: NSRange(location: 0,
                                                       length: timestampString.count)) !=
       nil else {
-      FirebaseLogger.dataConnect
-        .error(
-          "Timestamp string format doesn't support."
-        )
+      DataConnectLogger.error(
+        "Timestamp string \(timestampString) format doesn't support."
+      )
       throw DataConnectError.invalidTimestampFormat
     }
 
