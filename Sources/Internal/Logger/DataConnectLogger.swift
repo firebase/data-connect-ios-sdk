@@ -15,12 +15,25 @@
 import FirebaseCore
 import OSLog
 
+let privateLogDisabledArgument = "-FIRPrivateLogDisabled"
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class DataConnectLogger {
-  private static let logger = Logger(
+  static let logger = Logger(
     subsystem: "com.google.firebase",
     category: "[FirebaseDataConnect]"
   )
+
+  static let privateLoggingEnabled: Bool = {
+    let arguments = ProcessInfo.processInfo.arguments
+    if arguments.contains(privateLogDisabledArgument) {
+      DataConnectLogger.debug("DataConnect private logging disabled.")
+      return false
+    } else {
+      DataConnectLogger.debug("DataConnect private logging enabled.")
+      return true
+    }
+  }()
 
   private static let logPrefix = "\(Version.sdkVersion) - [FirebaseDataConnect]"
 
@@ -64,16 +77,15 @@ class DataConnectLogger {
   }
 }
 
-enum LogPrivacy: Int {
-  case `public` = 0
-
-  case `private` = 1
+enum LogPrivacy {
+  case `public`
+  case `private`
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension DefaultStringInterpolation {
   mutating func appendInterpolation(_ value: String, privacy: LogPrivacy = .public) {
-    if privacy == .private, DataConnect.ArgumentFlag.privateLoggingEnabled {
+    if privacy == .private, DataConnectLogger.privateLoggingEnabled {
       appendLiteral(" <private>")
     } else {
       appendLiteral(value)

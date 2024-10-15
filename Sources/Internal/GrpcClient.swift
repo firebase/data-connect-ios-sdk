@@ -245,7 +245,7 @@ actor GrpcClient: CustomStringConvertible {
 
     // Enable GRPC tracing
     if DataConnectLogger.logLevel.rawValue >= FirebaseLoggerLevel.debug.rawValue,
-       DataConnect.ArgumentFlag.privateLoggingEnabled == false {
+       DataConnectLogger.privateLoggingEnabled == false {
       var logger = Logger(label: "com.google.firebase.dataconnect.grpc")
       logger.logLevel = .trace
       options.logger = logger
