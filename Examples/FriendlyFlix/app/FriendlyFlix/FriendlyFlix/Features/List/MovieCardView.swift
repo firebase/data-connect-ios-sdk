@@ -28,16 +28,18 @@ struct MovieCardView: View {
           if let image = phase.image {
             image
               .resizable()
-              .aspectRatio(contentMode: .fill)
-              .frame(height: 450)
+              .scaledToFit()
+              .frame(maxWidth: .infinity)
+              .clipped()
           } else if phase.error != nil {
             Color.red
               .redacted(if: true)
           } else {
             Image(systemName: "photo.artframe")
               .resizable()
-              .aspectRatio(contentMode: .fit)
-              .frame(height: 450)
+              .scaledToFit()
+              .frame(maxWidth: .infinity)
+              .clipped()
               .redacted(reason: .placeholder)
           }
         }

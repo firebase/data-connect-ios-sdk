@@ -67,7 +67,6 @@ struct CardView<Hero: View, Title: View, Details: View>: View {
         dismissButton
         heroTitle()
       }
-      .frame(height: 450)
       .clipShape(
         UnevenRoundedRectangle(
           cornerRadii: .init(
