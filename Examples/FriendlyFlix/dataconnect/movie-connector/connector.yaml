@@ -1,0 +1,7 @@
+connectorId: friendly-flix
+authMode: PUBLIC
+generate:
+  swiftSdk:
+    outputDir: "../../app"
+    package: "FriendlyFlixSDK"
+    observablePublisher: observableMacro
