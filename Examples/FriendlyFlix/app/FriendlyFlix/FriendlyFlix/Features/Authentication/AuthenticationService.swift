@@ -49,6 +49,11 @@ class AuthenticationService {
     authenticationState = .authenticated
   }
 
+  func signUpWithEmailPassword(email: String, password: String) async throws {
+    try await Auth.auth().createUser(withEmail: email, password: password)
+    authenticationState = .authenticated
+  }
+
   func signOut() throws {
     try Auth.auth().signOut()
     authenticationState = .unauthenticated

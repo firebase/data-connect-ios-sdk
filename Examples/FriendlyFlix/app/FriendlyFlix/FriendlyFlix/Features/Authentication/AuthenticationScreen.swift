@@ -73,13 +73,16 @@ struct AuthenticationScreen: View {
   }
 
   private func signUpWithEmailPassword() {
-    if authenticationService.authenticationState == .authenticated {
-      authenticationService.authenticationState = .unauthenticated
-      dismiss()
-    }
-    else {
-      authenticationService.authenticationState = .authenticated
-      dismiss()
+    Task {
+      do {
+        try await authenticationService.signUpWithEmailPassword(email: email, password: password)
+        errorMessage = ""
+        dismiss()
+      }
+      catch {
+        print(error.localizedDescription)
+        errorMessage = error.localizedDescription
+      }
     }
   }
 }
@@ -147,7 +150,10 @@ extension AuthenticationScreen {
         }
       }
 
-      Button(action: signInWithEmailPassword) {
+      Button(action: {
+        if flow == .login { signInWithEmailPassword() }
+        else { signUpWithEmailPassword()}
+      } ) {
         if authenticationService.authenticationState != .authenticating {
           Text(flow == .login ? "Log in with password" : "Sign up")
             .padding(.vertical, 8)
