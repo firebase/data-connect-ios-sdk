@@ -32,7 +32,7 @@ check out the [official documentation](https://firebase.google.com/docs/data-con
 
 3. Navigate to the [Data Connect section](https://console.firebase.google.com/u/0/project/_/dataconnect)
     of the Firebase console, click on the "Get Started" button and follow the setup workflow:
-     - Select a location for your Cloud SQL for PostgreSQL database (this sample uses `us-central1`). If you choose a different location, you'll also need to change the `data-connect-ios-sdk/Examples/FriendlyFlix/dataconnect/dataconnect.yaml` file. 
+     - Select a location for your Cloud SQL for PostgreSQL database (this sample uses `us-central1`). If you choose a different location, you'll also need to change the `data-connect-ios-sdk/Examples/FriendlyFlix/dataconnect/dataconnect.yaml` file.
      - Select the option to create a new Cloud SQL instance and fill in the following fields:
        - Service ID: `dataconnect`
        - Cloud SQL Instance ID: `fdc-sql`
@@ -50,7 +50,7 @@ check out the [official documentation](https://firebase.google.com/docs/data-con
    git clone https://github.com/firebase/data-connect-ios-sdk.git
    ```
 
-2. Move the `GoogleService-Info.plist` config file (downloaded in the previous step) into the root folder of the sample app in the 
+2. Move the `GoogleService-Info.plist` config file (downloaded in the previous step) into the root folder of the sample app in the
   `data-connect-ios-sdk/Examples/FriendlyFlix/app/FriendlyFlix/FriendlyFlix/GoogleService-Info.plist` directory.
 
 ### 3. Open in Visual Studio Code (VS Code)
