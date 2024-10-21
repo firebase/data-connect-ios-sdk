@@ -90,5 +90,5 @@ struct SearchScreen: View {
 
 #Preview {
   SearchScreen()
-    .environment(AuthenticationViewModel())
+    .environment(AuthenticationService())
 }

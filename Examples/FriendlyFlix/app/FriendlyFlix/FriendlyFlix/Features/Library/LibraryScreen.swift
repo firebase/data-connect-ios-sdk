@@ -20,7 +20,7 @@ import SwiftUI
 
 struct LibraryScreen: View {
   @Namespace var namespace
-  @Environment(AuthenticationViewModel.self) var authenticationViewModel
+  @Environment(AuthenticationService.self) var authenticationViewModel
 
   var body: some View {
     @Bindable var authenticationViewModel = authenticationViewModel
@@ -66,5 +66,5 @@ struct LibraryScreen: View {
 
 #Preview {
   LibraryScreen()
-    .environment(AuthenticationViewModel())
+    .environment(AuthenticationService())
 }

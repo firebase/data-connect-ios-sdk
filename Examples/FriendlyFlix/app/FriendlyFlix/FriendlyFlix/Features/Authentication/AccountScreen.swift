@@ -20,8 +20,27 @@ import SwiftUI
 
 struct AccountScreen: View {
   @Environment(\.dismiss) var dismiss
-  @Environment(AuthenticationViewModel.self) var authenticationViewModel
+  @Environment(AuthenticationService.self) var authenticationService
 
+  private var displayName: String {
+    authenticationService.user?.displayName ?? "(not set)"
+  }
+
+  private var email: String {
+    authenticationService.user?.email ?? ""
+  }
+
+  private func signOut() {
+    do {
+      try authenticationService.signOut()
+      dismiss()
+    }
+    catch {
+    }
+  }
+}
+
+extension AccountScreen {
   var body: some View {
     NavigationStack {
       List {
@@ -32,8 +51,8 @@ struct AccountScreen: View {
               .scaledToFit()
               .frame(height: 48)
             VStack(alignment: .leading) {
-              Text("Peter Friese")
-              Text("peterfriese@google.com")
+              Text(displayName)
+              Text(email)
             }
           }
         }
@@ -45,10 +64,7 @@ struct AccountScreen: View {
         }
 
         Section {
-          Button(action: {
-            authenticationViewModel.signOut()
-            dismiss()
-          }) {
+          Button(action: signOut) {
             Text("Sign out")
           }
         }

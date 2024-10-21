@@ -19,7 +19,7 @@
 import SwiftUI
 
 struct RootView: View {
-  @Environment(AuthenticationViewModel.self) private var authenticationViewModel
+  @Environment(AuthenticationService.self) private var authenticationViewModel
 
   var body: some View {
     @Bindable var authenticationViewModel = authenticationViewModel
@@ -48,5 +48,5 @@ struct RootView: View {
 
 #Preview {
   RootView()
-    .environment(AuthenticationViewModel())
+    .environment(AuthenticationService())
 }

@@ -19,33 +19,32 @@
 import SwiftUI
 import AuthenticationServices
 
-enum AuthenticationState {
-  case unauthenticated
-  case authenticating
-  case authenticated
+private enum FocusableField: Hashable {
+  case email
+  case password
+  case confirmPassword
 }
 
-enum AuthenticationFlow {
+private enum AuthenticationFlow {
   case login
   case signUp
 }
 
-@Observable
-class AuthenticationViewModel {
-  var presentingAuthenticationDialog = false
-  var presentingAccountDialog = false
+struct AuthenticationScreen: View {
+  @Environment(AuthenticationService.self) var authenticationService
+  @Environment(\.colorScheme) private var colorScheme
+  @Environment(\.dismiss) private var dismiss
 
-  var email = ""
-  var password = ""
-  var confirmPassword = ""
+  @State private var email = ""
+  @State private var password = ""
+  @State private var confirmPassword = ""
 
-  var flow: AuthenticationFlow = .login
+  @State private var flow: AuthenticationFlow = .login
 
-  var authenticationState: AuthenticationState = .unauthenticated
-  var errorMessage = ""
-  var displayName = ""
+  @State private var errorMessage = ""
+  @State private var displayName = ""
 
-  var isValid: Bool {
+  private  var isValid: Bool {
     return if flow == .login {
       !email.isEmpty && !password.isEmpty
     }
@@ -54,53 +53,39 @@ class AuthenticationViewModel {
     }
   }
 
-  func switchFlow() {
+  private func switchFlow() {
     flow = flow == .login ? .signUp : .login
     errorMessage = ""
   }
 
-  func signOut() {
-    authenticationState = .unauthenticated
-  }
-}
-
-private enum FocusableField: Hashable {
-  case email
-  case password
-  case confirmPassword
-}
-
-struct AuthenticationScreen: View {
-  @Environment(AuthenticationViewModel.self) var viewModel
-  @Environment(\.colorScheme) private var colorScheme
-  @Environment(\.dismiss) private var dismiss
-
   @FocusState private var focus: FocusableField?
 
   private func signInWithEmailPassword() {
-    if viewModel.authenticationState == .authenticated {
-      viewModel.authenticationState = .unauthenticated
-      dismiss()
-    }
-    else {
-      viewModel.authenticationState = .authenticated
-      dismiss()
+    Task {
+      do {
+        try await authenticationService.signInWithEmailPassword(email: email, password: password)
+        dismiss()
+      } catch {
+        print(error.localizedDescription)
+        errorMessage = error.localizedDescription
+      }
     }
   }
 
   private func signUpWithEmailPassword() {
-    if viewModel.authenticationState == .authenticated {
-      viewModel.authenticationState = .unauthenticated
+    if authenticationService.authenticationState == .authenticated {
+      authenticationService.authenticationState = .unauthenticated
       dismiss()
     }
     else {
-      viewModel.authenticationState = .authenticated
+      authenticationService.authenticationState = .authenticated
       dismiss()
     }
   }
+}
 
+extension AuthenticationScreen {
   var body: some View {
-    @Bindable var viewModel = viewModel
     VStack {
 //      Image("login")
 //        .resizable()
@@ -114,7 +99,7 @@ struct AuthenticationScreen: View {
 
       HStack {
         Image(systemName: "at")
-        TextField("Email", text: $viewModel.email)
+        TextField("Email", text: $email)
           .textInputAutocapitalization(.never)
           .disableAutocorrection(true)
           .focused($focus, equals: .email)
@@ -129,7 +114,7 @@ struct AuthenticationScreen: View {
 
       HStack {
         Image(systemName: "lock")
-        SecureField("Password", text: $viewModel.password)
+        SecureField("Password", text: $password)
           .focused($focus, equals: .password)
           .submitLabel(.go)
           .onSubmit {
@@ -140,10 +125,10 @@ struct AuthenticationScreen: View {
       .background(Divider(), alignment: .bottom)
       .padding(.bottom, 8)
 
-      if viewModel.flow == .signUp {
+      if flow == .signUp {
         HStack {
           Image(systemName: "lock")
-          SecureField("Confirm password", text: $viewModel.confirmPassword)
+          SecureField("Confirm password", text: $confirmPassword)
             .focused($focus, equals: .confirmPassword)
             .submitLabel(.go)
             .onSubmit {
@@ -155,16 +140,16 @@ struct AuthenticationScreen: View {
         .padding(.bottom, 8)
       }
 
-      if !viewModel.errorMessage.isEmpty {
+      if !errorMessage.isEmpty {
         VStack {
-          Text(viewModel.errorMessage)
+          Text(errorMessage)
             .foregroundColor(Color(UIColor.systemRed))
         }
       }
 
       Button(action: signInWithEmailPassword) {
-        if viewModel.authenticationState != .authenticating {
-          Text(viewModel.flow == .login ? "Log in with password" : "Sign up")
+        if authenticationService.authenticationState != .authenticating {
+          Text(flow == .login ? "Log in with password" : "Sign up")
             .padding(.vertical, 8)
             .frame(maxWidth: .infinity)
         }
@@ -175,7 +160,7 @@ struct AuthenticationScreen: View {
             .frame(maxWidth: .infinity)
         }
       }
-      .disabled(!viewModel.isValid)
+      .disabled(!isValid)
       .frame(maxWidth: .infinity)
       .buttonStyle(.borderedProminent)
 
@@ -185,7 +170,7 @@ struct AuthenticationScreen: View {
         VStack { Divider() }
       }
 
-      if viewModel.flow == .login {
+      if flow == .login {
         SignInWithAppleButton(.signIn) { request in
         } onCompletion: { result in
         }
@@ -203,13 +188,13 @@ struct AuthenticationScreen: View {
       }
 
       HStack {
-        Text(viewModel.flow == .login ? "Don't have an account yet?" : "Already have an account?")
+        Text(flow == .login ? "Don't have an account yet?" : "Already have an account?")
         Button(action: {
           withAnimation {
-            viewModel.switchFlow()
+            switchFlow()
           }
         }) {
-          Text(viewModel.flow == .signUp ? "Log in" : "Sign up")
+          Text(flow == .signUp ? "Log in" : "Sign up")
             .fontWeight(.semibold)
             .foregroundColor(.blue)
         }
@@ -223,5 +208,5 @@ struct AuthenticationScreen: View {
 
 #Preview {
   AuthenticationScreen()
-    .environment(AuthenticationViewModel())
+    .environment(AuthenticationService())
 }
