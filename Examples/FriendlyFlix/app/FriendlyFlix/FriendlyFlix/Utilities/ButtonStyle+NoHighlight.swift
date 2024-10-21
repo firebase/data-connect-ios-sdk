@@ -1,9 +1,8 @@
 //
-//  String+StringInterpolation.swift
-//  FriendlyFlix
+// NoHighlightButtonStyle.swift
+// FriendlyFlixMocks
 //
-//  Created by Peter Friese on 28.08.24.
-//  Copyright © 2024 Google LLC. All rights reserved.
+// Created by Peter Friese on 30.09.24.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,15 +16,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Foundation
+import SwiftUI
 
-extension String.StringInterpolation {
-  mutating func appendInterpolation(format value: Int, using style: NumberFormatter.Style) {
-    let formatter = NumberFormatter()
-    formatter.numberStyle = style
-
-    if let result = formatter.string(from: value as NSNumber) {
-      appendLiteral(result)
-    }
+struct NoHighlightButtonStyle: ButtonStyle {
+  func makeBody(configuration: Configuration) -> some View {
+    configuration.label
+  }
+}
+ 
+extension ButtonStyle where Self == NoHighlightButtonStyle {
+  static var noHighlight: NoHighlightButtonStyle {
+    get { NoHighlightButtonStyle() }
   }
 }

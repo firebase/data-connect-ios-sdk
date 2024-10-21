@@ -1,9 +1,8 @@
 //
-//  String+StringInterpolation.swift
-//  FriendlyFlix
+// Mockable.swift
+// FriendlyFlixMocks
 //
-//  Created by Peter Friese on 28.08.24.
-//  Copyright © 2024 Google LLC. All rights reserved.
+// Created by Peter Friese on 30.09.24.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,15 +16,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Foundation
 
-extension String.StringInterpolation {
-  mutating func appendInterpolation(format value: Int, using style: NumberFormatter.Style) {
-    let formatter = NumberFormatter()
-    formatter.numberStyle = style
+public protocol Mockable {
+  associatedtype MockType
 
-    if let result = formatter.string(from: value as NSNumber) {
-      appendLiteral(result)
-    }
+  static var mock: MockType { get }
+  static var mockList: [MockType] { get }
+}
+
+public extension Mockable {
+  static var mock: MockType {
+    mockList[0]
+  }
+  static var mockList: [MockType] {
+    []
   }
 }
