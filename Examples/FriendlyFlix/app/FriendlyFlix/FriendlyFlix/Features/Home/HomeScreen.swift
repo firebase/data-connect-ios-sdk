@@ -68,5 +68,5 @@ struct HomeScreen: View {
 
 #Preview {
   HomeScreen()
-    .environment(AuthenticationViewModel())
+    .environment(AuthenticationService())
 }

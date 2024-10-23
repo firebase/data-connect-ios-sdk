@@ -19,7 +19,7 @@
 import SwiftUI
 
 struct AuthenticationToolbarButton: View {
-  @Environment(AuthenticationViewModel.self) var viewModel
+  @Environment(AuthenticationService.self) var viewModel
 
   var body: some View {
     Button(action: onButtonTapped) {
@@ -39,5 +39,5 @@ struct AuthenticationToolbarButton: View {
 
 #Preview {
   AuthenticationToolbarButton()
-    .environment(AuthenticationViewModel())
+    .environment(AuthenticationService())
 }

@@ -17,6 +17,7 @@
 // limitations under the License.
 
 import SwiftUI
+import Firebase
 
 @main
 struct FriendlyFlixApp: App {
@@ -32,12 +33,13 @@ struct FriendlyFlixApp: App {
 
   init () {
     loadRocketSimConnect()
+    FirebaseApp.configure()
   }
 
   var body: some Scene {
     WindowGroup {
       RootView()
-        .environment(AuthenticationViewModel())
+        .environment(AuthenticationService())
     }
   }
 }
