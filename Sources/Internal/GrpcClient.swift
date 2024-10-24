@@ -266,10 +266,12 @@ actor GrpcClient: CustomStringConvertible {
   func createCallOptions() async -> CallOptions {
     var headers = HPACKHeaders()
 
-    headers.add(name: RequestHeaders.googRequestParamsHeader, value: googRequestHeaderValue)
-    headers.add(name: RequestHeaders.firebaseAppId, value: app.options.googleAppID)
-    headers.add(name: RequestHeaders.googApiClient, value: googApiClientHeaderValue)
-
+    if self.app.isDataCollectionDefaultEnabled {
+      headers.add(name: RequestHeaders.googRequestParamsHeader, value: googRequestHeaderValue)
+      headers.add(name: RequestHeaders.firebaseAppId, value: app.options.googleAppID)
+      headers.add(name: RequestHeaders.googApiClient, value: googApiClientHeaderValue)
+    }
+    
     // Add Auth token if available
     do {
       if let token = try await auth.currentUser?.getIDToken() {
