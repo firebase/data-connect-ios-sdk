@@ -17,12 +17,13 @@
 // limitations under the License.
 
 import SwiftUI
+import NukeUI
 
 struct MovieTileView: View {
   var title: String = "The Matrix"
   var imageUrl: String
-  var averageRating: Double = 8.7
-  var userRating: Double = 10
+  var averageRating: Double = 5.7
+  var userRating: Double = 9
 
   let gradient = LinearGradient(
     colors: [.blue, .green],
@@ -35,23 +36,28 @@ struct MovieTileView: View {
   var body: some View {
     VStack(alignment: .leading) {
       if let imageUrl = URL(string: imageUrl) {
-        AsyncImage(url: imageUrl) { phase in
-          if let image = phase.image {
+        LazyImage(url: imageUrl) { state in
+          if let image = state.image {
             image
               .resizable()
-              .aspectRatio(contentMode: .fit)
+              .aspectRatio(contentMode: .fill)
+              .frame(width: 150, height: 200)
               .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-          } else if phase.error != nil {
+          } else if state.error != nil {
             Color.red
+              .frame(width: 150, height: 200)
+              .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
               .redacted(if: true)
           } else {
             Image(systemName: "photo.artframe")
               .resizable()
-              .aspectRatio(contentMode: .fit)
+              .aspectRatio(contentMode: .fill)
+              .frame(width: 150, height: 200)
               .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
               .redacted(reason: .placeholder)
           }
         }
+        .frame(width: 150, height: 200)
       }
       Text(title)
         .lineLimit(1)
@@ -71,9 +77,9 @@ struct MovieTileView: View {
       ForEach(Movie.featured) { movie in
         MovieTileView(title: movie.title,
                       imageUrl: movie.imageUrl,
-                      averageRating: 8.7,
-                      userRating: 10.1)
-        .frame(maxWidth: 200, maxHeight: 300)
+                      averageRating: 8,
+                      userRating: 10)
+        .frame(width: 200, height: 300)
       }
     }
   }

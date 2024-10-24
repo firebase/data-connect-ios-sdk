@@ -17,6 +17,7 @@
 // limitations under the License.
 
 import SwiftUI
+import NukeUI
 
 struct MovieListRowView: View {
   var title: String
@@ -26,25 +27,28 @@ struct MovieListRowView: View {
   var body: some View {
     HStack(alignment: .top) {
       if let imageUrl = URL(string: imageUrl) {
-        AsyncImage(url: imageUrl) { phase in
-          if let image = phase.image {
+        LazyImage(url: imageUrl) { state in
+          if let image = state.image {
             image
               .resizable()
-              .scaledToFill()
+              .aspectRatio(contentMode: .fill)
               .frame(width: 150, height: 75)
-              .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-          } else if phase.error != nil {
+              .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+          } else if state.error != nil {
             Color.red
+              .frame(width: 150, height: 75)
+              .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
               .redacted(if: true)
           } else {
             Image(systemName: "photo.artframe")
               .resizable()
-              .scaledToFill()
+              .aspectRatio(contentMode: .fill)
               .frame(width: 150, height: 75)
-              .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+              .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
               .redacted(reason: .placeholder)
           }
         }
+        .frame(width: 150, height: 75)
       }
       VStack(alignment: .leading, spacing: 4) {
         Text(title)
@@ -62,13 +66,13 @@ struct MovieListRowView: View {
 
 #Preview {
   let movie = Movie.mock
-  MovieListRowView(title: movie.title, subtitle: movie.subtitle, imageUrl: movie.imageUrl)
+  MovieListRowView(title: movie.title, subtitle: movie.description, imageUrl: movie.imageUrl)
 }
 
 #Preview {
   NavigationStack {
     List(Movie.mockList) { movie in
-      MovieListRowView(title: movie.title, subtitle: movie.subtitle, imageUrl: movie.imageUrl)
+      MovieListRowView(title: movie.title, subtitle: movie.description, imageUrl: movie.imageUrl)
     }
     .listStyle(.plain)
     .navigationTitle("Movies")

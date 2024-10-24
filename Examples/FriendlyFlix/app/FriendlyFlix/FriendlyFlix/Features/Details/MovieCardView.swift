@@ -18,6 +18,7 @@
 
 
 import SwiftUI
+import NukeUI
 
 struct MovieCardView: View {
   var showDetails: Bool = false
@@ -27,23 +28,28 @@ struct MovieCardView: View {
   var body: some View {
     CardView(showDetails: showDetails) {
       if let imageUrl = URL(string: movie.imageUrl) {
-        AsyncImage(url: imageUrl) { phase in
-          if let image = phase.image {
+        LazyImage(url: imageUrl) { state in
+          if let image = state.image {
             image
               .resizable()
-              .aspectRatio(contentMode: .fill)
-              .frame(height: 450)
-          } else if phase.error != nil {
+              .scaledToFill()
+              .frame(maxWidth: .infinity)
+              .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+          } else if state.error != nil {
             Color.red
+              .frame(maxWidth: .infinity)
+              .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
               .redacted(if: true)
           } else {
             Image(systemName: "photo.artframe")
               .resizable()
-              .aspectRatio(contentMode: .fit)
-              .frame(height: 450)
+              .aspectRatio(contentMode: .fill)
+              .frame(maxWidth: .infinity)
+              .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
               .redacted(reason: .placeholder)
           }
         }
+        .frame(maxWidth: .infinity)
       }
     } heroTitle: {
       VStack(alignment: .leading) {

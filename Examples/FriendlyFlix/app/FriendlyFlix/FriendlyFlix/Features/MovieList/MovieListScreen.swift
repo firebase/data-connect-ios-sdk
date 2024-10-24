@@ -27,7 +27,7 @@ struct MovieListScreen: View {
       ForEach(movies) { movie in
         MovieListRowView(
           title: movie.title,
-          subtitle: movie.subtitle,
+          subtitle: movie.description,
           imageUrl: movie.imageUrl
         )
         .matchedTransitionSource(id: movie.id, in: namespace)

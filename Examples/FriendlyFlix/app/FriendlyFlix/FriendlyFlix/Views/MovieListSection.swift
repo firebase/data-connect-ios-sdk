@@ -21,6 +21,14 @@ import SwiftUI
 struct SectionedMovie: Identifiable, Hashable {
   var id = UUID()
   var movie: Movie
+
+  static func == (lhs: SectionedMovie, rhs: SectionedMovie) -> Bool {
+    lhs.id == rhs.id && lhs.movie.id == rhs.movie.id // Assuming MovieRepresentable has an id
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine(id)
+  }
 }
 
 struct MovieListSection: View {
@@ -49,8 +57,8 @@ struct MovieListSection: View {
               MovieTileView(
                 title: sectionedMovie.movie.title,
                 imageUrl: sectionedMovie.movie.imageUrl,
-                averageRating: 8.7,
-                userRating: 10.1
+                averageRating: sectionedMovie.movie.rating ?? 0,
+                userRating: 10
               )
               .frame(maxWidth: 150, maxHeight: 300)
               .matchedTransitionSource(id: sectionedMovie.id, in: namespace)

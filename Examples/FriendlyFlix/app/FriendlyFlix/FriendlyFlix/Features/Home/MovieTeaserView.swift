@@ -16,6 +16,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import NukeUI
 import SwiftUI
 
 struct MovieTeaserView: View {
@@ -25,20 +26,26 @@ struct MovieTeaserView: View {
 
   var body: some View {
     ZStack(alignment: .bottom) {
-      if let imageUrl = URL(string: imageUrl) {
-        AsyncImage(url: imageUrl) { phase in
-          if let image = phase.image {
-            image
-              .resizable()
-              .scaledToFill()
-          } else if phase.error != nil {
-            Color.red
-              .redacted(if: true)
-          } else {
-            Image(systemName: "photo.artframe")
-              .resizable()
-              .scaledToFill()
-              .redacted(reason: .placeholder)
+      GeometryReader { geometry in
+        if let imageUrl = URL(string: imageUrl) {
+          LazyImage(url: imageUrl) { state in
+            if let image = state.image {
+              image
+                .resizable()
+                .scaledToFill()
+                .frame(width: geometry.size.width)
+                .clipped()
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            } else if state.error != nil {
+              Color.red
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .redacted(if: true)
+            } else {
+              Image(systemName: "photo.artframe")
+                .resizable()
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .redacted(reason: .placeholder)
+            }
           }
         }
       }
@@ -67,7 +74,8 @@ struct MovieTeaserView: View {
   var movie = Movie.mock
   MovieTeaserView(
     title: movie.title,
-    subtitle: movie.subtitle,
+    subtitle: movie.description,
     imageUrl: movie.imageUrl
   )
+  .frame(maxHeight: 400)
 }

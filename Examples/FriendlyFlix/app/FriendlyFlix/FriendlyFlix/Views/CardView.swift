@@ -72,7 +72,6 @@ struct CardView<Hero: View, Title: View, Details: View>: View {
         dismissButton
         heroTitle()
       }
-      .frame(height: 450)
       .clipShape(
         UnevenRoundedRectangle(
           cornerRadii: .init(
@@ -138,6 +137,7 @@ struct CardView<Hero: View, Title: View, Details: View>: View {
 #Preview {
   CardView(showDetails: true) {
     GradientView(configuration: GradienConfiguration.sample)
+      .frame(height: 450)
   } heroTitle: {
     VStack(alignment: .leading) {
       Spacer()
@@ -167,6 +167,7 @@ struct CardView<Hero: View, Title: View, Details: View>: View {
   ScrollView {
     CardView(showDetails: false) {
       GradientView(configuration: GradienConfiguration.sample)
+        .frame(height: 450)
     } heroTitle: {
       VStack(alignment: .leading) {
         Spacer()
@@ -192,6 +193,7 @@ struct CardView<Hero: View, Title: View, Details: View>: View {
     }
     CardView(showDetails: false) {
       GradientView(configuration: GradienConfiguration.samples[1])
+        .frame(height: 450)
     } heroTitle: {
       VStack(alignment: .leading) {
         Spacer()
@@ -217,6 +219,7 @@ struct CardView<Hero: View, Title: View, Details: View>: View {
     }
     CardView(showDetails: false) {
       GradientView(configuration: GradienConfiguration.samples[2])
+        .frame(height: 450)
     } heroTitle: {
       VStack(alignment: .leading) {
         Spacer()
