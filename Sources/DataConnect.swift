@@ -30,12 +30,13 @@ public class DataConnect {
   private var callerSDKType: CallerSDKType = .base
 
   private let accessQueue = DispatchQueue(
-      label: "com.google.firebase.dataConnect.instanceAccessQueue",
-      autoreleaseFrequency: .workItem)
+    label: "com.google.firebase.dataConnect.instanceAccessQueue",
+    autoreleaseFrequency: .workItem
+  )
 
   // Instance store uses an internal queue to protect mutable state.
   // So marking it as
-  nonisolated(unsafe) private static let instanceStore = InstanceStore()
+  private nonisolated(unsafe) static let instanceStore = InstanceStore()
 
   public enum EmulatorDefaults {
     public static let host = "127.0.0.1"
@@ -68,7 +69,6 @@ public class DataConnect {
 
   public func useEmulator(host: String = EmulatorDefaults.host,
                           port: Int = EmulatorDefaults.port) {
-
     accessQueue.sync {
       settings = DataConnectSettings(host: host, port: port, sslEnabled: false)
 
@@ -131,10 +131,10 @@ public class DataConnect {
                                    .Type,
                                  publisher: ResultsPublisherType = .observableObject)
     -> any ObservableQueryRef {
-      accessQueue.sync {
-        let request = QueryRequest(operationName: name, variables: variables)
-        return operationsManager.queryRef(for: request, with: resultsDataType, publisher: publisher)
-      }
+    accessQueue.sync {
+      let request = QueryRequest(operationName: name, variables: variables)
+      return operationsManager.queryRef(for: request, with: resultsDataType, publisher: publisher)
+    }
   }
 
   /// Returns a Mutation Ref matching the name and specified variables.
@@ -145,10 +145,10 @@ public class DataConnect {
                                    .Type)
     -> MutationRef<ResultData,
       Variable> {
-        accessQueue.sync {
-          let request = MutationRequest(operationName: name, variables: variables)
-          return operationsManager.mutationRef(for: request, with: resultsDataType)
-        }
+    accessQueue.sync {
+      let request = MutationRequest(operationName: name, variables: variables)
+      return operationsManager.mutationRef(for: request, with: resultsDataType)
+    }
   }
 }
 
