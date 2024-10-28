@@ -15,16 +15,16 @@
 import Foundation
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public struct OperationResult<ResultData: Decodable> {
+public struct OperationResult<ResultData: Decodable & Sendable>: Sendable {
   public var data: ResultData
 }
 
 // notional protocol that denotes a variable.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public protocol OperationVariable: Encodable, Hashable, Equatable {}
+public protocol OperationVariable: Encodable, Hashable, Equatable, Sendable {}
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-protocol OperationRequest: Hashable, Equatable {
+protocol OperationRequest: Hashable, Equatable, Sendable {
   associatedtype Variable: OperationVariable
   var operationName: String { get } // Name within Connector definition
   var variables: Variable? { get }
@@ -32,7 +32,7 @@ protocol OperationRequest: Hashable, Equatable {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public protocol OperationRef {
-  associatedtype ResultData: Decodable
+  associatedtype ResultData: (Decodable & Sendable)
 
   func execute() async throws -> OperationResult<ResultData>
 }

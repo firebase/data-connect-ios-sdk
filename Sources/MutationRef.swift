@@ -27,7 +27,7 @@ struct MutationRequest<Variable: OperationVariable>: OperationRequest {
 
 /// Represents a predefined graphql mutation identified by name and variables.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public class MutationRef<ResultData: Decodable, Variable: OperationVariable>: OperationRef {
+public class MutationRef<ResultData: Decodable & Sendable, Variable: OperationVariable>: OperationRef {
   private var request: any OperationRequest
 
   private var grpcClient: GrpcClient

@@ -14,9 +14,9 @@
 
 import Foundation
 
-import FirebaseAppCheck
-import FirebaseAuth
-import FirebaseCore
+@preconcurrency import FirebaseAppCheck
+@preconcurrency import FirebaseAuth
+@preconcurrency import FirebaseCore
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class DataConnect {
@@ -29,7 +29,13 @@ public class DataConnect {
 
   private var callerSDKType: CallerSDKType = .base
 
-  private static var instanceStore = InstanceStore()
+  private let accessQueue = DispatchQueue(
+      label: "com.google.firebase.dataConnect.instanceAccessQueue",
+      autoreleaseFrequency: .workItem)
+
+  // Instance store uses an internal queue to protect mutable state.
+  // So marking it as
+  nonisolated(unsafe) private static let instanceStore = InstanceStore()
 
   public enum EmulatorDefaults {
     public static let host = "127.0.0.1"
@@ -62,26 +68,31 @@ public class DataConnect {
 
   public func useEmulator(host: String = EmulatorDefaults.host,
                           port: Int = EmulatorDefaults.port) {
-    settings = DataConnectSettings(host: host, port: port, sslEnabled: false)
 
-    // TODO: - shutdown grpc client
-    // self.grpcClient.close
-    // self.operations.close
+    accessQueue.sync {
+      settings = DataConnectSettings(host: host, port: port, sslEnabled: false)
 
-    guard app.options.projectID != nil else {
-      fatalError("Firebase DataConnect requires the projectID to be set in the app options")
+      // TODO: - shutdown grpc client
+      // self.grpcClient.close
+      // self.operations.close
+
+      guard app.options.projectID != nil else {
+        fatalError("Firebase DataConnect requires the projectID to be set in the app options")
+      }
+
+      let auth = Auth.auth(app: app)
+      nonisolated(unsafe) let appCheck = AppCheck.appCheck(app: app)
+      grpcClient = GrpcClient(
+        app: app,
+        settings: settings,
+        connectorConfig: connectorConfig,
+        auth: auth,
+        appCheck: appCheck,
+        callerSDKType: callerSDKType
+      )
+
+      operationsManager = OperationsManager(grpcClient: grpcClient)
     }
-
-    grpcClient = GrpcClient(
-      app: app,
-      settings: settings,
-      connectorConfig: connectorConfig,
-      auth: Auth.auth(app: app),
-      appCheck: AppCheck.appCheck(app: app),
-      callerSDKType: callerSDKType
-    )
-
-    operationsManager = OperationsManager(grpcClient: grpcClient)
   }
 
   // MARK: Init
@@ -97,12 +108,14 @@ public class DataConnect {
     self.connectorConfig = connectorConfig
     self.callerSDKType = callerSDKType
 
+    let auth = Auth.auth(app: app)
+    nonisolated(unsafe) let appCheck = AppCheck.appCheck(app: app)
     grpcClient = GrpcClient(
       app: self.app,
       settings: settings,
       connectorConfig: connectorConfig,
-      auth: Auth.auth(app: app),
-      appCheck: AppCheck.appCheck(app: app),
+      auth: auth,
+      appCheck: appCheck,
       callerSDKType: self.callerSDKType
     )
     operationsManager = OperationsManager(grpcClient: grpcClient)
@@ -111,33 +124,37 @@ public class DataConnect {
   // MARK: Operations
 
   /// Returns a query ref matching the name and variables.
-  public func query<ResultData: Decodable,
+  public func query<ResultData: Decodable & Sendable,
     Variable: OperationVariable>(name: String,
                                  variables: Variable,
                                  resultsDataType: ResultData
                                    .Type,
                                  publisher: ResultsPublisherType = .observableObject)
     -> any ObservableQueryRef {
-    let request = QueryRequest(operationName: name, variables: variables)
-    return operationsManager.queryRef(for: request, with: resultsDataType, publisher: publisher)
+      accessQueue.sync {
+        let request = QueryRequest(operationName: name, variables: variables)
+        return operationsManager.queryRef(for: request, with: resultsDataType, publisher: publisher)
+      }
   }
 
   /// Returns a Mutation Ref matching the name and specified variables.
-  public func mutation<ResultData: Decodable,
+  public func mutation<ResultData: Decodable & Sendable,
     Variable: OperationVariable>(name: String,
                                  variables: Variable,
                                  resultsDataType: ResultData
                                    .Type)
     -> MutationRef<ResultData,
       Variable> {
-    let request = MutationRequest(operationName: name, variables: variables)
-    return operationsManager.mutationRef(for: request, with: resultsDataType)
+        accessQueue.sync {
+          let request = MutationRequest(operationName: name, variables: variables)
+          return operationsManager.mutationRef(for: request, with: resultsDataType)
+        }
   }
 }
 
 // This enum is public so the gen sdk can access it
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public enum CallerSDKType {
+public enum CallerSDKType: Sendable {
   case base // base sdk is directly used
   case generated // generated sdk is calling the base
 }
@@ -170,7 +187,7 @@ private class InstanceStore {
     autoreleaseFrequency: .workItem
   )
 
-  var instances = [InstanceKey: DataConnect]()
+  private var instances = [InstanceKey: DataConnect]()
 
   func instance(for app: FirebaseApp, config: ConnectorConfig,
                 settings: DataConnectSettings, callerSDKType: CallerSDKType) -> DataConnect {

@@ -14,8 +14,8 @@
 
 import Foundation
 
-import FirebaseAppCheck
-import FirebaseAuth
+@preconcurrency import FirebaseAppCheck
+@preconcurrency import FirebaseAuth
 import FirebaseCore
 import GRPC
 import NIOCore
