@@ -36,9 +36,9 @@ public class DataConnect {
 
   // Instance store uses an internal queue to protect mutable state.
   #if compiler(>=6)
-  private nonisolated(unsafe) static let instanceStore = InstanceStore()
+    private nonisolated(unsafe) static let instanceStore = InstanceStore()
   #else
-  private static let instanceStore = InstanceStore()
+    private static let instanceStore = InstanceStore()
   #endif
 
   public enum EmulatorDefaults {
