@@ -17,19 +17,39 @@
 // limitations under the License.
 
 import SwiftUI
+import FirebaseDataConnect
+import FriendlyFlixSDK
 
 struct LibraryScreen: View {
   @Namespace var namespace
   @Environment(AuthenticationService.self) var authenticationViewModel
 
+  private var connector = DataConnect.friendlyFlixConnector
+
+  init() {
+    watchListRef = connector.getUserFavoriteMoviesQuery.ref()
+  }
+
+  private let watchListRef: QueryRefObservation<GetUserFavoriteMoviesQuery.Data, GetUserFavoriteMoviesQuery.Variables>
+  private var watchList: [Movie] {
+    watchListRef.data?.user?.favoriteMovies.map(Movie.init) ?? []
+  }
+}
+
+extension LibraryScreen {
   var body: some View {
-    @Bindable var authenticationViewModel = authenticationViewModel
     NavigationStack {
       ScrollView {
         if authenticationViewModel.authenticationState == .authenticated {
           Group {
-            MovieListSection(namespace: namespace, title: "Watch List", movies: Movie.watchList)
-            MovieListSection(namespace: namespace, title: "Favourites", movies: Movie.featured)
+            MovieListSection(namespace: namespace, title: "Watch List", movies: watchList)
+              .onAppear {
+                Task {
+                  try await watchListRef.execute()
+                }
+              }
+
+            // TODO: insert section with list of all movies the user has rated
           }
           .padding()
         }

@@ -3533,3 +3533,233 @@ searchTerm: String
 }
 
 
+
+
+
+
+public class GetUserFavoriteMoviesQuery{
+
+  let dataConnect: DataConnect
+
+  init(dataConnect: DataConnect) {
+    self.dataConnect = dataConnect
+  }
+
+  public static let OperationName = "GetUserFavoriteMovies"
+
+  public typealias Ref = QueryRefObservation<GetUserFavoriteMoviesQuery.Data,GetUserFavoriteMoviesQuery.Variables>
+
+  public struct Variables: OperationVariable {
+
+    
+    
+  }
+
+  public struct Data: Decodable {
+
+
+
+
+public struct User: Decodable  {
+  
+
+
+
+
+public struct FavoriteMovieFavoriteMovies: Decodable  {
+  
+
+
+
+
+public struct Movie: Decodable ,Hashable, Equatable, Identifiable {
+  
+
+
+public var 
+id: UUID
+
+
+
+public var 
+title: String
+
+
+
+public var 
+genre: String?
+
+
+
+public var 
+imageUrl: String
+
+
+
+public var 
+releaseYear: Int?
+
+
+
+public var 
+rating: Double?
+
+
+
+public var 
+description: String?
+
+
+  
+  public var movieKey: MovieKey {
+    return MovieKey(
+      
+      id: id
+    )
+  }
+
+  
+public func hash(into hasher: inout Hasher) {
+  
+  hasher.combine(id)
+  
+}
+public static func == (lhs: Movie, rhs: Movie) -> Bool {
+    
+    return lhs.id == rhs.id 
+        
+  }
+
+  
+
+  
+  enum CodingKeys: String, CodingKey {
+    
+    case id
+    
+    case title
+    
+    case genre
+    
+    case imageUrl
+    
+    case releaseYear
+    
+    case rating
+    
+    case description
+    
+  }
+
+  public init(from decoder: any Decoder) throws {
+    var container = try decoder.container(keyedBy: CodingKeys.self)
+    let codecHelper = CodecHelper<CodingKeys>()
+
+    
+    
+    self.id = try codecHelper.decode(UUID.self, forKey: .id, container: &container)
+    
+    
+    
+    self.title = try codecHelper.decode(String.self, forKey: .title, container: &container)
+    
+    
+    
+    self.genre = try codecHelper.decode(String?.self, forKey: .genre, container: &container)
+    
+    
+    
+    self.imageUrl = try codecHelper.decode(String.self, forKey: .imageUrl, container: &container)
+    
+    
+    
+    self.releaseYear = try codecHelper.decode(Int?.self, forKey: .releaseYear, container: &container)
+    
+    
+    
+    self.rating = try codecHelper.decode(Double?.self, forKey: .rating, container: &container)
+    
+    
+    
+    self.description = try codecHelper.decode(String?.self, forKey: .description, container: &container)
+    
+    
+  }
+}
+public var 
+movie: Movie
+
+
+  
+
+  
+  enum CodingKeys: String, CodingKey {
+    
+    case movie
+    
+  }
+
+  public init(from decoder: any Decoder) throws {
+    var container = try decoder.container(keyedBy: CodingKeys.self)
+    let codecHelper = CodecHelper<CodingKeys>()
+
+    
+    
+    self.movie = try codecHelper.decode(Movie.self, forKey: .movie, container: &container)
+    
+    
+  }
+}
+public var 
+favoriteMovies: [FavoriteMovieFavoriteMovies]
+
+
+  
+
+  
+  enum CodingKeys: String, CodingKey {
+    
+    case favoriteMovies
+    
+  }
+
+  public init(from decoder: any Decoder) throws {
+    var container = try decoder.container(keyedBy: CodingKeys.self)
+    let codecHelper = CodecHelper<CodingKeys>()
+
+    
+    self.favoriteMovies = try codecHelper.decode([FavoriteMovieFavoriteMovies].self, forKey: .favoriteMovies, container: &container)
+    
+    
+  }
+}
+public var 
+user: User?
+
+  }
+
+  public func ref(
+        
+        ) -> QueryRefObservation<GetUserFavoriteMoviesQuery.Data,GetUserFavoriteMoviesQuery.Variables>  {
+        var variables = GetUserFavoriteMoviesQuery.Variables()
+        
+
+        let ref = dataConnect.query(name: "GetUserFavoriteMovies", variables: variables, resultsDataType:GetUserFavoriteMoviesQuery.Data.self, publisher: .observableMacro)
+        return ref as! QueryRefObservation<GetUserFavoriteMoviesQuery.Data,GetUserFavoriteMoviesQuery.Variables>
+   }
+
+   public func execute(
+        
+        ) async throws -> OperationResult<GetUserFavoriteMoviesQuery.Data> {
+        var variables = GetUserFavoriteMoviesQuery.Variables()
+        
+        
+        let ref = dataConnect.query(name: "GetUserFavoriteMovies", variables: variables, resultsDataType:GetUserFavoriteMoviesQuery.Data.self, publisher: .observableMacro)
+        
+        let refCast = ref as! QueryRefObservation<GetUserFavoriteMoviesQuery.Data,GetUserFavoriteMoviesQuery.Variables>
+        return try await refCast.execute()
+        
+   }
+}
+
+

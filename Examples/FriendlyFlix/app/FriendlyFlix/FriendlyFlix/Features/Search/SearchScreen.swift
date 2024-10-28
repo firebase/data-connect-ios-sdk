@@ -64,7 +64,7 @@ struct SearchScreen: View {
 
   private var filteredMovies: [Movie] {
     connector.listMoviesByPartialTitleQuery
-      .ref(searchTerm: searchText)
+      .ref(searchTerm: searchText.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines))
       .data?.movies.map(Movie.init) ?? []
   }
 

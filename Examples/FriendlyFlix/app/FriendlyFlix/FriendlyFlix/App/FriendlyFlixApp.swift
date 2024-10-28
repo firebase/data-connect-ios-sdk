@@ -18,6 +18,9 @@
 
 import SwiftUI
 import Firebase
+import FirebaseAuth
+import FirebaseDataConnect
+import FriendlyFlixSDK
 
 @main
 struct FriendlyFlixApp: App {
@@ -31,15 +34,26 @@ struct FriendlyFlixApp: App {
 #endif
   }
 
-  init () {
+  var authenticationService: AuthenticationService?
+
+  init() {
     loadRocketSimConnect()
     FirebaseApp.configure()
+
+    authenticationService = AuthenticationService()
+    authenticationService?.onSignUp { user in
+      print("User signed in \(user.displayName ?? "(no fullname)") with email \(user.email ?? "(no email)")")
+      let userName = String(user.email?.split(separator: "@").first ?? "(unknown)")
+      Task {
+        try await DataConnect.friendlyFlixConnector.upsertUserMutation.execute(username: userName)
+      }
+    }
   }
 
   var body: some Scene {
     WindowGroup {
       RootView()
-        .environment(AuthenticationService())
+        .environment(authenticationService)
     }
   }
 }

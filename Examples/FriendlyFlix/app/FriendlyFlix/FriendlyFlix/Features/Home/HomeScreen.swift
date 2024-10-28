@@ -54,9 +54,9 @@ struct HomeScreen: View {
       .data?.movies.map(Movie.init) ?? []
   }
 
+  let watchListRef: QueryRefObservation<GetUserFavoriteMoviesQuery.Data, GetUserFavoriteMoviesQuery.Variables>
   private var watchList: [Movie] {
-    /// TODO: build a query that retrieves the user's watch list
-    connector.listMoviesQuery.ref().data?.movies.map(Movie.init) ?? []
+    watchListRef.data?.user?.favoriteMovies.map(Movie.init) ?? []
   }
 
   private var featuredMovies: [Movie] {
@@ -67,6 +67,10 @@ struct HomeScreen: View {
         optionalVars.orderByRating = .DESC
       })
       .data?.movies.map(Movie.init) ?? []
+  }
+
+  init() {
+    watchListRef = connector.getUserFavoriteMoviesQuery.ref()
   }
 }
 
@@ -93,6 +97,11 @@ extension HomeScreen {
         Group {
           MovieListSection(namespace: namespace, title: "Top Movies", movies: topMovies)
           MovieListSection(namespace: namespace, title: "Watch List", movies: watchList)
+            .onAppear {
+              Task {
+                try await watchListRef.execute()
+              }
+            }
           MovieListSection(namespace: namespace, title: "Featured", movies: featuredMovies)
         }
         .navigationDestination(for: [Movie].self) { movies in

@@ -43,6 +43,7 @@ public class FriendlyFlixConnector {
     self.getIfFavoritedMovieQuery = GetIfFavoritedMovieQuery(dataConnect: dataConnect)
     self.searchAllQuery = SearchAllQuery(dataConnect: dataConnect)
     self.listMoviesByPartialTitleQuery = ListMoviesByPartialTitleQuery(dataConnect: dataConnect)
+    self.getUserFavoriteMoviesQuery = GetUserFavoriteMoviesQuery(dataConnect: dataConnect)
     
   }
 
@@ -64,6 +65,7 @@ public let getCurrentUserQuery: GetCurrentUserQuery
 public let getIfFavoritedMovieQuery: GetIfFavoritedMovieQuery
 public let searchAllQuery: SearchAllQuery
 public let listMoviesByPartialTitleQuery: ListMoviesByPartialTitleQuery
+public let getUserFavoriteMoviesQuery: GetUserFavoriteMoviesQuery
 
 
 }

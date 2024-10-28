@@ -20,12 +20,28 @@ import Foundation
 import SwiftUI
 
 struct Movie: Identifiable, Hashable {
-  let id = UUID()
+  let id: UUID
   let title: String
   let description: String
   let releaseYear: Int?
   var rating: Double?
   let imageUrl: String
+
+  init(
+    id: UUID = UUID(),
+    title: String,
+    description: String,
+    releaseYear: Int?,
+    rating: Double? = nil,
+    imageUrl: String
+  ) {
+    self.id = id
+    self.title = title
+    self.description = description
+    self.releaseYear = releaseYear
+    self.rating = rating
+    self.imageUrl = imageUrl
+  }
 }
 
 extension Movie: Mockable {

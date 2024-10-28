@@ -313,19 +313,19 @@ query ListMoviesByPartialTitle($searchTerm: String!) @auth(level: PUBLIC) {
 # }
 
 # # Get favorite movies by user ID
-# query GetUserFavoriteMovies @auth(level: USER) {
-#   user(id_expr: "auth.uid") {
-#     favorite_movies_on_user {
-#       movie {
-#         id
-#         title
-#         genre
-#         imageUrl
-#         releaseYear
-#         rating
-#         description
-#       }
-#     }
-#   }
-# }
+query GetUserFavoriteMovies @auth(level: USER) {
+  user(id_expr: "auth.uid") {
+    favoriteMovies: favorite_movies_on_user {
+      movie {
+        id
+        title
+        genre
+        imageUrl
+        releaseYear
+        rating
+        description
+      }
+    }
+  }
+}
 # # end of example queries

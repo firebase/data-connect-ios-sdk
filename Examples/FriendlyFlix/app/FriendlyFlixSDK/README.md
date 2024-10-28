@@ -323,6 +323,39 @@ DataConnect.friendlyFlixConnector.listMoviesByPartialTitleQuery.execute(...)
 ```
 
 
+## GetUserFavoriteMoviesQuery
+
+
+### Using the Query Reference
+```
+struct MyView: View {
+   var getUserFavoriteMoviesQueryRef = DataConnect.friendlyFlixConnector.getUserFavoriteMoviesQuery.ref(...)
+
+  var body: some View {
+    VStack {
+      if let data = getUserFavoriteMoviesQueryRef.data {
+        // use data in View
+      }
+      else {
+        Text("Loading...")
+      }
+    }
+    .task {
+        do {
+          let _ = try await getUserFavoriteMoviesQueryRef.execute()
+        } catch {
+        }
+      }
+  }
+}
+```
+
+### One-shot execute
+```
+DataConnect.friendlyFlixConnector.getUserFavoriteMoviesQuery.execute(...)
+```
+
+
 # Mutations
 ## UpsertUserMutation
 

@@ -19,12 +19,43 @@
 
 import SwiftUI
 import NukeUI
+import FirebaseDataConnect
+import FriendlyFlixSDK
 
 struct MovieCardView: View {
-  var showDetails: Bool = false
+  public var showDetails: Bool = false
+  public var movie: Movie
 
-  var movie: Movie
+  private var connector = DataConnect.friendlyFlixConnector
 
+  public init(showDetails: Bool, movie: Movie) {
+    self.showDetails = showDetails
+    self.movie = movie
+
+    isFavouriteRef = connector.getIfFavoritedMovieQuery.ref(movieId: movie.id)
+  }
+
+  private let isFavouriteRef: QueryRefObservation<GetIfFavoritedMovieQuery.Data, GetIfFavoritedMovieQuery.Variables>
+  private var isFavourite: Bool {
+    isFavouriteRef.data?.favorite_movie?.movieId != nil
+  }
+
+  func toggleFavourite() {
+    Task {
+      if isFavourite {
+        let _ = try await connector.deleteFavoritedMovieMutation.execute(movieId: movie.id)
+        let _ = try await isFavouriteRef.execute()
+      }
+      else {
+        let _ = try await connector.addFavoritedMovieMutation.execute(movieId: movie.id)
+        let _ = try await isFavouriteRef.execute()
+      }
+    }
+  }
+
+}
+
+extension MovieCardView {
   var body: some View {
     CardView(showDetails: showDetails) {
       if let imageUrl = URL(string: movie.imageUrl) {
@@ -71,7 +102,24 @@ struct MovieCardView: View {
       }
     } details: {
       Text(movie.title)
+      Button {
+        toggleFavourite()
+      } label: {
+        Label(
+          isFavourite ? "Remove from watch list" : "Add to watch list",
+          systemImage: isFavourite ? "heart.slash" :"heart"
+        )
+      }
+
 //      MovieDetailsView(movie: movie)
+    }
+    .task {
+      do {
+        let _ = try await isFavouriteRef.execute()
+      }
+      catch {
+        print(error)
+      }
     }
   }
 }
