@@ -15,7 +15,7 @@
 import Foundation
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public struct ConnectorConfig: Hashable, Equatable {
+public struct ConnectorConfig: Hashable, Equatable, Sendable {
   public private(set) var serviceId: String
   public private(set) var location: String
   public private(set) var connector: String

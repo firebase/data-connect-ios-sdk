@@ -34,7 +34,7 @@ class OperationsManager {
     self.grpcClient = grpcClient
   }
 
-  func queryRef<ResultDataType: Decodable,
+  func queryRef<ResultDataType: Decodable & Sendable,
     VariableType: OperationVariable>(for request: QueryRequest<VariableType>,
                                      with resultType: ResultDataType
                                        .Type,

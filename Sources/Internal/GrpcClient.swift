@@ -14,8 +14,8 @@
 
 import Foundation
 
-import FirebaseAppCheck
-import FirebaseAuth
+@preconcurrency import FirebaseAppCheck
+@preconcurrency import FirebaseAuth
 import FirebaseCore
 import GRPC
 import NIOCore
@@ -108,8 +108,6 @@ actor GrpcClient: CustomStringConvertible {
   }()
 
   init(app: FirebaseApp, settings: DataConnectSettings, connectorConfig: ConnectorConfig,
-       auth: Auth,
-       appCheck: AppCheck?,
        callerSDKType: CallerSDKType) {
     self.app = app
 
@@ -120,8 +118,8 @@ actor GrpcClient: CustomStringConvertible {
 
     serverSettings = settings
     self.connectorConfig = connectorConfig
-    self.auth = auth
-    self.appCheck = appCheck
+    auth = Auth.auth(app: app)
+    appCheck = AppCheck.appCheck(app: app)
     self.callerSDKType = callerSDKType
 
     connectorName =
