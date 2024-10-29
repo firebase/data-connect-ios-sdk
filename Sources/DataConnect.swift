@@ -83,14 +83,10 @@ public class DataConnect {
         fatalError("Firebase DataConnect requires the projectID to be set in the app options")
       }
 
-      let auth = Auth.auth(app: app)
-      nonisolated(unsafe) let appCheck = AppCheck.appCheck(app: app)
       grpcClient = GrpcClient(
         app: app,
         settings: settings,
         connectorConfig: connectorConfig,
-        auth: auth,
-        appCheck: appCheck,
         callerSDKType: callerSDKType
       )
 
@@ -111,14 +107,10 @@ public class DataConnect {
     self.connectorConfig = connectorConfig
     self.callerSDKType = callerSDKType
 
-    let auth = Auth.auth(app: app)
-    nonisolated(unsafe) let appCheck = AppCheck.appCheck(app: app)
     grpcClient = GrpcClient(
       app: self.app,
       settings: settings,
       connectorConfig: connectorConfig,
-      auth: auth,
-      appCheck: appCheck,
       callerSDKType: self.callerSDKType
     )
     operationsManager = OperationsManager(grpcClient: grpcClient)
