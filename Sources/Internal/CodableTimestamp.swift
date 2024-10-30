@@ -53,7 +53,7 @@ extension CodableTimestamp {
                                                       length: timestampString.count)) !=
       nil else {
       DataConnectLogger.error(
-        "Timestamp string \(timestampString) format doesn't support."
+        "Timestamp string format \(timestampString) is not supported."
       )
       throw DataConnectError.invalidTimestampFormat
     }

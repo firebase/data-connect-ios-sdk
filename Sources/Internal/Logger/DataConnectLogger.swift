@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import FirebaseCore
-import OSLog
+import os
 
 let privateLogDisabledArgument = "-FIRPrivateLogDisabled"
 
@@ -86,7 +86,7 @@ enum LogPrivacy {
 extension DefaultStringInterpolation {
   mutating func appendInterpolation(_ value: String, privacy: LogPrivacy = .public) {
     if privacy == .private, DataConnectLogger.privateLoggingEnabled {
-      appendLiteral(" <private>")
+      appendLiteral("<private>")
     } else {
       appendLiteral(value)
     }

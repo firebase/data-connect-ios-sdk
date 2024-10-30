@@ -63,7 +63,7 @@ actor GrpcClient: CustomStringConvertible {
   private lazy var client: FirebaseDataConnectAsyncClient? = {
     do {
       DataConnectLogger
-        .debug("GrpcClient\(self.description, privacy: .private) initialization starts.")
+        .debug("GrpcClient: \(self.description, privacy: .private) initialization starts.")
       let group = PlatformSupport.makeEventLoopGroup(loopCount: threadPoolSize)
       let channel = try GRPCChannelPool.with(
         target: .host(serverSettings.host, port: serverSettings.port),
@@ -72,11 +72,12 @@ actor GrpcClient: CustomStringConvertible {
           .plaintext,
         eventLoopGroup: group
       )
-      DataConnectLogger.debug("GrpcClient\(self.description, privacy: .private) has been created.")
+      DataConnectLogger
+        .debug("GrpcClient: \(self.description, privacy: .private) has been created.")
       return FirebaseDataConnectAsyncClient(channel: channel)
     } catch {
       DataConnectLogger
-        .debug("Error:\(error) when creating GrpcClient\(self.description, privacy: .private).")
+        .debug("Error:\(error) when creating GrpcClient: \(self.description, privacy: .private).")
       return nil
     }
   }()
@@ -117,7 +118,7 @@ actor GrpcClient: CustomStringConvertible {
     googRequestHeaderValue = "location=\(self.connectorConfig.location)&frontend=data"
 
     description = """
-        : projectId=\(projectId) \
+        projectId=\(projectId) \
         connector=\(connectorConfig.connector) \
         host=\(serverSettings.host) \
         port=\(serverSettings.port) \
@@ -140,27 +141,27 @@ actor GrpcClient: CustomStringConvertible {
       connectorName: connectorName,
       request: request
     )
-    let requestString = try ": " + grpcRequest.jsonString()
+    let requestString = try grpcRequest.jsonString()
 
     do {
       DataConnectLogger
-        .debug("executeQuery() sends grpc request\(requestString, privacy: .private).")
+        .debug("executeQuery() sends grpc request: \(requestString, privacy: .private).")
       let results = try await client.executeQuery(grpcRequest, callOptions: createCallOptions())
-      let resultsString = try ": " + results.jsonString()
+      let resultsString = try results.jsonString()
       DataConnectLogger
-        .debug("executeQuery() receives response\(resultsString, privacy: .private).")
+        .debug("executeQuery() receives response: \(resultsString, privacy: .private).")
       // Not doing error decoding here
       if let decodedResults = try codec.decode(result: results.data, asType: resultType) {
         return OperationResult(data: decodedResults)
       } else {
         // In future, set this as error in OperationResult
         DataConnectLogger
-          .debug("executeQuery() response\(resultsString, privacy: .private) decode failed.")
+          .debug("executeQuery() response: \(resultsString, privacy: .private) decode failed.")
         throw DataConnectError.decodeFailed
       }
     } catch {
       DataConnectLogger.error(
-        "executeQuery()\(requestString, privacy: .private) grpc call FAILED with \(error)."
+        "executeQuery(): \(requestString, privacy: .private) grpc call FAILED with \(error)."
       )
       throw error
     }
@@ -183,25 +184,25 @@ actor GrpcClient: CustomStringConvertible {
       request: request
     )
 
-    let requestString = try ": " + grpcRequest.jsonString()
+    let requestString = try grpcRequest.jsonString()
 
     do {
       DataConnectLogger
-        .debug("executeMutation() sends grpc request \(requestString, privacy: .private).")
+        .debug("executeMutation() sends grpc request: \(requestString, privacy: .private).")
       let results = try await client.executeMutation(grpcRequest, callOptions: createCallOptions())
-      let resultsString = try ": " + results.jsonString()
+      let resultsString = try results.jsonString()
       DataConnectLogger
-        .debug("executeMutation() receives response\(resultsString, privacy: .private).")
+        .debug("executeMutation() receives response: \(resultsString, privacy: .private).")
       if let decodedResults = try codec.decode(result: results.data, asType: resultType) {
         return OperationResult(data: decodedResults)
       } else {
         DataConnectLogger
-          .debug("executeMutation() response\(resultsString, privacy: .private) decode failed.")
+          .debug("executeMutation() response: \(resultsString, privacy: .private) decode failed.")
         throw DataConnectError.decodeFailed
       }
     } catch {
       DataConnectLogger.error(
-        "executeMutation()\(requestString, privacy: .private) grpc call FAILED with \(error)."
+        "executeMutation(): \(requestString, privacy: .private) grpc call FAILED with \(error)."
       )
       throw error
     }
