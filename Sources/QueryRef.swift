@@ -14,7 +14,7 @@
 
 import Foundation
 
-import Combine
+@preconcurrency import Combine
 import Observation
 
 /// The type of publisher to use for the Query Ref
@@ -75,13 +75,13 @@ public protocol QueryRef: OperationRef {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-actor GenericQueryRef<ResultData: Decodable, Variable: OperationVariable>: QueryRef {
-  private var resultsPublisher = PassthroughSubject<Result<ResultData, DataConnectError>,
+actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVariable>: QueryRef {
+  private let resultsPublisher = PassthroughSubject<Result<ResultData, DataConnectError>,
     Never>()
 
-  private var request: QueryRequest<Variable>
+  private let request: QueryRequest<Variable>
 
-  private var grpcClient: GrpcClient
+  private let grpcClient: GrpcClient
 
   init(request: QueryRequest<Variable>, grpcClient: GrpcClient) {
     self.request = request
@@ -143,7 +143,7 @@ public protocol ObservableQueryRef: QueryRef {
 ///            If last fetch was successful, this variable is cleared
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class QueryRefObservableObject<
-  ResultData: Decodable,
+  ResultData: Decodable & Sendable,
   Variable: OperationVariable
 >: ObservableObject, ObservableQueryRef {
   private var request: QueryRequest<Variable>
@@ -216,7 +216,7 @@ public class QueryRefObservableObject<
 @available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
 @Observable
 public class QueryRefObservation<
-  ResultData: Decodable,
+  ResultData: Decodable & Sendable,
   Variable: OperationVariable
 >: ObservableQueryRef {
   @ObservationIgnored

@@ -20,7 +20,7 @@ import Foundation
  Essentially represents: https://the-guild.dev/graphql/scalars/docs/scalars/local-date
  */
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public struct LocalDate: Codable, Equatable, Comparable, CustomStringConvertible {
+public struct LocalDate: Codable, Comparable, CustomStringConvertible, Equatable, Sendable {
   private var calendar = Calendar(identifier: .gregorian)
   private var dateFormatter = DateFormatter()
   private var date = Date()
