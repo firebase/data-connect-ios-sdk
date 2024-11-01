@@ -38,7 +38,6 @@ struct SearchedView: View {
   var body: some View {
     if !isSearching {
       MovieListSection(namespace: namespace, title: "Top Movies", movies: topMovies)
-      CategoriesView()
     } else {
       ForEach(filteredMovies) { movie in
         NavigationLink(value: movie) {
