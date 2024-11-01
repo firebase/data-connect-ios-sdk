@@ -19,20 +19,22 @@
 import SwiftUI
 
 struct AuthenticationToolbarButton: View {
-  @Environment(AuthenticationService.self) var viewModel
+  @Environment(AuthenticationService.self) var authenticationService
 
-  var body: some View {
-    Button(action: onButtonTapped) {
-      Image(systemName: viewModel.authenticationState == .unauthenticated ? "person.circle" : "person.circle.fill")
-    }
-  }
-
-  func onButtonTapped() {
-    if viewModel.authenticationState == .unauthenticated {
-      viewModel.presentingAuthenticationDialog.toggle()
+  private func onButtonTapped() {
+    if authenticationService.authenticationState == .unauthenticated {
+      authenticationService.presentingAuthenticationDialog.toggle()
     }
     else {
-      viewModel.presentingAccountDialog.toggle()
+      authenticationService.presentingAccountDialog.toggle()
+    }
+  }
+}
+
+extension AuthenticationToolbarButton {
+  var body: some View {
+    Button(action: onButtonTapped) {
+      Image(systemName: authenticationService.authenticationState == .unauthenticated ? "person.circle" : "person.circle.fill")
     }
   }
 }
