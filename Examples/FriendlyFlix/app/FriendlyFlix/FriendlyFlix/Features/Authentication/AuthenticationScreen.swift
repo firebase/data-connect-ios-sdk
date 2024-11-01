@@ -90,12 +90,7 @@ struct AuthenticationScreen: View {
 extension AuthenticationScreen {
   var body: some View {
     VStack {
-//      Image("login")
-//        .resizable()
-//        .aspectRatio(contentMode: .fit)
-//        .frame(minHeight: 300, maxHeight: 400)
-//      Text(viewModel.flow == .login ? "Log in" : "Sign up")
-      Text("Welcome")
+      Text("Welcome to FriendlyFlix")
         .font(.largeTitle)
         .fontWeight(.bold)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -169,29 +164,6 @@ extension AuthenticationScreen {
       .disabled(!isValid)
       .frame(maxWidth: .infinity)
       .buttonStyle(.borderedProminent)
-
-      HStack {
-        VStack { Divider() }
-        Text("or")
-        VStack { Divider() }
-      }
-
-      if flow == .login {
-        SignInWithAppleButton(.signIn) { request in
-        } onCompletion: { result in
-        }
-        .signInWithAppleButtonStyle(colorScheme == .light ? .black : .white)
-        .frame(maxWidth: .infinity, minHeight: 50, maxHeight: 50)
-        .cornerRadius(8)
-      }
-      else {
-        SignInWithAppleButton(.signUp) { request in
-        } onCompletion: { result in
-        }
-        .signInWithAppleButtonStyle(colorScheme == .light ? .black : .white)
-        .frame(maxWidth: .infinity, minHeight: 50, maxHeight: 50)
-        .cornerRadius(8)
-      }
 
       HStack {
         Text(flow == .login ? "Don't have an account yet?" : "Already have an account?")
