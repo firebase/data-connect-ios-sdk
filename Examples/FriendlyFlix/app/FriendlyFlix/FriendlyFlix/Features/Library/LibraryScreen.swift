@@ -22,9 +22,13 @@ import FriendlyFlixSDK
 
 struct LibraryScreen: View {
   @Namespace var namespace
-  @Environment(AuthenticationService.self) var authenticationViewModel
+  @Environment(AuthenticationService.self) var authenticationService
 
   private var connector = DataConnect.friendlyFlixConnector
+
+  private var isSignedIn: Bool {
+    authenticationService.user != nil
+  }
 
   init() {
     watchListRef = connector.getUserFavoriteMoviesQuery.ref()
@@ -34,13 +38,17 @@ struct LibraryScreen: View {
   private var watchList: [Movie] {
     watchListRef.data?.user?.favoriteMovies.map(Movie.init) ?? []
   }
+
+  private func presentSignInDialog() {
+    authenticationService.presentingAuthenticationDialog.toggle()
+  }
 }
 
 extension LibraryScreen {
   var body: some View {
     NavigationStack {
       ScrollView {
-        if authenticationViewModel.authenticationState == .authenticated {
+        if isSignedIn {
           Group {
             MovieListSection(namespace: namespace, title: "Watch List", movies: watchList)
               .onAppear {
@@ -48,7 +56,6 @@ extension LibraryScreen {
                   try await watchListRef.execute()
                 }
               }
-
             // TODO: insert section with list of all movies the user has rated
           }
           .padding()
@@ -73,11 +80,16 @@ extension LibraryScreen {
       }
     }
     .overlay {
-      if authenticationViewModel.authenticationState == .unauthenticated {
+      if !isSignedIn {
         ContentUnavailableView {
           Label("Your library is empty", systemImage: "rectangle.on.rectangle.slash")
         } description: {
-          Text("Your watch list and favourites will appear here.")
+          VStack {
+            Text("Your watch list and favourites will appear here once you sign in.")
+            Button(action: presentSignInDialog) {
+              Text("Sign in")
+            }
+          }
         }
       }
     }
