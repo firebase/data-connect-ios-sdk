@@ -26,6 +26,10 @@ struct HomeScreen: View {
 
   private var connector = DataConnect.friendlyFlixConnector
 
+  private var isSignedIn: Bool {
+    authenticationService.user != nil
+  }
+
   private func mapMovie(_ listMovie: ListMoviesQuery.Data.Movie) -> Movie {
     .init(
       title: listMovie.title,
@@ -59,16 +63,6 @@ struct HomeScreen: View {
     watchListRef.data?.user?.favoriteMovies.map(Movie.init) ?? []
   }
 
-  private var featuredMovies: [Movie] {
-    /// TODO: build query that retrieves movies that are marked as "featured"
-    connector.listMoviesQuery
-      .ref({ optionalVars in
-        optionalVars.limit = 5
-        optionalVars.orderByRating = .DESC
-      })
-      .data?.movies.map(Movie.init) ?? []
-  }
-
   init() {
     watchListRef = connector.getUserFavoriteMoviesQuery.ref()
   }
@@ -96,13 +90,14 @@ extension HomeScreen {
 
         Group {
           MovieListSection(namespace: namespace, title: "Top Movies", movies: topMovies)
-          MovieListSection(namespace: namespace, title: "Watch List", movies: watchList)
-            .onAppear {
-              Task {
-                try await watchListRef.execute()
+          if isSignedIn {
+            MovieListSection(namespace: namespace, title: "Watch List", movies: watchList)
+              .onAppear {
+                Task {
+                  try await watchListRef.execute()
+                }
               }
-            }
-          MovieListSection(namespace: namespace, title: "Featured", movies: featuredMovies)
+          }
         }
         .navigationDestination(for: [Movie].self) { movies in
           MovieListScreen(namespace: namespace, movies: movies)
