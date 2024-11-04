@@ -219,7 +219,7 @@ query ListMoviesByPartialTitle($searchTerm: String!) @auth(level: PUBLIC) {
     releaseYear
     genre
     rating
-    description    
+    description
   }
 }
 
