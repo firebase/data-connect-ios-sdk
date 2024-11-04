@@ -23,10 +23,11 @@ import FirebaseDataConnect
 import FriendlyFlixSDK
 
 struct MovieCardView: View {
-  public var showDetails: Bool = false
-  public var movie: Movie
-
+  @Environment(\.dismiss) private var dismiss
   private var connector = DataConnect.friendlyFlixConnector
+
+  private var showDetails: Bool = false
+  private var movie: Movie
 
   public init(showDetails: Bool, movie: Movie) {
     self.showDetails = showDetails
@@ -35,12 +36,14 @@ struct MovieCardView: View {
     isFavouriteRef = connector.getIfFavoritedMovieQuery.ref(movieId: movie.id)
   }
 
+  // MARK: - Favourite handling
+
   private let isFavouriteRef: QueryRefObservation<GetIfFavoritedMovieQuery.Data, GetIfFavoritedMovieQuery.Variables>
   private var isFavourite: Bool {
     isFavouriteRef.data?.favorite_movie?.movieId != nil
   }
 
-  func toggleFavourite() {
+  private func toggleFavourite() {
     Task {
       if isFavourite {
         let _ = try await connector.deleteFavoritedMovieMutation.execute(movieId: movie.id)
@@ -52,7 +55,6 @@ struct MovieCardView: View {
       }
     }
   }
-
 }
 
 extension MovieCardView {
@@ -101,17 +103,33 @@ extension MovieCardView {
         .background(.thinMaterial)
       }
     } details: {
-      Text(movie.title)
-      Button {
-        toggleFavourite()
-      } label: {
-        Label(
-          isFavourite ? "Remove from watch list" : "Add to watch list",
-          systemImage: isFavourite ? "heart.slash" :"heart"
-        )
+      MovieDetailsView(movie: movie)
+    }
+    .toolbar {
+      ToolbarItem {
+        Button {
+          toggleFavourite()
+        } label: {
+          Image(systemName: isFavourite ? "heart.fill" : "heart")
+            .font(.headline)
+            .foregroundColor(.white)
+            .frame(width: 30, height: 30)
+            .background(Color.black.opacity(0.6))
+            .clipShape(Circle())
+        }
       }
-
-//      MovieDetailsView(movie: movie)
+      ToolbarItem {
+        Button {
+          dismiss()
+        } label: {
+          Image(systemName: "xmark")
+            .font(.headline)
+            .foregroundColor(.white)
+            .frame(width: 30, height: 30)
+            .background(Color.black.opacity(0.6))
+            .clipShape(Circle())
+        }
+      }
     }
     .task {
       do {
@@ -124,6 +142,6 @@ extension MovieCardView {
   }
 }
 
-// #Preview {
-//  MovieCardView(showDetails: true, gradientConfiguration: GradienConfiguration.sample)
-// }
+ #Preview {
+   MovieCardView(showDetails: true, movie: Movie.mock)
+ }
