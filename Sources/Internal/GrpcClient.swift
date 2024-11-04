@@ -27,6 +27,7 @@ import SwiftProtobuf
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 typealias FirebaseDataConnectAsyncClient =
   Google_Firebase_Dataconnect_V1beta_ConnectorServiceAsyncClient
+typealias FirebaseDataConnectGraphqlError = Google_Firebase_Dataconnect_V1beta_GraphqlError
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 actor GrpcClient: CustomStringConvertible {
@@ -148,7 +149,13 @@ actor GrpcClient: CustomStringConvertible {
       let resultsString = try results.jsonString()
       DataConnectLogger
         .debug("executeQuery() receives response: \(resultsString, privacy: .private).")
+
       // Not doing error decoding here
+      guard results.errors.isEmpty else {
+        throw DataConnectError
+          .operationExecutionFailed(messages: createErrorJson(errors: results.errors))
+      }
+
       if let decodedResults = try codec.decode(result: results.data, asType: resultType) {
         return OperationResult(data: decodedResults)
       } else {
@@ -191,6 +198,12 @@ actor GrpcClient: CustomStringConvertible {
       let resultsString = try results.jsonString()
       DataConnectLogger
         .debug("executeMutation() receives response: \(resultsString, privacy: .private).")
+
+      guard results.errors.isEmpty else {
+        throw DataConnectError
+          .operationExecutionFailed(messages: createErrorJson(errors: results.errors))
+      }
+
       if let decodedResults = try codec.decode(result: results.data, asType: resultType) {
         return OperationResult(data: decodedResults)
       } else {
@@ -203,6 +216,22 @@ actor GrpcClient: CustomStringConvertible {
         "executeMutation(): \(requestString, privacy: .private) grpc call FAILED with \(error)."
       )
       throw error
+    }
+  }
+
+  private func createErrorJson(errors: [FirebaseDataConnectGraphqlError]) -> String? {
+    var errorMessages = [String]()
+    for err in errors {
+      errorMessages.append(err.message)
+    }
+
+    do {
+      let jsonEncoder = JSONEncoder()
+      let jsonData = try jsonEncoder.encode(errorMessages)
+      return String(data: jsonData, encoding: .utf8)
+    } catch {
+      DataConnectLogger.error("Error encoding partial error list")
+      return nil
     }
   }
 
