@@ -36,5 +36,5 @@ public enum DataConnectError: Error {
   case invalidTimestampFormat
 
   /// generic operation execution error
-  case operationExecutionFailed
+  case operationExecutionFailed(messages: String?)
 }
