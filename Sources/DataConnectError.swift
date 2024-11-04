@@ -37,5 +37,4 @@ public enum DataConnectError: Error {
 
   /// generic operation execution error
   case operationExecutionFailed
-
 }
