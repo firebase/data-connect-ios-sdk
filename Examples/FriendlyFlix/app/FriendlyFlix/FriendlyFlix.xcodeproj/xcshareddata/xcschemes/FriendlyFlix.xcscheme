@@ -15,7 +15,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "884EA4CB2C7E0CC7009866B5"
+               BlueprintIdentifier = "88A9E6332CA834C600B3C4EF"
                BuildableName = "FriendlyFlix.app"
                BlueprintName = "FriendlyFlix"
                ReferencedContainer = "container:FriendlyFlix.xcodeproj">
@@ -29,30 +29,6 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES"
       shouldAutocreateTestPlan = "YES">
-      <Testables>
-         <TestableReference
-            skipped = "NO"
-            parallelizable = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "884EA4DB2C7E0CC8009866B5"
-               BuildableName = "FriendlyFlixTests.xctest"
-               BlueprintName = "FriendlyFlixTests"
-               ReferencedContainer = "container:FriendlyFlix.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO"
-            parallelizable = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "884EA4E52C7E0CC8009866B5"
-               BuildableName = "FriendlyFlixUITests.xctest"
-               BlueprintName = "FriendlyFlixUITests"
-               ReferencedContainer = "container:FriendlyFlix.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-      </Testables>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
@@ -68,7 +44,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "884EA4CB2C7E0CC7009866B5"
+            BlueprintIdentifier = "88A9E6332CA834C600B3C4EF"
             BuildableName = "FriendlyFlix.app"
             BlueprintName = "FriendlyFlix"
             ReferencedContainer = "container:FriendlyFlix.xcodeproj">
@@ -85,7 +61,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "884EA4CB2C7E0CC7009866B5"
+            BlueprintIdentifier = "88A9E6332CA834C600B3C4EF"
             BuildableName = "FriendlyFlix.app"
             BlueprintName = "FriendlyFlix"
             ReferencedContainer = "container:FriendlyFlix.xcodeproj">

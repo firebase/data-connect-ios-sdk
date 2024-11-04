@@ -1,4 +1,8 @@
-// Copyright 2024 Google LLC
+//
+// Mockable.swift
+// FriendlyFlixMocks
+//
+// Created by Peter Friese on 30.09.24.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,12 +16,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Testing
 
-@testable import FriendlyFlix
+public protocol Mockable {
+  associatedtype MockType
 
-struct FriendlyFlixTests {
-  @Test func example() async throws {
-    // Write your test here and use APIs like `#expect(...)` to check expected conditions.
+  static var mock: MockType { get }
+  static var mockList: [MockType] { get }
+}
+
+public extension Mockable {
+  static var mock: MockType {
+    mockList[0]
+  }
+  static var mockList: [MockType] {
+    []
   }
 }

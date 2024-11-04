@@ -1,4 +1,4 @@
-// Copyright 2024 Google LLC
+// Copyright © 2024 Google LLC. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 
 import SwiftUI
 
@@ -28,7 +29,6 @@ struct MovieReviewCard: View {
         StarRatingView(rating: rating)
         Text("·")
         Text(reviewerName)
-        Spacer()
       }
       .font(.subheadline)
       Text(review)
@@ -43,11 +43,8 @@ struct MovieReviewCard: View {
           topLeading: 16,
           bottomLeading: 16,
           bottomTrailing: 16,
-          topTrailing: 16
-        ),
-        style: .continuous
-      )
-    )
+          topTrailing: 16),
+        style: .continuous))
   }
 }
 
@@ -58,7 +55,7 @@ struct MovieReviewCard: View {
       rating: 4.5,
       reviewerName: "John Doe",
       review:
-      "Velit officia quis ut ut dolor velit voluptate magna Lorem. Sint do ex adipisicing laboris magna et duis aute fugiat culpa minim id culpa nulla do. Occaecat in anim ad Lorem eu aute consectetur excepteur fugiat laboris eiusmod. Et tempor Lorem quis eu magna cillum adipisicing consectetur."
+        "Velit officia quis ut ut dolor velit voluptate magna Lorem. Sint do ex adipisicing laboris magna et duis aute fugiat culpa minim id culpa nulla do. Occaecat in anim ad Lorem eu aute consectetur excepteur fugiat laboris eiusmod. Et tempor Lorem quis eu magna cillum adipisicing consectetur."
     )
     .padding()
   }

@@ -1,4 +1,8 @@
-// Copyright 2024 Google LLC
+//
+// CardView.swift
+// FriendlyFlixMocks
+//
+// Created by Peter Friese on 30.09.24.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,6 +15,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 
 import SwiftUI
 
@@ -38,33 +43,10 @@ struct CardView<Hero: View, Title: View, Details: View>: View {
     self.details = details
   }
 
-  @ViewBuilder
-  var dismissButton: some View {
-    if showDetails {
-      HStack {
-        Spacer()
-        Button {
-          dismiss()
-        } label: {
-          Image(systemName: "xmark")
-            .font(.headline)
-            .foregroundColor(.white)
-            .frame(width: 30, height: 30)
-            .background(Color.black.opacity(0.6))
-            .clipShape(Circle())
-        }
-        .padding([.top, .trailing], 30)
-      }
-    } else {
-      EmptyView()
-    }
-  }
-
   var cardView: some View {
     VStack(spacing: 0) {
       ZStack(alignment: .topLeading) {
         hero
-        dismissButton
         heroTitle()
       }
       .clipShape(
@@ -97,9 +79,10 @@ struct CardView<Hero: View, Title: View, Details: View>: View {
         cardView
           .scaleEffect(scaleFactor)
           .navigationBarBackButtonHidden(true)
-          .statusBar(hidden: true)
+          .statusBarHidden()
       }
       .ignoresSafeArea()
+
       // Start: drag down to pop back
       .background(Color(UIColor.secondarySystemBackground))
       .scrollIndicators(scaleFactor < 1 ? .hidden : .automatic, axes: .vertical)
@@ -130,29 +113,32 @@ struct CardView<Hero: View, Title: View, Details: View>: View {
 }
 
 #Preview {
-  CardView(showDetails: true) {
-    GradientView(configuration: GradienConfiguration.sample)
-  } heroTitle: {
-    VStack(alignment: .leading) {
-      Spacer()
-      Text("Here be titles")
-        .font(.title)
-      Text("And subtitles")
-        .font(.title3)
-    }
-    .foregroundColor(Color(UIColor.systemGroupedBackground))
-    .padding()
-  } details: {
-    VStack {
-      Text(
+  NavigationStack {
+    CardView(showDetails: true) {
+      GradientView(configuration: GradienConfiguration.sample)
+        .frame(height: 450)
+    } heroTitle: {
+      VStack(alignment: .leading) {
+        Spacer()
+        Text("Here be titles")
+          .font(.title)
+        Text("And subtitles")
+          .font(.title3)
+      }
+      .foregroundColor(Color(UIColor.systemGroupedBackground))
+      .padding()
+    } details: {
+      VStack {
+        Text(
         """
         Amet culpa excepteur sit ad tempor minim aute anim nisi voluptate do. Exercitation nisi adipisicing esse officia sit ullamco.
         Tempor ullamco irure proident cupidatat non Lorem ut voluptate est ad in deserunt esse velit exercitation. Tempor voluptate ex aute id.
         Fugiat in minim labore minim duis et duis eiusmod ullamco eiusmod minim deserunt voluptate.
         """
-      )
-      .font(.body)
-      .padding()
+        )
+        .font(.body)
+        .padding()
+      }
     }
   }
 }
@@ -161,6 +147,7 @@ struct CardView<Hero: View, Title: View, Details: View>: View {
   ScrollView {
     CardView(showDetails: false) {
       GradientView(configuration: GradienConfiguration.sample)
+        .frame(height: 450)
     } heroTitle: {
       VStack(alignment: .leading) {
         Spacer()
@@ -186,6 +173,7 @@ struct CardView<Hero: View, Title: View, Details: View>: View {
     }
     CardView(showDetails: false) {
       GradientView(configuration: GradienConfiguration.samples[1])
+        .frame(height: 450)
     } heroTitle: {
       VStack(alignment: .leading) {
         Spacer()
@@ -211,6 +199,7 @@ struct CardView<Hero: View, Title: View, Details: View>: View {
     }
     CardView(showDetails: false) {
       GradientView(configuration: GradienConfiguration.samples[2])
+        .frame(height: 450)
     } heroTitle: {
       VStack(alignment: .leading) {
         Spacer()

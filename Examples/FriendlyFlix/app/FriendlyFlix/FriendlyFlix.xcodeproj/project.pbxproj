@@ -7,96 +7,49 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		887822772CA2EFCA00DE73A1 /* FriendlyFlixSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 887822762CA2EFCA00DE73A1 /* FriendlyFlixSDK */; };
-		8878227A2CA2F95300DE73A1 /* FriendlyFlixSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 887822792CA2F95300DE73A1 /* FriendlyFlixSDK */; };
-		8878227D2CA2FAB200DE73A1 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 8878227C2CA2FAB200DE73A1 /* FirebaseAuth */; };
+		88896F392CCA5AD80089A19C /* NukeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 88896F382CCA5AD80089A19C /* NukeUI */; };
+		88BA433B2CC937E10063E309 /* FirebaseDataConnect in Frameworks */ = {isa = PBXBuildFile; productRef = 88BA433A2CC937E10063E309 /* FirebaseDataConnect */; };
+		88BA43402CC938250063E309 /* FriendlyFlixSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 88BA433F2CC938250063E309 /* FriendlyFlixSDK */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXContainerItemProxy section */
-		884EA4DD2C7E0CC8009866B5 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 884EA4C42C7E0CC7009866B5 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 884EA4CB2C7E0CC7009866B5;
-			remoteInfo = FriendlyFlix;
-		};
-		884EA4E72C7E0CC8009866B5 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 884EA4C42C7E0CC7009866B5 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 884EA4CB2C7E0CC7009866B5;
-			remoteInfo = FriendlyFlix;
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXFileReference section */
-		884EA4CC2C7E0CC7009866B5 /* FriendlyFlix.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FriendlyFlix.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		884EA4DC2C7E0CC8009866B5 /* FriendlyFlixTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FriendlyFlixTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		884EA4E62C7E0CC8009866B5 /* FriendlyFlixUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FriendlyFlixUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		88A9E6342CA834C600B3C4EF /* FriendlyFlix.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FriendlyFlix.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		884EA4CE2C7E0CC7009866B5 /* FriendlyFlix */ = {
+		88A9E6362CA834C600B3C4EF /* FriendlyFlix */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = FriendlyFlix;
-			sourceTree = "<group>";
-		};
-		884EA4DF2C7E0CC8009866B5 /* FriendlyFlixTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = FriendlyFlixTests;
-			sourceTree = "<group>";
-		};
-		884EA4E92C7E0CC8009866B5 /* FriendlyFlixUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = FriendlyFlixUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		884EA4C92C7E0CC7009866B5 /* Frameworks */ = {
+		88A9E6312CA834C600B3C4EF /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				887822772CA2EFCA00DE73A1 /* FriendlyFlixSDK in Frameworks */,
-				8878227D2CA2FAB200DE73A1 /* FirebaseAuth in Frameworks */,
-				8878227A2CA2F95300DE73A1 /* FriendlyFlixSDK in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		884EA4D92C7E0CC8009866B5 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		884EA4E32C7E0CC8009866B5 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
+				88896F392CCA5AD80089A19C /* NukeUI in Frameworks */,
+				88BA433B2CC937E10063E309 /* FirebaseDataConnect in Frameworks */,
+				88BA43402CC938250063E309 /* FriendlyFlixSDK in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		884EA4C32C7E0CC7009866B5 = {
+		88A9E62B2CA834C600B3C4EF = {
 			isa = PBXGroup;
 			children = (
-				884EA4CE2C7E0CC7009866B5 /* FriendlyFlix */,
-				884EA4DF2C7E0CC8009866B5 /* FriendlyFlixTests */,
-				884EA4E92C7E0CC8009866B5 /* FriendlyFlixUITests */,
-				884EA4CD2C7E0CC7009866B5 /* Products */,
+				88A9E6362CA834C600B3C4EF /* FriendlyFlix */,
+				88A9E6352CA834C600B3C4EF /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		884EA4CD2C7E0CC7009866B5 /* Products */ = {
+		88A9E6352CA834C600B3C4EF /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				884EA4CC2C7E0CC7009866B5 /* FriendlyFlix.app */,
-				884EA4DC2C7E0CC8009866B5 /* FriendlyFlixTests.xctest */,
-				884EA4E62C7E0CC8009866B5 /* FriendlyFlixUITests.xctest */,
+				88A9E6342CA834C600B3C4EF /* FriendlyFlix.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -104,141 +57,72 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		884EA4CB2C7E0CC7009866B5 /* FriendlyFlix */ = {
+		88A9E6332CA834C600B3C4EF /* FriendlyFlix */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 884EA4F02C7E0CC8009866B5 /* Build configuration list for PBXNativeTarget "FriendlyFlix" */;
+			buildConfigurationList = 88A9E6422CA834C700B3C4EF /* Build configuration list for PBXNativeTarget "FriendlyFlix" */;
 			buildPhases = (
-				884EA4C82C7E0CC7009866B5 /* Sources */,
-				884EA4C92C7E0CC7009866B5 /* Frameworks */,
-				884EA4CA2C7E0CC7009866B5 /* Resources */,
+				88A9E6302CA834C600B3C4EF /* Sources */,
+				88A9E6312CA834C600B3C4EF /* Frameworks */,
+				88A9E6322CA834C600B3C4EF /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				884EA4CE2C7E0CC7009866B5 /* FriendlyFlix */,
+				88A9E6362CA834C600B3C4EF /* FriendlyFlix */,
 			);
 			name = FriendlyFlix;
 			packageProductDependencies = (
-				887822762CA2EFCA00DE73A1 /* FriendlyFlixSDK */,
-				887822792CA2F95300DE73A1 /* FriendlyFlixSDK */,
-				8878227C2CA2FAB200DE73A1 /* FirebaseAuth */,
+				88BA433A2CC937E10063E309 /* FirebaseDataConnect */,
+				88BA433F2CC938250063E309 /* FriendlyFlixSDK */,
+				88896F382CCA5AD80089A19C /* NukeUI */,
 			);
 			productName = FriendlyFlix;
-			productReference = 884EA4CC2C7E0CC7009866B5 /* FriendlyFlix.app */;
+			productReference = 88A9E6342CA834C600B3C4EF /* FriendlyFlix.app */;
 			productType = "com.apple.product-type.application";
-		};
-		884EA4DB2C7E0CC8009866B5 /* FriendlyFlixTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 884EA4F32C7E0CC8009866B5 /* Build configuration list for PBXNativeTarget "FriendlyFlixTests" */;
-			buildPhases = (
-				884EA4D82C7E0CC8009866B5 /* Sources */,
-				884EA4D92C7E0CC8009866B5 /* Frameworks */,
-				884EA4DA2C7E0CC8009866B5 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				884EA4DE2C7E0CC8009866B5 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				884EA4DF2C7E0CC8009866B5 /* FriendlyFlixTests */,
-			);
-			name = FriendlyFlixTests;
-			packageProductDependencies = (
-			);
-			productName = FriendlyFlixTests;
-			productReference = 884EA4DC2C7E0CC8009866B5 /* FriendlyFlixTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
-		884EA4E52C7E0CC8009866B5 /* FriendlyFlixUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 884EA4F62C7E0CC8009866B5 /* Build configuration list for PBXNativeTarget "FriendlyFlixUITests" */;
-			buildPhases = (
-				884EA4E22C7E0CC8009866B5 /* Sources */,
-				884EA4E32C7E0CC8009866B5 /* Frameworks */,
-				884EA4E42C7E0CC8009866B5 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				884EA4E82C7E0CC8009866B5 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				884EA4E92C7E0CC8009866B5 /* FriendlyFlixUITests */,
-			);
-			name = FriendlyFlixUITests;
-			packageProductDependencies = (
-			);
-			productName = FriendlyFlixUITests;
-			productReference = 884EA4E62C7E0CC8009866B5 /* FriendlyFlixUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		884EA4C42C7E0CC7009866B5 /* Project object */ = {
+		88A9E62C2CA834C600B3C4EF /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1600;
 				LastUpgradeCheck = 1600;
 				TargetAttributes = {
-					884EA4CB2C7E0CC7009866B5 = {
+					88A9E6332CA834C600B3C4EF = {
 						CreatedOnToolsVersion = 16.0;
-					};
-					884EA4DB2C7E0CC8009866B5 = {
-						CreatedOnToolsVersion = 16.0;
-						TestTargetID = 884EA4CB2C7E0CC7009866B5;
-					};
-					884EA4E52C7E0CC8009866B5 = {
-						CreatedOnToolsVersion = 16.0;
-						TestTargetID = 884EA4CB2C7E0CC7009866B5;
 					};
 				};
 			};
-			buildConfigurationList = 884EA4C72C7E0CC7009866B5 /* Build configuration list for PBXProject "FriendlyFlix" */;
+			buildConfigurationList = 88A9E62F2CA834C600B3C4EF /* Build configuration list for PBXProject "FriendlyFlix" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
 			);
-			mainGroup = 884EA4C32C7E0CC7009866B5;
+			mainGroup = 88A9E62B2CA834C600B3C4EF;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				887822782CA2F95300DE73A1 /* XCLocalSwiftPackageReference "../FriendlyFlixSDK" */,
-				8878227B2CA2FAB200DE73A1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				88BA43392CC937E10063E309 /* XCRemoteSwiftPackageReference "data-connect-ios-sdk" */,
+				88BA433E2CC938250063E309 /* XCLocalSwiftPackageReference "../FriendlyFlixSDK" */,
+				88896F372CCA5AD80089A19C /* XCRemoteSwiftPackageReference "Nuke" */,
 			);
 			preferredProjectObjectVersion = 77;
-			productRefGroup = 884EA4CD2C7E0CC7009866B5 /* Products */;
+			productRefGroup = 88A9E6352CA834C600B3C4EF /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				884EA4CB2C7E0CC7009866B5 /* FriendlyFlix */,
-				884EA4DB2C7E0CC8009866B5 /* FriendlyFlixTests */,
-				884EA4E52C7E0CC8009866B5 /* FriendlyFlixUITests */,
+				88A9E6332CA834C600B3C4EF /* FriendlyFlix */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		884EA4CA2C7E0CC7009866B5 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		884EA4DA2C7E0CC8009866B5 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		884EA4E42C7E0CC8009866B5 /* Resources */ = {
+		88A9E6322CA834C600B3C4EF /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -248,21 +132,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		884EA4C82C7E0CC7009866B5 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		884EA4D82C7E0CC8009866B5 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		884EA4E22C7E0CC8009866B5 /* Sources */ = {
+		88A9E6302CA834C600B3C4EF /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -271,21 +141,8 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
-/* Begin PBXTargetDependency section */
-		884EA4DE2C7E0CC8009866B5 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 884EA4CB2C7E0CC7009866B5 /* FriendlyFlix */;
-			targetProxy = 884EA4DD2C7E0CC8009866B5 /* PBXContainerItemProxy */;
-		};
-		884EA4E82C7E0CC8009866B5 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 884EA4CB2C7E0CC7009866B5 /* FriendlyFlix */;
-			targetProxy = 884EA4E72C7E0CC8009866B5 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
-
 /* Begin XCBuildConfiguration section */
-		884EA4EE2C7E0CC8009866B5 /* Debug */ = {
+		88A9E6402CA834C700B3C4EF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -348,7 +205,7 @@
 			};
 			name = Debug;
 		};
-		884EA4EF2C7E0CC8009866B5 /* Release */ = {
+		88A9E6412CA834C700B3C4EF /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -404,7 +261,7 @@
 			};
 			name = Release;
 		};
-		884EA4F12C7E0CC8009866B5 /* Debug */ = {
+		88A9E6432CA834C700B3C4EF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -420,16 +277,11 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				OTHER_LDFLAGS = (
-					"-Xlinker",
-					"-interposable",
-				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.google.firebase.samples.FriendlyFlix;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -438,7 +290,7 @@
 			};
 			name = Debug;
 		};
-		884EA4F22C7E0CC8009866B5 /* Release */ = {
+		88A9E6442CA834C700B3C4EF /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -454,7 +306,6 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -465,116 +316,26 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
-		884EA4F42C7E0CC8009866B5 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = YGAZHQXHH4;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.google.firebase.samples.FriendlyFlixTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/FriendlyFlix.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/FriendlyFlix";
-			};
-			name = Debug;
-		};
-		884EA4F52C7E0CC8009866B5 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = YGAZHQXHH4;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.google.firebase.samples.FriendlyFlixTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/FriendlyFlix.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/FriendlyFlix";
-			};
-			name = Release;
-		};
-		884EA4F72C7E0CC8009866B5 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = YGAZHQXHH4;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.google.firebase.samples.FriendlyFlixUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = FriendlyFlix;
-			};
-			name = Debug;
-		};
-		884EA4F82C7E0CC8009866B5 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = YGAZHQXHH4;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.google.firebase.samples.FriendlyFlixUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = FriendlyFlix;
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		884EA4C72C7E0CC7009866B5 /* Build configuration list for PBXProject "FriendlyFlix" */ = {
+		88A9E62F2CA834C600B3C4EF /* Build configuration list for PBXProject "FriendlyFlix" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				884EA4EE2C7E0CC8009866B5 /* Debug */,
-				884EA4EF2C7E0CC8009866B5 /* Release */,
+				88A9E6402CA834C700B3C4EF /* Debug */,
+				88A9E6412CA834C700B3C4EF /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		884EA4F02C7E0CC8009866B5 /* Build configuration list for PBXNativeTarget "FriendlyFlix" */ = {
+		88A9E6422CA834C700B3C4EF /* Build configuration list for PBXNativeTarget "FriendlyFlix" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				884EA4F12C7E0CC8009866B5 /* Debug */,
-				884EA4F22C7E0CC8009866B5 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		884EA4F32C7E0CC8009866B5 /* Build configuration list for PBXNativeTarget "FriendlyFlixTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				884EA4F42C7E0CC8009866B5 /* Debug */,
-				884EA4F52C7E0CC8009866B5 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		884EA4F62C7E0CC8009866B5 /* Build configuration list for PBXNativeTarget "FriendlyFlixUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				884EA4F72C7E0CC8009866B5 /* Debug */,
-				884EA4F82C7E0CC8009866B5 /* Release */,
+				88A9E6432CA834C700B3C4EF /* Debug */,
+				88A9E6442CA834C700B3C4EF /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -582,16 +343,24 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		887822782CA2F95300DE73A1 /* XCLocalSwiftPackageReference "../FriendlyFlixSDK" */ = {
+		88BA433E2CC938250063E309 /* XCLocalSwiftPackageReference "../FriendlyFlixSDK" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../FriendlyFlixSDK;
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		8878227B2CA2FAB200DE73A1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+		88896F372CCA5AD80089A19C /* XCRemoteSwiftPackageReference "Nuke" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
+			repositoryURL = "https://github.com/kean/Nuke?tab=readme-ov-file";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.8.0;
+			};
+		};
+		88BA43392CC937E10063E309 /* XCRemoteSwiftPackageReference "data-connect-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/data-connect-ios-sdk";
 			requirement = {
 				branch = main;
 				kind = branch;
@@ -600,20 +369,21 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		887822762CA2EFCA00DE73A1 /* FriendlyFlixSDK */ = {
+		88896F382CCA5AD80089A19C /* NukeUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 88896F372CCA5AD80089A19C /* XCRemoteSwiftPackageReference "Nuke" */;
+			productName = NukeUI;
+		};
+		88BA433A2CC937E10063E309 /* FirebaseDataConnect */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 88BA43392CC937E10063E309 /* XCRemoteSwiftPackageReference "data-connect-ios-sdk" */;
+			productName = FirebaseDataConnect;
+		};
+		88BA433F2CC938250063E309 /* FriendlyFlixSDK */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = FriendlyFlixSDK;
-		};
-		887822792CA2F95300DE73A1 /* FriendlyFlixSDK */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = FriendlyFlixSDK;
-		};
-		8878227C2CA2FAB200DE73A1 /* FirebaseAuth */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 8878227B2CA2FAB200DE73A1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseAuth;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
-	rootObject = 884EA4C42C7E0CC7009866B5 /* Project object */;
+	rootObject = 88A9E62C2CA834C600B3C4EF /* Project object */;
 }

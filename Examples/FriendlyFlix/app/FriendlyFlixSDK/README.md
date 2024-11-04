@@ -282,6 +282,80 @@ DataConnect.friendlyFlixConnector.searchAllQuery.execute(...)
 ```
 
 
+## ListMoviesByPartialTitleQuery
+### Variables
+#### Required
+```swift
+
+let searchTerm: String = ...
+```
+
+
+
+
+### Using the Query Reference
+```
+struct MyView: View {
+   var listMoviesByPartialTitleQueryRef = DataConnect.friendlyFlixConnector.listMoviesByPartialTitleQuery.ref(...)
+
+  var body: some View {
+    VStack {
+      if let data = listMoviesByPartialTitleQueryRef.data {
+        // use data in View
+      }
+      else {
+        Text("Loading...")
+      }
+    }
+    .task {
+        do {
+          let _ = try await listMoviesByPartialTitleQueryRef.execute()
+        } catch {
+        }
+      }
+  }
+}
+```
+
+### One-shot execute
+```
+DataConnect.friendlyFlixConnector.listMoviesByPartialTitleQuery.execute(...)
+```
+
+
+## GetUserFavoriteMoviesQuery
+
+
+### Using the Query Reference
+```
+struct MyView: View {
+   var getUserFavoriteMoviesQueryRef = DataConnect.friendlyFlixConnector.getUserFavoriteMoviesQuery.ref(...)
+
+  var body: some View {
+    VStack {
+      if let data = getUserFavoriteMoviesQueryRef.data {
+        // use data in View
+      }
+      else {
+        Text("Loading...")
+      }
+    }
+    .task {
+        do {
+          let _ = try await getUserFavoriteMoviesQueryRef.execute()
+        } catch {
+        }
+      }
+  }
+}
+```
+
+### One-shot execute
+```
+DataConnect.friendlyFlixConnector.getUserFavoriteMoviesQuery.execute(...)
+```
+
+
 # Mutations
 ## UpsertUserMutation
 
@@ -292,7 +366,7 @@ DataConnect.friendlyFlixConnector.searchAllQuery.execute(...)
 
 let username: String = ...
 ```
-
+ 
 
 ### One-shot execute
 ```
@@ -308,7 +382,7 @@ DataConnect.friendlyFlixConnector.upsertUserMutation.execute(...)
 
 let movieId: UUID = ...
 ```
-
+ 
 
 ### One-shot execute
 ```
@@ -324,7 +398,7 @@ DataConnect.friendlyFlixConnector.addFavoritedMovieMutation.execute(...)
 
 let movieId: UUID = ...
 ```
-
+ 
 
 ### One-shot execute
 ```
@@ -342,7 +416,7 @@ let movieId: UUID = ...
 let rating: Int = ...
 let reviewText: String = ...
 ```
-
+ 
 
 ### One-shot execute
 ```
@@ -360,7 +434,7 @@ let movieId: UUID = ...
 let rating: Int = ...
 let reviewText: String = ...
 ```
-
+ 
 
 ### One-shot execute
 ```
@@ -376,7 +450,7 @@ DataConnect.friendlyFlixConnector.updateReviewMutation.execute(...)
 
 let movieId: UUID = ...
 ```
-
+ 
 
 ### One-shot execute
 ```

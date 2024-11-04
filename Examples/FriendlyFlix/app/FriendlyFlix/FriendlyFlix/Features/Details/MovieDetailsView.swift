@@ -1,4 +1,4 @@
-// Copyright 2024 Google LLC
+// Copyright © 2024 Google LLC. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,29 +15,49 @@
 import FirebaseDataConnect
 import FriendlyFlixSDK
 import SwiftUI
-
-// Introduce a common protocol for movie actors, so we can use the same
-// view for ActorMainActors and ActorSupportingActors
-protocol MovieActor {
-  var id: UUID { get set }
-  var name: String { get set }
-  var imageUrl: String { get set }
-}
-
-extension GetMovieByIdQuery.Data.Movie.ActorMainActors: MovieActor {}
-extension GetMovieByIdQuery.Data.Movie.ActorSupportingActors: MovieActor {}
+import NukeUI
 
 struct MovieDetailsView: View {
-  var movie: ListMoviesQuery.Data.Movie
-  let movieDetailsRef: GetMovieByIdQuery.Ref
+  private var movie: Movie
 
-  init(movie: ListMoviesQuery.Data.Movie) {
-    self.movie = movie
-    movieDetailsRef = DataConnect.friendlyFlixConnector.getMovieByIdQuery.ref(id: movie.id)
+  private var movieDetails: MovieDetails? {
+    DataConnect.friendlyFlixConnector
+      .getMovieByIdQuery
+      .ref(id: movie.id)
+      .data?.movie.map { movieDetails in
+        MovieDetails(
+          title: movieDetails.title,
+          description: movieDetails.description ?? "",
+          releaseYear: movieDetails.releaseYear,
+          rating: movieDetails.rating ?? 0,
+          imageUrl: movieDetails.imageUrl,
+          mainActors: movieDetails.mainActors.map({ mainActor in
+            MovieActor(id: mainActor.id,
+                       name: mainActor.name,
+                       imageUrl: mainActor.imageUrl)
+          }),
+          supportingActors: movieDetails.supportingActors.map({ supportingActor in
+            MovieActor(id: supportingActor.id,
+                       name: supportingActor.name,
+                       imageUrl: supportingActor.imageUrl)
+          }),
+          reviews: movieDetails.reviews.map({ review in
+            Review(id: review.id,
+                   reviewText: review.reviewText ?? "",
+                   rating: review.rating ?? 0,
+                   userName: review.user.username)
+          })
+        )
+      }
   }
 
-//  var movieRef: GetMovieByIdQuery
+  public init(movie: Movie) {
+    self.movie = movie
+  }
 
+}
+
+extension MovieDetailsView {
   var body: some View {
     VStack(alignment: .leading, spacing: 10) {
       // description
@@ -47,88 +67,76 @@ struct MovieDetailsView: View {
           .bold()
           .unredacted()
 
-        Text(movieDetailsRef.data?.movie?.description ?? .placeholder(length: 150))
+        Text(movie.description)
           .font(.body)
-          .redacted(reason: movieDetailsRef.data?.movie == nil ? .placeholder : [])
         HStack {
           Spacer()
         }
       }
-      .redacted(if: movieDetailsRef.data == nil)
 
-      // Actors
-      if let mainActors = movieDetailsRef.data?.movie?.mainActors, mainActors.count > 0 {
-        actorsSection(title: "Main actors", actors: mainActors)
-      }
-      if let supportingActors = movieDetailsRef.data?.movie?.supportingActors,
-         supportingActors.count > 0 {
-        actorsSection(title: "Supporting actors", actors: supportingActors)
-      }
-
-      // Reviews
-      DetailsSection(title: "Ratings & Reviews") {
-        HStack(alignment: .center) {
-          Text("4.7")
-            .font(.system(size: 64, weight: .bold))
-          Spacer()
-          VStack(alignment: .trailing) {
-            StarRatingView(rating: 4.7)
-            Text("23 Ratings")
-              .font(.title)
-              .bold()
-          }
+      if let movieDetails {
+        if !movieDetails.mainActors.isEmpty {
+          actorsSection(title: "Main actors", actors: movieDetails.mainActors)
         }
-        Text("Most Helpful Reviews")
-          .font(.title3)
-          .bold()
-        ScrollView(.horizontal) {
-          LazyHStack {
-            if let reviews = movieDetailsRef.data?.movie?.reviews {
-              ForEach(reviews, id: \.id) { review in
-                if let rating = review.rating, let feedback = review.reviewText {
-                  MovieReviewCard(
-                    title: "Feedback",
-                    rating: Double(rating),
-                    reviewerName: review.user.username,
-                    review: feedback
-                  )
+        if !movieDetails.supportingActors.isEmpty {
+          actorsSection(title: "Supporting actors", actors: movieDetails.supportingActors)
+        }
+
+        // Reviews
+        DetailsSection("Ratings & Reviews") {
+          VStack(alignment: .leading) {
+            HStack(alignment: .center) {
+              Text("\(movieDetails.rating, specifier: "%.1f")")
+                .font(.system(size: 64, weight: .bold))
+              Spacer()
+              VStack(alignment: .trailing) {
+                StarRatingView(rating: Double(movieDetails.rating))
+                Text("23 Ratings")
+                  .font(.title)
+                  .bold()
+              }
+            }
+            Text("Most Helpful Reviews")
+              .font(.title3)
+              .bold()
+            ScrollView(.horizontal) {
+              LazyHStack {
+                ForEach(movieDetails.reviews) { review in
+                  MovieReviewCard(title: "Feedback",
+                                  rating: Double(review.rating),
+                                  reviewerName: review.userName,
+                                  review: review.reviewText)
                   .frame(width: 350)
                 }
               }
+              .scrollTargetLayout()
             }
+            .scrollTargetBehavior(.viewAligned)
+            .scrollIndicators(.hidden)
           }
-          .scrollTargetLayout()
         }
-        .scrollTargetBehavior(.viewAligned)
-        .scrollIndicators(.hidden)
       }
-
-      // Similar Movies
-      // if let movie = movieRef.data?.movie {
-      //   let metadata = "\(movie.description) \nGenres: \(movie.genres.joined(separator: " "))"
-      //   RelatedSection(similarMoviesRef: DataConnect.moviesClient.listSimilarMoviesQueryRef(to: movie.id, metadata: metadata))
-      // }
     }
-    .padding(8)
+    .padding()
   }
 }
 
 extension MovieDetailsView {
-  func actorsSection(title: String, actors: [any MovieActor]) -> some View {
-    DetailsSection(title: title) {
+  func actorsSection(title: String, actors: [MovieActor]) -> some View {
+    DetailsSection(title) {
       ScrollView(.horizontal) {
         LazyHStack {
           ForEach(actors, id: \.id) { actor in
             VStack(alignment: .center) {
               if let imageUrl = URL(string: actor.imageUrl) {
-                AsyncImage(url: imageUrl) { phase in
-                  if let image = phase.image {
+                LazyImage(url: imageUrl) { state in
+                  if let image = state.image {
                     image
                       .resizable()
                       .scaledToFill()
                       .frame(width: 96, height: 96, alignment: .center)
                       .clipShape(Circle())
-                  } else if phase.error != nil {
+                  } else if state.error != nil {
                     Color.red
                       .redacted(if: true)
                   } else {
@@ -152,6 +160,6 @@ extension MovieDetailsView {
   }
 }
 
-// #Preview {
-//  MovieDetailsView(for: UUID())
-// }
+#Preview {
+  MovieDetailsView(movie: Movie.mock)
+}

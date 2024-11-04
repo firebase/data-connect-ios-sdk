@@ -1,11 +1,11 @@
 specVersion: "v1beta"
-serviceId: "friendly-flix-service"
+serviceId: "dataconnect"
 location: "us-central1"
 schema:
   source: "./schema"
   datasource:
     postgresql:
-      database: "friendly-flix-database"
+      database: "fdcdb"
       cloudSql:
-        instanceId: "my-cloud-sql"
+        instanceId: "fdc-sql"
 connectorDirs: ["./movie-connector"]

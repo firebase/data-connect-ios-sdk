@@ -1,4 +1,8 @@
-// Copyright 2024 Google LLC
+//
+// NoHighlightButtonStyle.swift
+// FriendlyFlixMocks
+//
+// Created by Peter Friese on 30.09.24.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,20 +16,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Firebase
-import FirebaseAuth
 import SwiftUI
 
-@main
-struct FriendlyFlixApp: App {
-  init() {
-    FirebaseApp.configure()
-    Auth.auth().signInAnonymously()
+struct NoHighlightButtonStyle: ButtonStyle {
+  func makeBody(configuration: Configuration) -> some View {
+    configuration.label
   }
-
-  var body: some Scene {
-    WindowGroup {
-      MoviesList()
-    }
+}
+ 
+extension ButtonStyle where Self == NoHighlightButtonStyle {
+  static var noHighlight: NoHighlightButtonStyle {
+    get { NoHighlightButtonStyle() }
   }
 }
