@@ -1,5 +1,5 @@
 //
-// ProfileScreen.swift
+// LibraryScreen.swift
 // FriendlyFlixMocks
 //
 // Created by Peter Friese on 28.09.24.
@@ -16,9 +16,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import SwiftUI
 import FirebaseDataConnect
 import FriendlyFlixSDK
+import SwiftUI
 
 struct LibraryScreen: View {
   @Namespace var namespace
@@ -34,7 +34,10 @@ struct LibraryScreen: View {
     watchListRef = connector.getUserFavoriteMoviesQuery.ref()
   }
 
-  private let watchListRef: QueryRefObservation<GetUserFavoriteMoviesQuery.Data, GetUserFavoriteMoviesQuery.Variables>
+  private let watchListRef: QueryRefObservation<
+    GetUserFavoriteMoviesQuery.Data,
+    GetUserFavoriteMoviesQuery.Variables
+  >
   private var watchList: [Movie] {
     watchListRef.data?.user?.favoriteMovies.map(Movie.init) ?? []
   }

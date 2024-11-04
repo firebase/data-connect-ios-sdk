@@ -16,9 +16,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import SwiftUI
 import FirebaseDataConnect
 import FriendlyFlixSDK
+import SwiftUI
 
 struct HomeScreen: View {
   @Namespace private var namespace
@@ -42,23 +42,26 @@ struct HomeScreen: View {
 
   private var heroMovies: [Movie] {
     connector.listMoviesQuery
-      .ref({ optionalVars in
+      .ref { optionalVars in
         optionalVars.limit = 3
         optionalVars.orderByReleaseYear = .DESC
-      })
+      }
       .data?.movies.map(Movie.init) ?? []
   }
 
   private var topMovies: [Movie] {
     connector.listMoviesQuery
-      .ref({ optionalVars in
+      .ref { optionalVars in
         optionalVars.limit = 5
         optionalVars.orderByRating = .DESC
-      })
+      }
       .data?.movies.map(Movie.init) ?? []
   }
 
-  let watchListRef: QueryRefObservation<GetUserFavoriteMoviesQuery.Data, GetUserFavoriteMoviesQuery.Variables>
+  let watchListRef: QueryRefObservation<
+    GetUserFavoriteMoviesQuery.Data,
+    GetUserFavoriteMoviesQuery.Variables
+  >
   private var watchList: [Movie] {
     watchListRef.data?.user?.favoriteMovies.map(Movie.init) ?? []
   }
@@ -75,8 +78,12 @@ extension HomeScreen {
         TabView {
           ForEach(heroMovies) { movie in
             NavigationLink(value: movie) {
-              MovieTeaserView(title: movie.title, subtitle: movie.description, imageUrl: movie.imageUrl)
-                .matchedTransitionSource(id: movie.id, in: namespace)
+              MovieTeaserView(
+                title: movie.title,
+                subtitle: movie.description,
+                imageUrl: movie.imageUrl
+              )
+              .matchedTransitionSource(id: movie.id, in: namespace)
             }
             .buttonStyle(.noHighlight)
           }

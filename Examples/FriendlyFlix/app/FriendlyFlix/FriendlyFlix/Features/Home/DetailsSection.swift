@@ -48,12 +48,12 @@ struct DetailsSection<Title, Details>: View where Title: View, Details: View {
 }
 
 extension DetailsSection where Title == Text {
-  init (_ title: Text, content: @escaping () -> Details) {
+  init(_ title: Text, content: @escaping () -> Details) {
     self.title = { title }
     self.content = { content() }
   }
 
-  init (_ title: any StringProtocol, content: @escaping () -> Details) {
+  init(_ title: any StringProtocol, content: @escaping () -> Details) {
     self.title = { Text(title) }
     self.content = { content() }
   }

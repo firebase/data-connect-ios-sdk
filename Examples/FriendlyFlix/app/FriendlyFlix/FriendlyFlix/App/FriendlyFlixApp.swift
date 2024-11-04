@@ -1,5 +1,5 @@
 //
-// FriendlyFlixMocksApp.swift
+// FriendlyFlixApp.swift
 // FriendlyFlixMocks
 //
 // Created by Peter Friese on 28.09.24.
@@ -16,22 +16,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import SwiftUI
 import Firebase
 import FirebaseAuth
 import FirebaseDataConnect
 import FriendlyFlixSDK
+import SwiftUI
 
 @main
 struct FriendlyFlixApp: App {
   private func loadRocketSimConnect() {
-#if DEBUG
-    guard (Bundle(path: "/Applications/RocketSim.app/Contents/Frameworks/RocketSimConnectLinker.nocache.framework")?.load() == true) else {
-      print("Failed to load linker framework")
-      return
-    }
-    print("RocketSim Connect successfully linked")
-#endif
+    #if DEBUG
+      guard Bundle(
+        path: "/Applications/RocketSim.app/Contents/Frameworks/RocketSimConnectLinker.nocache.framework"
+      )?
+        .load() == true else {
+        print("Failed to load linker framework")
+        return
+      }
+      print("RocketSim Connect successfully linked")
+    #endif
   }
 
   var authenticationService: AuthenticationService?
@@ -42,7 +45,9 @@ struct FriendlyFlixApp: App {
 
     authenticationService = AuthenticationService()
     authenticationService?.onSignUp { user in
-      print("User signed in \(user.displayName ?? "(no fullname)") with email \(user.email ?? "(no email)")")
+      print(
+        "User signed in \(user.displayName ?? "(no fullname)") with email \(user.email ?? "(no email)")"
+      )
       let userName = String(user.email?.split(separator: "@").first ?? "(unknown)")
       Task {
         try await DataConnect.friendlyFlixConnector.upsertUserMutation.execute(username: userName)

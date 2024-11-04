@@ -14,8 +14,8 @@
 
 import FirebaseDataConnect
 import FriendlyFlixSDK
-import SwiftUI
 import NukeUI
+import SwiftUI
 
 struct MovieDetailsView: View {
   private var movie: Movie
@@ -31,22 +31,22 @@ struct MovieDetailsView: View {
           releaseYear: movieDetails.releaseYear,
           rating: movieDetails.rating ?? 0,
           imageUrl: movieDetails.imageUrl,
-          mainActors: movieDetails.mainActors.map({ mainActor in
+          mainActors: movieDetails.mainActors.map { mainActor in
             MovieActor(id: mainActor.id,
                        name: mainActor.name,
                        imageUrl: mainActor.imageUrl)
-          }),
-          supportingActors: movieDetails.supportingActors.map({ supportingActor in
+          },
+          supportingActors: movieDetails.supportingActors.map { supportingActor in
             MovieActor(id: supportingActor.id,
                        name: supportingActor.name,
                        imageUrl: supportingActor.imageUrl)
-          }),
-          reviews: movieDetails.reviews.map({ review in
+          },
+          reviews: movieDetails.reviews.map { review in
             Review(id: review.id,
                    reviewText: review.reviewText ?? "",
                    rating: review.rating ?? 0,
                    userName: review.user.username)
-          })
+          }
         )
       }
   }
@@ -54,7 +54,6 @@ struct MovieDetailsView: View {
   public init(movie: Movie) {
     self.movie = movie
   }
-
 }
 
 extension MovieDetailsView {
@@ -106,7 +105,7 @@ extension MovieDetailsView {
                                   rating: Double(review.rating),
                                   reviewerName: review.userName,
                                   review: review.reviewText)
-                  .frame(width: 350)
+                    .frame(width: 350)
                 }
               }
               .scrollTargetLayout()

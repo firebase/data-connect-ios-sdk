@@ -1,5 +1,5 @@
 //
-// MovieListView.swift
+// MovieListScreen.swift
 // FriendlyFlixMocks
 //
 // Created by Peter Friese on 30.09.24.
@@ -33,7 +33,6 @@ struct MovieListScreen: View {
         .matchedTransitionSource(id: movie.id, in: namespace)
         .navigationLink(value: movie, hideChevron: true)
       }
-
     }
     .listStyle(.plain)
   }

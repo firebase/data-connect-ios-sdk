@@ -17,30 +17,29 @@ import FriendlyFlixSDK
 
 extension Movie {
   init(from: ListMoviesQuery.Data.Movie) {
-    self.id = from.id
-    self.title = from.title
-    self.description = from.description ?? ""
-    self.releaseYear = from.releaseYear
-    self.rating = from.rating
-    self.imageUrl = from.imageUrl
+    id = from.id
+    title = from.title
+    description = from.description ?? ""
+    releaseYear = from.releaseYear
+    rating = from.rating
+    imageUrl = from.imageUrl
   }
 
   init(from: ListMoviesByPartialTitleQuery.Data.Movie) {
-    self.id = from.id
-    self.title = from.title
-    self.description = from.description ?? ""
-    self.releaseYear = from.releaseYear
-    self.rating = from.rating
-    self.imageUrl = from.imageUrl
+    id = from.id
+    title = from.title
+    description = from.description ?? ""
+    releaseYear = from.releaseYear
+    rating = from.rating
+    imageUrl = from.imageUrl
   }
 
   init(from: GetUserFavoriteMoviesQuery.Data.User.FavoriteMovieFavoriteMovies) {
-    self.id = from.movie.id
-    self.title = from.movie.title
-    self.description = from.movie.description ?? ""
-    self.releaseYear = from.movie.releaseYear
-    self.rating = from.movie.rating
-    self.imageUrl = from.movie.imageUrl
+    id = from.movie.id
+    title = from.movie.title
+    description = from.movie.description ?? ""
+    releaseYear = from.movie.releaseYear
+    rating = from.movie.rating
+    imageUrl = from.movie.imageUrl
   }
 }
-

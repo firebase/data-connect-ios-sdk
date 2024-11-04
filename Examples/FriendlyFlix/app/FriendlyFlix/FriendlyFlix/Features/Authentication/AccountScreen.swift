@@ -34,9 +34,7 @@ struct AccountScreen: View {
     do {
       try authenticationService.signOut()
       dismiss()
-    }
-    catch {
-    }
+    } catch {}
   }
 }
 
@@ -67,7 +65,7 @@ extension AccountScreen {
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
         ToolbarItem {
-          Button(action: {dismiss()}) {
+          Button(action: { dismiss() }) {
             Text("Done")
           }
         }

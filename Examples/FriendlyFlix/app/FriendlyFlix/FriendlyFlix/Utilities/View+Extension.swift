@@ -16,7 +16,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 import SwiftUI
 
 extension View {
@@ -31,13 +30,14 @@ extension View {
   func navigationLink(value: any Hashable, hideChevron: Bool = false) -> some View {
     if hideChevron {
       // If hideChevron is true, apply the overlay trick to hide the chevron
-      // Put the NavigationLink into an overlay, and set its opacity to zero. By using this trick, we can hide the chevron.
+      // Put the NavigationLink into an overlay, and set its opacity to zero. By using this trick,
+      // we can hide the chevron.
       // Source: https://www.reddit.com/r/SwiftUI/comments/13rhg02/how_can_i_use_navigationlink_inside_list_without/jlkqbkz/
       overlay {
         NavigationLink(value: value) {
           EmptyView()
         }
-          .opacity(0)
+        .opacity(0)
       }
     } else {
       // If hideChevron is false, return the original view without modification

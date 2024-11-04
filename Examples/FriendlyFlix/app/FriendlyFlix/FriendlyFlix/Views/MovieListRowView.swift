@@ -16,8 +16,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import SwiftUI
 import NukeUI
+import SwiftUI
 
 struct MovieListRowView: View {
   var title: String

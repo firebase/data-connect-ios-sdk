@@ -16,7 +16,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 public protocol Mockable {
   associatedtype MockType
 
@@ -28,6 +27,7 @@ public extension Mockable {
   static var mock: MockType {
     mockList[0]
   }
+
   static var mockList: [MockType] {
     []
   }

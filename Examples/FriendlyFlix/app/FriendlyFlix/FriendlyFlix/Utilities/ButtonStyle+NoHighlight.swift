@@ -1,5 +1,5 @@
 //
-// NoHighlightButtonStyle.swift
+// ButtonStyle+NoHighlight.swift
 // FriendlyFlixMocks
 //
 // Created by Peter Friese on 30.09.24.
@@ -23,9 +23,7 @@ struct NoHighlightButtonStyle: ButtonStyle {
     configuration.label
   }
 }
- 
+
 extension ButtonStyle where Self == NoHighlightButtonStyle {
-  static var noHighlight: NoHighlightButtonStyle {
-    get { NoHighlightButtonStyle() }
-  }
+  static var noHighlight: NoHighlightButtonStyle { NoHighlightButtonStyle() }
 }

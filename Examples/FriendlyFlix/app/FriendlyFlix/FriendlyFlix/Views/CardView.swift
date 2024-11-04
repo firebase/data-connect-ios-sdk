@@ -16,7 +16,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 import SwiftUI
 
 // Try for blendmode https://saeedrz.medium.com/unleashing-creativity-a-deep-dive-into-blendmode-in-swiftui-2edc3f204fa8
@@ -130,11 +129,11 @@ struct CardView<Hero: View, Title: View, Details: View>: View {
     } details: {
       VStack {
         Text(
-        """
-        Amet culpa excepteur sit ad tempor minim aute anim nisi voluptate do. Exercitation nisi adipisicing esse officia sit ullamco.
-        Tempor ullamco irure proident cupidatat non Lorem ut voluptate est ad in deserunt esse velit exercitation. Tempor voluptate ex aute id.
-        Fugiat in minim labore minim duis et duis eiusmod ullamco eiusmod minim deserunt voluptate.
-        """
+          """
+          Amet culpa excepteur sit ad tempor minim aute anim nisi voluptate do. Exercitation nisi adipisicing esse officia sit ullamco.
+          Tempor ullamco irure proident cupidatat non Lorem ut voluptate est ad in deserunt esse velit exercitation. Tempor voluptate ex aute id.
+          Fugiat in minim labore minim duis et duis eiusmod ullamco eiusmod minim deserunt voluptate.
+          """
         )
         .font(.body)
         .padding()

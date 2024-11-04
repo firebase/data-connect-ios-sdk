@@ -16,9 +16,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import SwiftUI
 import FirebaseDataConnect
 import FriendlyFlixSDK
+import SwiftUI
 
 struct SearchedView: View {
   @Environment(\.isSearching) private var isSearching
@@ -28,10 +28,10 @@ struct SearchedView: View {
 
   private var topMovies: [Movie] {
     connector.listMoviesQuery
-      .ref({ optionalVars in
+      .ref { optionalVars in
         optionalVars.limit = 5
         optionalVars.orderByRating = .DESC
-      })
+      }
       .data?.movies.map(Movie.init) ?? []
   }
 
@@ -66,7 +66,6 @@ struct SearchScreen: View {
       .ref(searchTerm: searchText.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines))
       .data?.movies.map(Movie.init) ?? []
   }
-
 }
 
 extension SearchScreen {
@@ -83,7 +82,8 @@ extension SearchScreen {
         MovieCardView(showDetails: true, movie: movie)
           .navigationTransition(.zoom(sourceID: movie.id, in: namespace))
           .task {
-            // NavigationStack requires `.statusBarHidden` to be applied to the navigationstack itself, not on any children.
+            // NavigationStack requires `.statusBarHidden` to be applied to the navigationstack
+            // itself, not on any children.
             // See https://danielsaidi.com/blog/2023/03/14/handling-status-bar-color-scheme-and-visibility-in-swiftui
             isStatusBarHidden = true
           }

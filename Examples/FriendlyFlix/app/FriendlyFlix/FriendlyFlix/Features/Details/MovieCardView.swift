@@ -16,11 +16,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-import SwiftUI
-import NukeUI
 import FirebaseDataConnect
 import FriendlyFlixSDK
+import NukeUI
+import SwiftUI
 
 struct MovieCardView: View {
   @Environment(\.dismiss) private var dismiss
@@ -38,7 +37,10 @@ struct MovieCardView: View {
 
   // MARK: - Favourite handling
 
-  private let isFavouriteRef: QueryRefObservation<GetIfFavoritedMovieQuery.Data, GetIfFavoritedMovieQuery.Variables>
+  private let isFavouriteRef: QueryRefObservation<
+    GetIfFavoritedMovieQuery.Data,
+    GetIfFavoritedMovieQuery.Variables
+  >
   private var isFavourite: Bool {
     isFavouriteRef.data?.favorite_movie?.movieId != nil
   }
@@ -48,8 +50,7 @@ struct MovieCardView: View {
       if isFavourite {
         let _ = try await connector.deleteFavoritedMovieMutation.execute(movieId: movie.id)
         let _ = try await isFavouriteRef.execute()
-      }
-      else {
+      } else {
         let _ = try await connector.addFavoritedMovieMutation.execute(movieId: movie.id)
         let _ = try await isFavouriteRef.execute()
       }
@@ -134,14 +135,13 @@ extension MovieCardView {
     .task {
       do {
         let _ = try await isFavouriteRef.execute()
-      }
-      catch {
+      } catch {
         print(error)
       }
     }
   }
 }
 
- #Preview {
-   MovieCardView(showDetails: true, movie: Movie.mock)
- }
+#Preview {
+  MovieCardView(showDetails: true, movie: Movie.mock)
+}

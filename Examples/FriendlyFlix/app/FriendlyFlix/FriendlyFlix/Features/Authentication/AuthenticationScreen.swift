@@ -16,8 +16,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import SwiftUI
 import AuthenticationServices
+import SwiftUI
 
 private enum FocusableField: Hashable {
   case email
@@ -44,11 +44,10 @@ struct AuthenticationScreen: View {
   @State private var errorMessage = ""
   @State private var displayName = ""
 
-  private  var isValid: Bool {
+  private var isValid: Bool {
     return if flow == .login {
       !email.isEmpty && !password.isEmpty
-    }
-    else {
+    } else {
       !email.isEmpty && !password.isEmpty && password == confirmPassword
     }
   }
@@ -78,8 +77,7 @@ struct AuthenticationScreen: View {
         try await authenticationService.signUpWithEmailPassword(email: email, password: password)
         errorMessage = ""
         dismiss()
-      }
-      catch {
+      } catch {
         print(error.localizedDescription)
         errorMessage = error.localizedDescription
       }
@@ -147,14 +145,13 @@ extension AuthenticationScreen {
 
       Button(action: {
         if flow == .login { signInWithEmailPassword() }
-        else { signUpWithEmailPassword()}
-      } ) {
+        else { signUpWithEmailPassword() }
+      }) {
         if authenticationService.authenticationState != .authenticating {
           Text(flow == .login ? "Log in with password" : "Sign up")
             .padding(.vertical, 8)
             .frame(maxWidth: .infinity)
-        }
-        else {
+        } else {
           ProgressView()
             .progressViewStyle(CircularProgressViewStyle(tint: .white))
             .padding(.vertical, 8)

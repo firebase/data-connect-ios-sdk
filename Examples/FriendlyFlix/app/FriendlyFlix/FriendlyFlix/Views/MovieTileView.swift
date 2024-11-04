@@ -16,8 +16,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import SwiftUI
 import NukeUI
+import SwiftUI
 
 struct MovieTileView: View {
   var title: String = "The Matrix"
@@ -63,8 +63,9 @@ struct MovieTileView: View {
         .lineLimit(1)
         .font(.headline)
       HStack {
-        Text(star).foregroundColor(.yellow) + Text(" ") + Text("\(averageRating, specifier: "%.1f")") +
-        Text(" ") + Text(star)
+        Text(star)
+          .foregroundColor(.yellow) + Text(" ") + Text("\(averageRating, specifier: "%.1f")") +
+          Text(" ") + Text(star)
           .foregroundColor(.blue) + Text(" ") + Text("\(userRating, specifier: "%.1f")")
       }
     }
@@ -79,7 +80,7 @@ struct MovieTileView: View {
                       imageUrl: movie.imageUrl,
                       averageRating: 8,
                       userRating: 10)
-        .frame(width: 200, height: 300)
+          .frame(width: 200, height: 300)
       }
     }
   }

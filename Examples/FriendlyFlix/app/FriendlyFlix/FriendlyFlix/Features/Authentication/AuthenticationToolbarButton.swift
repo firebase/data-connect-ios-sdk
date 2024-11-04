@@ -24,8 +24,7 @@ struct AuthenticationToolbarButton: View {
   private func onButtonTapped() {
     if authenticationService.authenticationState == .unauthenticated {
       authenticationService.presentingAuthenticationDialog.toggle()
-    }
-    else {
+    } else {
       authenticationService.presentingAccountDialog.toggle()
     }
   }
@@ -34,7 +33,8 @@ struct AuthenticationToolbarButton: View {
 extension AuthenticationToolbarButton {
   var body: some View {
     Button(action: onButtonTapped) {
-      Image(systemName: authenticationService.authenticationState == .unauthenticated ? "person.circle" : "person.circle.fill")
+      Image(systemName: authenticationService
+        .authenticationState == .unauthenticated ? "person.circle" : "person.circle.fill")
     }
   }
 }

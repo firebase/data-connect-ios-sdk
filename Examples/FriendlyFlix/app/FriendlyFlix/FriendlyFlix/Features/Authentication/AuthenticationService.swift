@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import FirebaseAuth
 import Foundation
 import Observation
-import FirebaseAuth
 
 enum AuthenticationState {
   case unauthenticated
@@ -28,7 +28,7 @@ class AuthenticationService {
   var presentingAccountDialog = false
 
   var authenticationState: AuthenticationState = .unauthenticated
-  var user: User? = nil
+  var user: User?
 
   private var authenticationListener: AuthStateDidChangeListenerHandle?
 
@@ -37,8 +37,7 @@ class AuthenticationService {
       if let user {
         self.authenticationState = .authenticated
         self.user = user
-      }
-      else {
+      } else {
         self.authenticationState = .unauthenticated
       }
     }
@@ -60,7 +59,7 @@ class AuthenticationService {
     if let onSignUp, let user = Auth.auth().currentUser {
       onSignUp(user)
     }
-    
+
     authenticationState = .authenticated
   }
 
