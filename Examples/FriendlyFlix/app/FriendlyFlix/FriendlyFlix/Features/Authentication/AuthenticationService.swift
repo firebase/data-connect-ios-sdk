@@ -44,6 +44,11 @@ class AuthenticationService {
     }
   }
 
+  private var onSignUp: ((User) -> Void)?
+  public func onSignUp(_ action: @escaping (User) -> Void) {
+    onSignUp = action
+  }
+
   func signInWithEmailPassword(email: String, password: String) async throws {
     try await Auth.auth().signIn(withEmail: email, password: password)
     authenticationState = .authenticated
@@ -51,6 +56,11 @@ class AuthenticationService {
 
   func signUpWithEmailPassword(email: String, password: String) async throws {
     try await Auth.auth().createUser(withEmail: email, password: password)
+
+    if let onSignUp, let user = Auth.auth().currentUser {
+      onSignUp(user)
+    }
+    
     authenticationState = .authenticated
   }
 

@@ -17,22 +17,33 @@
 // limitations under the License.
 
 import SwiftUI
+import FirebaseDataConnect
+import FriendlyFlixSDK
 
-private struct SearchedView: View {
+struct SearchedView: View {
   @Environment(\.isSearching) private var isSearching
   var namespace: Namespace.ID
-  var filteredMovies: [Movie]
+  var filteredMovies = [Movie]()
+  var connector = DataConnect.friendlyFlixConnector
+
+  private var topMovies: [Movie] {
+    connector.listMoviesQuery
+      .ref({ optionalVars in
+        optionalVars.limit = 5
+        optionalVars.orderByRating = .DESC
+      })
+      .data?.movies.map(Movie.init) ?? []
+  }
 
   var body: some View {
     if !isSearching {
-      MovieListSection(namespace: namespace, title: "Top Movies", movies: Movie.topMovies)
-      CategoriesView()
+      MovieListSection(namespace: namespace, title: "Top Movies", movies: topMovies)
     } else {
       ForEach(filteredMovies) { movie in
         NavigationLink(value: movie) {
           MovieListRowView(
             title: movie.title,
-            subtitle: movie.subtitle,
+            subtitle: movie.description,
             imageUrl: movie.imageUrl
           )
           .matchedTransitionSource(id: movie.id, in: namespace)
@@ -48,11 +59,17 @@ struct SearchScreen: View {
   @State private var isStatusBarHidden = false
   @Namespace private var namespace
 
-  var filteredMovies: [Movie] {
-    Movie.mockList.filter { $0.title.lowercased().contains(searchText.lowercased()) }
+  var connector = DataConnect.friendlyFlixConnector
+
+  private var filteredMovies: [Movie] {
+    connector.listMoviesByPartialTitleQuery
+      .ref(searchTerm: searchText.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines))
+      .data?.movies.map(Movie.init) ?? []
   }
 
+}
 
+extension SearchScreen {
   var body: some View {
     NavigationStack {
       ScrollView {

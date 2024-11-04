@@ -2,7 +2,7 @@
 enum AccessLevel {
   """
   This operation is accessible to anyone, with or without authentication.
-  Equivalent to: @auth(expr: "true")
+  Equivalent to: `@auth(expr: "true")`
   """
   PUBLIC
 
@@ -391,7 +391,19 @@ directive @fdc_generated(
 
 type _Service {
   "Full Service Definition Language of the Frebase Data Connect Schema, including normalized schema, predefined and generated types."
-  sdl: String!
+  sdl(
+    """
+    Whether or not to omit Data Connect builtin GraphQL preludes.
+    They are static GraphQL publically available in the docsite.
+    """
+    omitBuiltin: Boolean = false
+    """
+    Whether or not to omit GQL description in the SDL.
+    We generate description to document generated schema.
+    It may bloat the size of SDL.
+    """
+    omitDescription: Boolean = false
+  ): String!
   "Orignal Schema Sources in the service."
   schema: String!
   "Generated documentation from the schema of the Firebase Data Connect Service."
@@ -830,16 +842,16 @@ Customizes a field that represents a SQL database table column.
 Data Connect maps scalar Fields on `@table` type to a SQL column of
 corresponding data type.
 
-- scalar `UUID`: [`uuid`](https://www.postgresql.org/docs/current/datatype-uuid.html).
-- scalar `String`: [`text`](https://www.postgresql.org/docs/current/datatype-character.html)
-- scalar `Int`: [`int`](https://www.postgresql.org/docs/current/datatype-numeric.html)
-- scalar `Int64`: [`bigint`](https://www.postgresql.org/docs/current/datatype-numeric.html)
-- scalar `Float`: [`double precision`](https://www.postgresql.org/docs/current/datatype-numeric.html)
-- scalar `Boolean`: [`boolean`](https://www.postgresql.org/docs/current/datatype-boolean.html)
-- scalar `Date`: [`date`](https://www.postgresql.org/docs/current/datatype-datetime.html)
-- scalar `Timestamp`: [`timestamptz`](https://www.postgresql.org/docs/current/datatype-datetime.html)
-- scalar `Any`: [`jsonb`](https://www.postgresql.org/docs/current/datatype-json.html)
-- scalar `Vector`: [`pgvector`](https://github.com/pgvector/pgvector)
+- scalar `UUID` maps to [`uuid`](https://www.postgresql.org/docs/current/datatype-uuid.html).
+- scalar `String` maps to [`text`](https://www.postgresql.org/docs/current/datatype-character.html).
+- scalar `Int` maps to [`int`](https://www.postgresql.org/docs/current/datatype-numeric.html).
+- scalar `Int64` maps to [`bigint`](https://www.postgresql.org/docs/current/datatype-numeric.html).
+- scalar `Float` maps to [`double precision`](https://www.postgresql.org/docs/current/datatype-numeric.html).
+- scalar `Boolean` maps to [`boolean`](https://www.postgresql.org/docs/current/datatype-boolean.html).
+- scalar `Date` maps to [`date`](https://www.postgresql.org/docs/current/datatype-datetime.html).
+- scalar `Timestamp` maps to [`timestamptz`](https://www.postgresql.org/docs/current/datatype-datetime.html).
+- scalar `Any` maps to [`jsonb`](https://www.postgresql.org/docs/current/datatype-json.html).
+- scalar `Vector` maps to [`pgvector`](https://github.com/pgvector/pgvector).
 
 Array scalar fields are mapped to [Postgres arrays](https://www.postgresql.org/docs/current/arrays.html).
 
@@ -882,6 +894,8 @@ directive @col(
 
   Each GraphQL type can map to multiple SQL data types.
   Refer to [Postgres supported data types](https://www.postgresql.org/docs/current/datatype.html).
+
+  Incompatible SQL data type will lead to undefiend barehavior.
   """
   dataType: String
   """
@@ -917,7 +931,8 @@ type ManyTable @table {
 type OneTable @table {
   id: UUID! @default(expr: "uuidV4()")
   someField: UUID!
-  manyTables_on_refField: [ManyTable!]!
+  # Generated Fields:
+  # manyTables_on_refField: [ManyTable!]!
 }
 ```
 Data Connect generates the necessary foreign key constraint.
@@ -964,6 +979,8 @@ type Bug @table {
   assignee: User
   reproter: User
 }
+
+type User @table { name: String!  }
 ```
 
 ##### Required Many-to-One Relation
@@ -979,6 +996,8 @@ type Comment @table {
   post: Post!
   content: String!
 }
+
+type Post @table { title: String!  }
 ```
 
 ##### Many To Many Relation
@@ -1002,17 +1021,19 @@ knows this is a join table, so expands the many-to-many query field.
 ```graphql
 type Group @table {
   name: String!
-  users_via_Membership: [User!]!
-  memberships_on_group: [Membership!]!
+  # Generated Fields:
+  # users_via_Membership: [User!]!
+  # memberships_on_group: [Membership!]!
 }
 type User @table {
   name: String!
-  groups_via_Membership: [Group!]!
-  memberships_on_user: [Membership!]!
+  # Generated Fields:
+  # groups_via_Membership: [Group!]!
+  # memberships_on_user: [Membership!]!
 }
 ```
 
-###### Example: Transerse the Many-To-Many Relation
+###### Example: Traverse the Many-To-Many Relation
 
 ```graphql
 query ($id: UUID!) {
@@ -1024,7 +1045,7 @@ query ($id: UUID!) {
 }
 ```
 
-###### Example: Transerse to the Join Table
+###### Example: Traverse to the Join Table
 
 ```graphql
 query ($id: UUID!) {
@@ -1049,9 +1070,9 @@ type Account @table {
   user: User! @unique
 }
 # Alternatively, use primary key constraint.
-type Account @table(key: "user") {
-  user: User!
-}
+# type Account @table(key: "user") {
+#   user: User!
+# }
 ```
 
 ###### Example: Transerse the Reference Field
@@ -1064,7 +1085,7 @@ query ($id: UUID!) {
 }
 ```
 
-###### Example: Reverse Tranverse the Reference field
+###### Example: Reverse Traverse the Reference field
 
 ```graphql
 query ($id: UUID!) {
@@ -1084,17 +1105,17 @@ query ($id: UUID!) {
 
 """
 directive @ref(
-  "The SQL database foreign key constraint name. Defaults to {table_name}_{field_name}_fkey."
+  "The SQL database foreign key constraint name. Defaults to snake_case `{table_name}_{field_name}_fkey`."
   constraintName: String
   """
-  Foreign key fields. Defaults to {tableName}{PrimaryIdName}.
+  Foreign key fields. Defaults to `{tableName}{PrimaryIdName}`.
   """
   fields: [String!]
   "The fields that the foreign key references in the other table. Defaults to its primary key."
   references: [String!]
 ) on FIELD_DEFINITION
 
-"Defines the direction of an orderby query"
+"Defines the orderBy direction in a query."
 enum OrderDirection {
 "Results are ordered in ascending order."
   ASC
@@ -1166,8 +1187,8 @@ directive @index(
   Configure the SQL database index id.
 
   If not overridden, Data Connect generates the index name:
-  - `table_name_first_field_second_field_aa_idx`
-  - `table_name_only_field_name_idx`
+  - `{table_name}_{first_field}_{second_field}_aa_idx`
+  - `{table_name}_{field_name}_idx`
   """
   name: String
   """
@@ -1728,6 +1749,8 @@ as a JSON array. All elements must be finite (no NaN, Infinity or -Infinity).
 Example: [1.1, 2, 3.3]
 
 In the PostgreSQL table, it's stored as [`pgvector`](https://github.com/pgvector/pgvector).
+
+See `Vector_Embed` for how to generate text embeddings in query and mutations.
 """
 scalar Vector
 
@@ -1816,6 +1839,8 @@ type Post @table {
 }
 ```
 
+NOTE: All natively supported `Vector_Embed_Model` generates vector of length `768`.
+
 ###### Example: Insert embedding
 
 ```graphql
@@ -1861,5 +1886,5 @@ scalar Vector_Embed_Model
   @fdc_forbiddenAsFieldType
   @fdc_example(value: "textembedding-gecko@003", description: "A stable version of the textembedding-gecko model")
   @fdc_example(value: "textembedding-gecko@001", description: "An older version of the textembedding-gecko model")
-  @fdc_example(value: "text-embedding-004", description: "Annother textembedding model")
+  @fdc_example(value: "text-embedding-004", description: "Another text embedding model")
 

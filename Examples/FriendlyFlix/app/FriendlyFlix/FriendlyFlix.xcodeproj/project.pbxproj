@@ -7,7 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		8854EC512CC6AC2700A09F27 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 8854EC502CC6AC2700A09F27 /* FirebaseAuth */; };
+		88896F392CCA5AD80089A19C /* NukeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 88896F382CCA5AD80089A19C /* NukeUI */; };
+		88BA433B2CC937E10063E309 /* FirebaseDataConnect in Frameworks */ = {isa = PBXBuildFile; productRef = 88BA433A2CC937E10063E309 /* FirebaseDataConnect */; };
+		88BA43402CC938250063E309 /* FriendlyFlixSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 88BA433F2CC938250063E309 /* FriendlyFlixSDK */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,7 +29,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8854EC512CC6AC2700A09F27 /* FirebaseAuth in Frameworks */,
+				88896F392CCA5AD80089A19C /* NukeUI in Frameworks */,
+				88BA433B2CC937E10063E309 /* FirebaseDataConnect in Frameworks */,
+				88BA43402CC938250063E309 /* FriendlyFlixSDK in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -70,7 +74,9 @@
 			);
 			name = FriendlyFlix;
 			packageProductDependencies = (
-				8854EC502CC6AC2700A09F27 /* FirebaseAuth */,
+				88BA433A2CC937E10063E309 /* FirebaseDataConnect */,
+				88BA433F2CC938250063E309 /* FriendlyFlixSDK */,
+				88896F382CCA5AD80089A19C /* NukeUI */,
 			);
 			productName = FriendlyFlix;
 			productReference = 88A9E6342CA834C600B3C4EF /* FriendlyFlix.app */;
@@ -101,7 +107,9 @@
 			mainGroup = 88A9E62B2CA834C600B3C4EF;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				8854EC4F2CC6AC2700A09F27 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				88BA43392CC937E10063E309 /* XCRemoteSwiftPackageReference "data-connect-ios-sdk" */,
+				88BA433E2CC938250063E309 /* XCLocalSwiftPackageReference "../FriendlyFlixSDK" */,
+				88896F372CCA5AD80089A19C /* XCRemoteSwiftPackageReference "Nuke" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 88A9E6352CA834C600B3C4EF /* Products */;
@@ -334,22 +342,46 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		88BA433E2CC938250063E309 /* XCLocalSwiftPackageReference "../FriendlyFlixSDK" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../FriendlyFlixSDK;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
-		8854EC4F2CC6AC2700A09F27 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+		88896F372CCA5AD80089A19C /* XCRemoteSwiftPackageReference "Nuke" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
+			repositoryURL = "https://github.com/kean/Nuke?tab=readme-ov-file";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 11.0.0;
+				minimumVersion = 12.8.0;
+			};
+		};
+		88BA43392CC937E10063E309 /* XCRemoteSwiftPackageReference "data-connect-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/data-connect-ios-sdk";
+			requirement = {
+				branch = main;
+				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		8854EC502CC6AC2700A09F27 /* FirebaseAuth */ = {
+		88896F382CCA5AD80089A19C /* NukeUI */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 8854EC4F2CC6AC2700A09F27 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseAuth;
+			package = 88896F372CCA5AD80089A19C /* XCRemoteSwiftPackageReference "Nuke" */;
+			productName = NukeUI;
+		};
+		88BA433A2CC937E10063E309 /* FirebaseDataConnect */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 88BA43392CC937E10063E309 /* XCRemoteSwiftPackageReference "data-connect-ios-sdk" */;
+			productName = FirebaseDataConnect;
+		};
+		88BA433F2CC938250063E309 /* FriendlyFlixSDK */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FriendlyFlixSDK;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

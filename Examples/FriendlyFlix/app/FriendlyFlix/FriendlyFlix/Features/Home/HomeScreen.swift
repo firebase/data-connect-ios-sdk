@@ -17,34 +17,87 @@
 // limitations under the License.
 
 import SwiftUI
+import FirebaseDataConnect
+import FriendlyFlixSDK
 
 struct HomeScreen: View {
   @Namespace private var namespace
+  @Environment(AuthenticationService.self) var authenticationService
 
+  private var connector = DataConnect.friendlyFlixConnector
+
+  private var isSignedIn: Bool {
+    authenticationService.user != nil
+  }
+
+  private func mapMovie(_ listMovie: ListMoviesQuery.Data.Movie) -> Movie {
+    .init(
+      title: listMovie.title,
+      description: listMovie.description ?? "",
+      releaseYear: listMovie.releaseYear,
+      rating: listMovie.rating,
+      imageUrl: listMovie.imageUrl
+    )
+  }
+
+  private var heroMovies: [Movie] {
+    connector.listMoviesQuery
+      .ref({ optionalVars in
+        optionalVars.limit = 3
+        optionalVars.orderByReleaseYear = .DESC
+      })
+      .data?.movies.map(Movie.init) ?? []
+  }
+
+  private var topMovies: [Movie] {
+    connector.listMoviesQuery
+      .ref({ optionalVars in
+        optionalVars.limit = 5
+        optionalVars.orderByRating = .DESC
+      })
+      .data?.movies.map(Movie.init) ?? []
+  }
+
+  let watchListRef: QueryRefObservation<GetUserFavoriteMoviesQuery.Data, GetUserFavoriteMoviesQuery.Variables>
+  private var watchList: [Movie] {
+    watchListRef.data?.user?.favoriteMovies.map(Movie.init) ?? []
+  }
+
+  init() {
+    watchListRef = connector.getUserFavoriteMoviesQuery.ref()
+  }
+}
+
+extension HomeScreen {
   var body: some View {
     NavigationStack {
       ScrollView {
         TabView {
-          ForEach(Movie.featured) { movie in
+          ForEach(heroMovies) { movie in
             NavigationLink(value: movie) {
-              MovieTeaserView(title: movie.title, subtitle: movie.subtitle, imageUrl: movie.imageUrl)
+              MovieTeaserView(title: movie.title, subtitle: movie.description, imageUrl: movie.imageUrl)
                 .matchedTransitionSource(id: movie.id, in: namespace)
             }
-
+            .buttonStyle(.noHighlight)
           }
         }
+        .frame(height: 600)
         .navigationDestination(for: Movie.self) { movie in
           MovieCardView(showDetails: true, movie: movie)
             .navigationTransition(.zoom(sourceID: movie.id, in: namespace))
         }
-        .frame(height: 600)
-        .tabViewStyle(.page)
         .tabViewStyle(.page(indexDisplayMode: .always))
 
         Group {
-          MovieListSection(namespace: namespace, title: "Top Movies", movies: Movie.topMovies)
-          MovieListSection(namespace: namespace, title: "Watch List", movies: Movie.watchList)
-          MovieListSection(namespace: namespace, title: "Featured", movies: Movie.featured)
+          MovieListSection(namespace: namespace, title: "Top Movies", movies: topMovies)
+          if isSignedIn {
+            MovieListSection(namespace: namespace, title: "Watch List", movies: watchList)
+              .onAppear {
+                Task {
+                  try await watchListRef.execute()
+                }
+              }
+          }
         }
         .navigationDestination(for: [Movie].self) { movies in
           MovieListScreen(namespace: namespace, movies: movies)

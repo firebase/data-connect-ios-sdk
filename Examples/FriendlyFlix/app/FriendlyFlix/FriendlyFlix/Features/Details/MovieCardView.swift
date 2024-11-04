@@ -18,32 +18,71 @@
 
 
 import SwiftUI
+import NukeUI
+import FirebaseDataConnect
+import FriendlyFlixSDK
 
 struct MovieCardView: View {
-  var showDetails: Bool = false
+  @Environment(\.dismiss) private var dismiss
+  private var connector = DataConnect.friendlyFlixConnector
 
-  var movie: Movie
+  private var showDetails: Bool = false
+  private var movie: Movie
 
+  public init(showDetails: Bool, movie: Movie) {
+    self.showDetails = showDetails
+    self.movie = movie
+
+    isFavouriteRef = connector.getIfFavoritedMovieQuery.ref(movieId: movie.id)
+  }
+
+  // MARK: - Favourite handling
+
+  private let isFavouriteRef: QueryRefObservation<GetIfFavoritedMovieQuery.Data, GetIfFavoritedMovieQuery.Variables>
+  private var isFavourite: Bool {
+    isFavouriteRef.data?.favorite_movie?.movieId != nil
+  }
+
+  private func toggleFavourite() {
+    Task {
+      if isFavourite {
+        let _ = try await connector.deleteFavoritedMovieMutation.execute(movieId: movie.id)
+        let _ = try await isFavouriteRef.execute()
+      }
+      else {
+        let _ = try await connector.addFavoritedMovieMutation.execute(movieId: movie.id)
+        let _ = try await isFavouriteRef.execute()
+      }
+    }
+  }
+}
+
+extension MovieCardView {
   var body: some View {
     CardView(showDetails: showDetails) {
       if let imageUrl = URL(string: movie.imageUrl) {
-        AsyncImage(url: imageUrl) { phase in
-          if let image = phase.image {
+        LazyImage(url: imageUrl) { state in
+          if let image = state.image {
             image
               .resizable()
-              .aspectRatio(contentMode: .fill)
-              .frame(height: 450)
-          } else if phase.error != nil {
+              .scaledToFill()
+              .frame(maxWidth: .infinity)
+              .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+          } else if state.error != nil {
             Color.red
+              .frame(maxWidth: .infinity)
+              .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
               .redacted(if: true)
           } else {
             Image(systemName: "photo.artframe")
               .resizable()
-              .aspectRatio(contentMode: .fit)
-              .frame(height: 450)
+              .aspectRatio(contentMode: .fill)
+              .frame(maxWidth: .infinity)
+              .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
               .redacted(reason: .placeholder)
           }
         }
+        .frame(maxWidth: .infinity)
       }
     } heroTitle: {
       VStack(alignment: .leading) {
@@ -64,12 +103,45 @@ struct MovieCardView: View {
         .background(.thinMaterial)
       }
     } details: {
-      Text(movie.title)
-//      MovieDetailsView(movie: movie)
+      MovieDetailsView(movie: movie)
+    }
+    .toolbar {
+      ToolbarItem {
+        Button {
+          toggleFavourite()
+        } label: {
+          Image(systemName: isFavourite ? "heart.fill" : "heart")
+            .font(.headline)
+            .foregroundColor(.white)
+            .frame(width: 30, height: 30)
+            .background(Color.black.opacity(0.6))
+            .clipShape(Circle())
+        }
+      }
+      ToolbarItem {
+        Button {
+          dismiss()
+        } label: {
+          Image(systemName: "xmark")
+            .font(.headline)
+            .foregroundColor(.white)
+            .frame(width: 30, height: 30)
+            .background(Color.black.opacity(0.6))
+            .clipShape(Circle())
+        }
+      }
+    }
+    .task {
+      do {
+        let _ = try await isFavouriteRef.execute()
+      }
+      catch {
+        print(error)
+      }
     }
   }
 }
 
-// #Preview {
-//  MovieCardView(showDetails: true, gradientConfiguration: GradienConfiguration.sample)
-// }
+ #Preview {
+   MovieCardView(showDetails: true, movie: Movie.mock)
+ }

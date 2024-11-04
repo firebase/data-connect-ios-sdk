@@ -58,12 +58,6 @@ extension AccountScreen {
         }
 
         Section {
-          Button(role: .destructive, action: {}) {
-            Text("Clear viewing history")
-          }
-        }
-
-        Section {
           Button(action: signOut) {
             Text("Sign out")
           }
@@ -84,4 +78,5 @@ extension AccountScreen {
 
 #Preview {
   AccountScreen()
+    .environment(AuthenticationService())
 }
