@@ -148,7 +148,12 @@ actor GrpcClient: CustomStringConvertible {
       let resultsString = try results.jsonString()
       DataConnectLogger
         .debug("executeQuery() receives response: \(resultsString, privacy: .private).")
+
       // Not doing error decoding here
+      guard results.errors.isEmpty else {
+        throw DataConnectError.operationExecutionFailed
+      }
+
       if let decodedResults = try codec.decode(result: results.data, asType: resultType) {
         return OperationResult(data: decodedResults)
       } else {
@@ -191,6 +196,11 @@ actor GrpcClient: CustomStringConvertible {
       let resultsString = try results.jsonString()
       DataConnectLogger
         .debug("executeMutation() receives response: \(resultsString, privacy: .private).")
+
+      guard results.errors.isEmpty else {
+        throw DataConnectError.operationExecutionFailed
+      }
+
       if let decodedResults = try codec.decode(result: results.data, asType: resultType) {
         return OperationResult(data: decodedResults)
       } else {

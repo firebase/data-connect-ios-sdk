@@ -34,4 +34,8 @@ public enum DataConnectError: Error {
 
   /// timestamp components specified to initialize Timestamp are invalid
   case invalidTimestampFormat
+
+  /// generic operation execution error
+  case operationExecutionFailed
+
 }
