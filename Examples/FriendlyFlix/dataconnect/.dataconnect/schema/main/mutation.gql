@@ -189,6 +189,69 @@ extend type Mutation {
     data: User_Data!
   ): User_KeyOutput! @fdc_generated(from: "User", purpose: UPSERT_SINGLE)
   """
+  ✨ Insert or update `Actor` objects into the table, based on the primary key. Returns the key of the newly inserted `Actor`.
+  """
+  actor_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Actor_Data!]!
+  ): [Actor_KeyOutput!]! @fdc_generated(from: "Actor", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `FavoriteMovie` objects into the table, based on the primary key. Returns the key of the newly inserted `FavoriteMovie`.
+  """
+  favorite_movie_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [FavoriteMovie_Data!]!
+  ): [FavoriteMovie_KeyOutput!]! @fdc_generated(from: "FavoriteMovie", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Movie` objects into the table, based on the primary key. Returns the key of the newly inserted `Movie`.
+  """
+  movie_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Movie_Data!]!
+  ): [Movie_KeyOutput!]! @fdc_generated(from: "Movie", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `MovieActor` objects into the table, based on the primary key. Returns the key of the newly inserted `MovieActor`.
+  """
+  movieActor_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [MovieActor_Data!]!
+  ): [MovieActor_KeyOutput!]! @fdc_generated(from: "MovieActor", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `MovieMetadata` objects into the table, based on the primary key. Returns the key of the newly inserted `MovieMetadata`.
+  """
+  movieMetadata_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [MovieMetadata_Data!]!
+  ): [MovieMetadata_KeyOutput!]! @fdc_generated(from: "MovieMetadata", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Review` objects into the table, based on the primary key. Returns the key of the newly inserted `Review`.
+  """
+  review_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Review_Data!]!
+  ): [Review_KeyOutput!]! @fdc_generated(from: "Review", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `User` objects into the table, based on the primary key. Returns the key of the newly inserted `User`.
+  """
+  user_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [User_Data!]!
+  ): [User_KeyOutput!]! @fdc_generated(from: "User", purpose: UPSERT_MULTIPLE)
+  """
   ✨ Update a single `Actor` based on `id`, `key` or `first`, setting columns specified in `data`. Returns `null` if not found.
   """
   actor_update(

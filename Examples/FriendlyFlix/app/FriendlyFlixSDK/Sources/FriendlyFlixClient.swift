@@ -13,7 +13,7 @@ import FirebaseDataConnect
 
 public extension DataConnect {
 
-  static var friendlyFlixConnector: FriendlyFlixConnector = {
+  static let friendlyFlixConnector: FriendlyFlixConnector = {
     let dc = DataConnect.dataConnect(connectorConfig: FriendlyFlixConnector.connectorConfig, callerSDKType: .generated)
     return FriendlyFlixConnector(dataConnect: dc)
   }()
@@ -22,7 +22,7 @@ public extension DataConnect {
 
 public class FriendlyFlixConnector {
 
-  var dataConnect: DataConnect
+  let dataConnect: DataConnect
 
   public static let connectorConfig = ConnectorConfig(serviceId: "dataconnect", location: "us-central1", connector: "friendly-flix")
 

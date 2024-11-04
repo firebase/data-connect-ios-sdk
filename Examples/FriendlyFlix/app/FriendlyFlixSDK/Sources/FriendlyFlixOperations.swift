@@ -24,7 +24,7 @@ import FirebaseDataConnect
 
 // MARK: Common Enums
 
-public enum OrderDirection: String, Codable {
+public enum OrderDirection: String, Codable, Sendable {
   case ASC = "ASC"
   case DESC = "DESC"
   }
@@ -104,7 +104,7 @@ public func hash(into hasher: inout Hasher) {
 
   }
 
-  public struct Data: Decodable {
+  public struct Data: Decodable, Sendable {
 
 
 
@@ -125,6 +125,7 @@ username: String
         return ref as MutationRef<UpsertUserMutation.Data,UpsertUserMutation.Variables>
    }
 
+  @MainActor
    public func execute(
         
 username: String
@@ -210,7 +211,7 @@ public func hash(into hasher: inout Hasher) {
 
   }
 
-  public struct Data: Decodable {
+  public struct Data: Decodable, Sendable {
 
 
 
@@ -231,6 +232,7 @@ movieId: UUID
         return ref as MutationRef<AddFavoritedMovieMutation.Data,AddFavoritedMovieMutation.Variables>
    }
 
+  @MainActor
    public func execute(
         
 movieId: UUID
@@ -316,7 +318,7 @@ public func hash(into hasher: inout Hasher) {
 
   }
 
-  public struct Data: Decodable {
+  public struct Data: Decodable, Sendable {
 
 
 
@@ -337,6 +339,7 @@ movieId: UUID
         return ref as MutationRef<DeleteFavoritedMovieMutation.Data,DeleteFavoritedMovieMutation.Variables>
    }
 
+  @MainActor
    public func execute(
         
 movieId: UUID
@@ -458,7 +461,7 @@ public func hash(into hasher: inout Hasher) {
 
   }
 
-  public struct Data: Decodable {
+  public struct Data: Decodable, Sendable {
 
 
 
@@ -483,6 +486,7 @@ reviewText: String
         return ref as MutationRef<AddReviewMutation.Data,AddReviewMutation.Variables>
    }
 
+  @MainActor
    public func execute(
         
 movieId: UUID
@@ -608,7 +612,7 @@ public func hash(into hasher: inout Hasher) {
 
   }
 
-  public struct Data: Decodable {
+  public struct Data: Decodable, Sendable {
 
 
 
@@ -633,6 +637,7 @@ reviewText: String
         return ref as MutationRef<UpdateReviewMutation.Data,UpdateReviewMutation.Variables>
    }
 
+  @MainActor
    public func execute(
         
 movieId: UUID
@@ -722,7 +727,7 @@ public func hash(into hasher: inout Hasher) {
 
   }
 
-  public struct Data: Decodable {
+  public struct Data: Decodable, Sendable {
 
 
 
@@ -743,6 +748,7 @@ movieId: UUID
         return ref as MutationRef<DeleteReviewMutation.Data,DeleteReviewMutation.Variables>
    }
 
+  @MainActor
    public func execute(
         
 movieId: UUID
@@ -859,12 +865,12 @@ public func hash(into hasher: inout Hasher) {
 
   }
 
-  public struct Data: Decodable {
+  public struct Data: Decodable, Sendable {
 
 
 
 
-public struct Movie: Decodable ,Hashable, Equatable, Identifiable {
+public struct Movie: Decodable, Sendable ,Hashable, Equatable, Identifiable {
   
 
 
@@ -1010,11 +1016,12 @@ movies: [Movie]
         return ref as! QueryRefObservation<ListMoviesQuery.Data,ListMoviesQuery.Variables>
    }
 
+  @MainActor
    public func execute(
         
         
         
-        _ optionalVars: ((inout ListMoviesQuery.Variables)->())? = nil
+        _ optionalVars: (@MainActor (inout ListMoviesQuery.Variables)->())? = nil
         ) async throws -> OperationResult<ListMoviesQuery.Data> {
         var variables = ListMoviesQuery.Variables()
         
@@ -1101,12 +1108,12 @@ public func hash(into hasher: inout Hasher) {
 
   }
 
-  public struct Data: Decodable {
+  public struct Data: Decodable, Sendable {
 
 
 
 
-public struct Movie: Decodable ,Hashable, Equatable, Identifiable {
+public struct Movie: Decodable, Sendable ,Hashable, Equatable, Identifiable {
   
 
 
@@ -1152,7 +1159,7 @@ tags: [String]?
 
 
 
-public struct MovieMetadataMetadata: Decodable  {
+public struct MovieMetadataMetadata: Decodable, Sendable  {
   
 
 
@@ -1187,7 +1194,7 @@ metadata: [MovieMetadataMetadata]
 
 
 
-public struct ActorMainActors: Decodable ,Hashable, Equatable, Identifiable {
+public struct ActorMainActors: Decodable, Sendable ,Hashable, Equatable, Identifiable {
   
 
 
@@ -1264,7 +1271,7 @@ mainActors: [ActorMainActors]
 
 
 
-public struct ActorSupportingActors: Decodable ,Hashable, Equatable, Identifiable {
+public struct ActorSupportingActors: Decodable, Sendable ,Hashable, Equatable, Identifiable {
   
 
 
@@ -1341,7 +1348,7 @@ supportingActors: [ActorSupportingActors]
 
 
 
-public struct ReviewReviews: Decodable  {
+public struct ReviewReviews: Decodable, Sendable  {
   
 
 
@@ -1367,7 +1374,7 @@ rating: Int?
 
 
 
-public struct User: Decodable ,Hashable, Equatable, Identifiable {
+public struct User: Decodable, Sendable ,Hashable, Equatable, Identifiable {
   
 
 
@@ -1596,6 +1603,7 @@ id: UUID
         return ref as! QueryRefObservation<GetMovieByIdQuery.Data,GetMovieByIdQuery.Variables>
    }
 
+  @MainActor
    public func execute(
         
 id: UUID
@@ -1682,12 +1690,12 @@ public func hash(into hasher: inout Hasher) {
 
   }
 
-  public struct Data: Decodable {
+  public struct Data: Decodable, Sendable {
 
 
 
 
-public struct Actor: Decodable ,Hashable, Equatable, Identifiable {
+public struct Actor: Decodable, Sendable ,Hashable, Equatable, Identifiable {
   
 
 
@@ -1708,7 +1716,7 @@ imageUrl: String
 
 
 
-public struct MovieMainActors: Decodable ,Hashable, Equatable, Identifiable {
+public struct MovieMainActors: Decodable, Sendable ,Hashable, Equatable, Identifiable {
   
 
 
@@ -1806,7 +1814,7 @@ mainActors: [MovieMainActors]
 
 
 
-public struct MovieSupportingActors: Decodable ,Hashable, Equatable, Identifiable {
+public struct MovieSupportingActors: Decodable, Sendable ,Hashable, Equatable, Identifiable {
   
 
 
@@ -1980,6 +1988,7 @@ id: UUID
         return ref as! QueryRefObservation<GetActorByIdQuery.Data,GetActorByIdQuery.Variables>
    }
 
+  @MainActor
    public func execute(
         
 id: UUID
@@ -2019,12 +2028,12 @@ public class GetCurrentUserQuery{
     
   }
 
-  public struct Data: Decodable {
+  public struct Data: Decodable, Sendable {
 
 
 
 
-public struct User: Decodable ,Hashable, Equatable, Identifiable {
+public struct User: Decodable, Sendable ,Hashable, Equatable, Identifiable {
   
 
 
@@ -2040,7 +2049,7 @@ username: String
 
 
 
-public struct ReviewReviews: Decodable  {
+public struct ReviewReviews: Decodable, Sendable  {
   
 
 
@@ -2066,7 +2075,7 @@ reviewText: String?
 
 
 
-public struct Movie: Decodable ,Hashable, Equatable, Identifiable {
+public struct Movie: Decodable, Sendable ,Hashable, Equatable, Identifiable {
   
 
 
@@ -2180,13 +2189,13 @@ reviews: [ReviewReviews]
 
 
 
-public struct FavoriteMovieFavoriteMovies: Decodable  {
+public struct FavoriteMovieFavoriteMovies: Decodable, Sendable  {
   
 
 
 
 
-public struct Movie: Decodable ,Hashable, Equatable, Identifiable {
+public struct Movie: Decodable, Sendable ,Hashable, Equatable, Identifiable {
   
 
 
@@ -2232,7 +2241,7 @@ tags: [String]?
 
 
 
-public struct MovieMetadataMetadata: Decodable  {
+public struct MovieMetadataMetadata: Decodable, Sendable  {
   
 
 
@@ -2449,6 +2458,7 @@ user: User?
         return ref as! QueryRefObservation<GetCurrentUserQuery.Data,GetCurrentUserQuery.Variables>
    }
 
+  @MainActor
    public func execute(
         
         ) async throws -> OperationResult<GetCurrentUserQuery.Data> {
@@ -2533,12 +2543,12 @@ public func hash(into hasher: inout Hasher) {
 
   }
 
-  public struct Data: Decodable {
+  public struct Data: Decodable, Sendable {
 
 
 
 
-public struct FavoriteMovie: Decodable  {
+public struct FavoriteMovie: Decodable, Sendable  {
   
 
 
@@ -2583,6 +2593,7 @@ movieId: UUID
         return ref as! QueryRefObservation<GetIfFavoritedMovieQuery.Data,GetIfFavoritedMovieQuery.Variables>
    }
 
+  @MainActor
    public func execute(
         
 movieId: UUID
@@ -2762,12 +2773,12 @@ public func hash(into hasher: inout Hasher) {
 
   }
 
-  public struct Data: Decodable {
+  public struct Data: Decodable, Sendable {
 
 
 
 
-public struct MovieMoviesMatchingTitle: Decodable ,Hashable, Equatable, Identifiable {
+public struct MovieMoviesMatchingTitle: Decodable, Sendable ,Hashable, Equatable, Identifiable {
   
 
 
@@ -2866,7 +2877,7 @@ moviesMatchingTitle: [MovieMoviesMatchingTitle]
 
 
 
-public struct MovieMoviesMatchingDescription: Decodable ,Hashable, Equatable, Identifiable {
+public struct MovieMoviesMatchingDescription: Decodable, Sendable ,Hashable, Equatable, Identifiable {
   
 
 
@@ -2965,7 +2976,7 @@ moviesMatchingDescription: [MovieMoviesMatchingDescription]
 
 
 
-public struct ActorActorsMatchingName: Decodable ,Hashable, Equatable, Identifiable {
+public struct ActorActorsMatchingName: Decodable, Sendable ,Hashable, Equatable, Identifiable {
   
 
 
@@ -3042,7 +3053,7 @@ actorsMatchingName: [ActorActorsMatchingName]
 
 
 
-public struct ReviewReviewsMatchingText: Decodable  {
+public struct ReviewReviewsMatchingText: Decodable, Sendable  {
   
 
 
@@ -3068,7 +3079,7 @@ reviewDate: LocalDate
 
 
 
-public struct Movie: Decodable ,Hashable, Equatable, Identifiable {
+public struct Movie: Decodable, Sendable ,Hashable, Equatable, Identifiable {
   
 
 
@@ -3134,7 +3145,7 @@ movie: Movie
 
 
 
-public struct User: Decodable ,Hashable, Equatable, Identifiable {
+public struct User: Decodable, Sendable ,Hashable, Equatable, Identifiable {
   
 
 
@@ -3279,6 +3290,7 @@ genre: String
         return ref as! QueryRefObservation<SearchAllQuery.Data,SearchAllQuery.Variables>
    }
 
+  @MainActor
    public func execute(
         
 minYear: Int
@@ -3293,7 +3305,7 @@ genre: String
 
         
         ,
-        _ optionalVars: ((inout SearchAllQuery.Variables)->())? = nil
+        _ optionalVars: (@MainActor (inout SearchAllQuery.Variables)->())? = nil
         ) async throws -> OperationResult<SearchAllQuery.Data> {
         var variables = SearchAllQuery.Variables(minYear:minYear,maxYear:maxYear,minRating:minRating,maxRating:maxRating,genre:genre)
         
@@ -3380,12 +3392,12 @@ public func hash(into hasher: inout Hasher) {
 
   }
 
-  public struct Data: Decodable {
+  public struct Data: Decodable, Sendable {
 
 
 
 
-public struct Movie: Decodable ,Hashable, Equatable, Identifiable {
+public struct Movie: Decodable, Sendable ,Hashable, Equatable, Identifiable {
   
 
 
@@ -3516,6 +3528,7 @@ searchTerm: String
         return ref as! QueryRefObservation<ListMoviesByPartialTitleQuery.Data,ListMoviesByPartialTitleQuery.Variables>
    }
 
+  @MainActor
    public func execute(
         
 searchTerm: String
@@ -3555,24 +3568,24 @@ public class GetUserFavoriteMoviesQuery{
     
   }
 
-  public struct Data: Decodable {
+  public struct Data: Decodable, Sendable {
 
 
 
 
-public struct User: Decodable  {
+public struct User: Decodable, Sendable  {
   
 
 
 
 
-public struct FavoriteMovieFavoriteMovies: Decodable  {
+public struct FavoriteMovieFavoriteMovies: Decodable, Sendable  {
   
 
 
 
 
-public struct Movie: Decodable ,Hashable, Equatable, Identifiable {
+public struct Movie: Decodable, Sendable ,Hashable, Equatable, Identifiable {
   
 
 
@@ -3748,6 +3761,7 @@ user: User?
         return ref as! QueryRefObservation<GetUserFavoriteMoviesQuery.Data,GetUserFavoriteMoviesQuery.Variables>
    }
 
+  @MainActor
    public func execute(
         
         ) async throws -> OperationResult<GetUserFavoriteMoviesQuery.Data> {

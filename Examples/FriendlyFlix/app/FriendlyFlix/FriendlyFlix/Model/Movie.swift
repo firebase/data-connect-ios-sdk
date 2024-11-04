@@ -19,6 +19,55 @@
 import Foundation
 import SwiftUI
 
+struct Review: Identifiable, Hashable {
+  let id: UUID
+  var reviewText: String
+  var rating: Int
+  var userName: String
+}
+
+struct MovieActor: Identifiable, Hashable {
+  var id: UUID
+  var name: String
+  var imageUrl: String
+}
+
+
+struct MovieDetails: Identifiable, Hashable {
+  let id: UUID
+  let title: String
+  let description: String
+  let releaseYear: Int?
+  var rating: Double
+  let imageUrl: String
+
+  let mainActors: [MovieActor]
+  let supportingActors: [MovieActor]
+  let reviews: [Review]
+
+  init(
+    id: UUID = UUID(),
+    title: String,
+    description: String,
+    releaseYear: Int?,
+    rating: Double,
+    imageUrl: String,
+    mainActors: [MovieActor],
+    supportingActors: [MovieActor],
+    reviews: [Review]
+  ) {
+    self.id = id
+    self.title = title
+    self.description = description
+    self.releaseYear = releaseYear
+    self.rating = rating
+    self.imageUrl = imageUrl
+    self.mainActors = mainActors
+    self.supportingActors = supportingActors
+    self.reviews = reviews
+  }
+}
+
 struct Movie: Identifiable, Hashable {
   let id: UUID
   let title: String
@@ -100,11 +149,6 @@ extension Movie: Mockable {
   static var featured = Array<Movie>(mockList.filter { $0.title.contains("The")})
   static var topMovies = Array<Movie>(mockList.prefix(3))
   static var watchList = Array<Movie>(mockList.suffix(5))
-
-//  static var featured = Array<Movie>([mockList[0]])
-//  static var topMovies = Array<Movie>([mockList[1]])
-//  static var watchList = Array<Movie>([mockList[2]])
-
 
 }
 

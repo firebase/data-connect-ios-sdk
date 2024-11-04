@@ -56,6 +56,8 @@ extension ActorKey : Hashable {
   }
 }
 
+extension ActorKey : Sendable {}
+
 
 
 public struct FavoriteMovieKey {
@@ -125,6 +127,8 @@ extension FavoriteMovieKey : Hashable {
     
   }
 }
+
+extension FavoriteMovieKey : Sendable {}
 
 
 
@@ -196,6 +200,8 @@ extension MovieActorKey : Hashable {
   }
 }
 
+extension MovieActorKey : Sendable {}
+
 
 
 public struct MovieMetadataKey {
@@ -250,6 +256,8 @@ extension MovieMetadataKey : Hashable {
   }
 }
 
+extension MovieMetadataKey : Sendable {}
+
 
 
 public struct MovieKey {
@@ -303,6 +311,8 @@ extension MovieKey : Hashable {
     
   }
 }
+
+extension MovieKey : Sendable {}
 
 
 
@@ -374,6 +384,8 @@ extension ReviewKey : Hashable {
   }
 }
 
+extension ReviewKey : Sendable {}
+
 
 
 public struct UserKey {
@@ -427,5 +439,7 @@ extension UserKey : Hashable {
     
   }
 }
+
+extension UserKey : Sendable {}
 
 
