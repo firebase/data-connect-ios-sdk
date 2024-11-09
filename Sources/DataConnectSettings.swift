@@ -15,7 +15,7 @@
 import Foundation
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public struct DataConnectSettings: Hashable, Equatable {
+public struct DataConnectSettings: Hashable, Equatable, Sendable {
   public private(set) var host: String
   public private(set) var port: Int
   public private(set) var sslEnabled: Bool

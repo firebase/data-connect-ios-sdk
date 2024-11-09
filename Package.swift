@@ -78,7 +78,7 @@ func firebaseDependency() -> Package.Dependency {
     return .package(url: firebaseURL, branch: "main")
   }
 
-  return .package(url: firebaseURL, exact: "11.3.0")
+  return .package(url: firebaseURL, exact: "11.5.0")
 }
 
 func integrationTestPath() -> String? {
