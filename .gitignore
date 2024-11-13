@@ -108,3 +108,4 @@ scripts
 xcodebuild.log
 
 Package.resolved
+GoogleService-Info.plist
