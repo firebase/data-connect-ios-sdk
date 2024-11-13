@@ -14,7 +14,7 @@
 
 import Firebase
 import FirebaseAuth
-import FirebaseDataConnect
+@preconcurrency import FirebaseDataConnect
 import FriendlyFlixSDK
 import SwiftUI
 

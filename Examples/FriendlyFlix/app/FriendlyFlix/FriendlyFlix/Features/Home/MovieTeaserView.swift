@@ -67,7 +67,7 @@ struct MovieTeaserView: View {
 }
 
 #Preview {
-  var movie = Movie.mock
+  let movie = Movie.mock
   MovieTeaserView(
     title: movie.title,
     subtitle: movie.description,

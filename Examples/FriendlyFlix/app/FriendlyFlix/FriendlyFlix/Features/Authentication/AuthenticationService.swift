@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import FirebaseAuth
+@preconcurrency import FirebaseAuth
 import Foundation
 import Observation
 
@@ -22,7 +22,7 @@ enum AuthenticationState {
   case authenticated
 }
 
-@Observable
+@Observable @MainActor
 class AuthenticationService {
   var presentingAuthenticationDialog = false
   var presentingAccountDialog = false

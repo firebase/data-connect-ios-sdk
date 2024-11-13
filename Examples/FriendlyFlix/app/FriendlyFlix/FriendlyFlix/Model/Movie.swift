@@ -85,7 +85,7 @@ struct Movie: Identifiable, Hashable {
 }
 
 extension Movie: Mockable {
-  static var mockList: [Movie] = [
+  static let mockList: [Movie] = [
     .init(
       title: "The Hitchhiker's Guide to the Galaxy",
       description:
@@ -137,7 +137,7 @@ extension Movie: Mockable {
     ),
   ]
 
-  static var featured = [Movie](mockList.filter { $0.title.contains("The") })
-  static var topMovies = [Movie](mockList.prefix(3))
-  static var watchList = [Movie](mockList.suffix(5))
+  static let featured = [Movie](mockList.filter { $0.title.contains("The") })
+  static let topMovies = [Movie](mockList.prefix(3))
+  static let watchList = [Movie](mockList.suffix(5))
 }
