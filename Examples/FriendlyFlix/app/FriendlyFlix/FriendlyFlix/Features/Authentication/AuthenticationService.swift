@@ -15,6 +15,7 @@
 import FirebaseAuth
 import Foundation
 import Observation
+import os
 
 enum AuthenticationState {
   case unauthenticated
@@ -24,6 +25,8 @@ enum AuthenticationState {
 
 @Observable
 class AuthenticationService {
+  private let logger = Logger(subsystem: "FriendlyFlix", category: "auth")
+
   var presentingAuthenticationDialog = false
   var presentingAccountDialog = false
 
@@ -57,6 +60,7 @@ class AuthenticationService {
     try await Auth.auth().createUser(withEmail: email, password: password)
 
     if let onSignUp, let user = Auth.auth().currentUser {
+      logger.debug("User signed in \(user.displayName ?? "(no fullname)") with email \(user.email ?? "(no email)")")
       onSignUp(user)
     }
 

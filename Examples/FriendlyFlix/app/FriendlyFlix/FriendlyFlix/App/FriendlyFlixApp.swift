@@ -20,30 +20,13 @@ import SwiftUI
 
 @main
 struct FriendlyFlixApp: App {
-  private func loadRocketSimConnect() {
-    #if DEBUG
-      guard Bundle(
-        path: "/Applications/RocketSim.app/Contents/Frameworks/RocketSimConnectLinker.nocache.framework"
-      )?
-        .load() == true else {
-        print("Failed to load linker framework")
-        return
-      }
-      print("RocketSim Connect successfully linked")
-    #endif
-  }
-
   var authenticationService: AuthenticationService?
 
   init() {
-    loadRocketSimConnect()
     FirebaseApp.configure()
 
     authenticationService = AuthenticationService()
     authenticationService?.onSignUp { user in
-      print(
-        "User signed in \(user.displayName ?? "(no fullname)") with email \(user.email ?? "(no email)")"
-      )
       let userName = String(user.email?.split(separator: "@").first ?? "(unknown)")
       Task {
         try await DataConnect.friendlyFlixConnector.upsertUserMutation.execute(username: userName)

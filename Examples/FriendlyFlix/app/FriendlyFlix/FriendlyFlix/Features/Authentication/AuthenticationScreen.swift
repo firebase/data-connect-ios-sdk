@@ -14,6 +14,7 @@
 
 import AuthenticationServices
 import SwiftUI
+import os
 
 private enum FocusableField: Hashable {
   case email
@@ -27,6 +28,7 @@ private enum AuthenticationFlow {
 }
 
 struct AuthenticationScreen: View {
+  private let logger = Logger(subsystem: "FriendlyFlix", category: "auth")
   @Environment(AuthenticationService.self) var authenticationService
   @Environment(\.colorScheme) private var colorScheme
   @Environment(\.dismiss) private var dismiss
@@ -61,7 +63,7 @@ struct AuthenticationScreen: View {
         try await authenticationService.signInWithEmailPassword(email: email, password: password)
         dismiss()
       } catch {
-        print(error.localizedDescription)
+        logger.error("Error when signing in with email / password: \(error.localizedDescription)")
         errorMessage = error.localizedDescription
       }
     }
@@ -74,7 +76,7 @@ struct AuthenticationScreen: View {
         errorMessage = ""
         dismiss()
       } catch {
-        print(error.localizedDescription)
+        logger.error("Error when signing up with email / password: \(error.localizedDescription)")
         errorMessage = error.localizedDescription
       }
     }

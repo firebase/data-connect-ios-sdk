@@ -16,8 +16,10 @@ import FirebaseDataConnect
 import FriendlyFlixSDK
 import NukeUI
 import SwiftUI
+import os
 
 struct MovieCardView: View {
+  private let logger = Logger(subsystem: "FriendlyFlix", category: "moviecard")
   @Environment(\.dismiss) private var dismiss
   private var connector = DataConnect.friendlyFlixConnector
 
@@ -32,7 +34,6 @@ struct MovieCardView: View {
   }
 
   // MARK: - Favourite handling
-
   private let isFavouriteRef: QueryRefObservation<
     GetIfFavoritedMovieQuery.Data,
     GetIfFavoritedMovieQuery.Variables
@@ -132,7 +133,7 @@ extension MovieCardView {
       do {
         let _ = try await isFavouriteRef.execute()
       } catch {
-        print(error)
+        logger.error("Error when trying to fetch favourite status: \(error.localizedDescription)")
       }
     }
   }
