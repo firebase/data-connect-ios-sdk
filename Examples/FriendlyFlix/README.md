@@ -86,3 +86,9 @@ Press the Run button in Xcode to run the sample app on the iOS Simulator.
        - Database name: `fdcdb`
 1. Allow some time for the Cloud SQL instance to be provisioned. After it's provisioned, the instance
    can be managed in the [Cloud Console](https://console.cloud.google.com/sql).
+
+
+### 4. Run the app
+
+1. In Xcode, select Product > Schemed > Edit Scheme, and then disable the check box labeled "useEmulator" to use your production project instead.
+2. Press the Run button in Xcode to run the sample app on the iOS Simulator.
