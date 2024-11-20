@@ -13,8 +13,8 @@
 // limitations under the License.
 
 import AuthenticationServices
-import SwiftUI
 import os
+import SwiftUI
 
 private enum FocusableField: Hashable {
   case email

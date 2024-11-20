@@ -60,7 +60,10 @@ class AuthenticationService {
     try await Auth.auth().createUser(withEmail: email, password: password)
 
     if let onSignUp, let user = Auth.auth().currentUser {
-      logger.debug("User signed in \(user.displayName ?? "(no fullname)") with email \(user.email ?? "(no email)")")
+      logger
+        .debug(
+          "User signed in \(user.displayName ?? "(no fullname)") with email \(user.email ?? "(no email)")"
+        )
       onSignUp(user)
     }
 

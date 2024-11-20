@@ -16,8 +16,8 @@ import Firebase
 import FirebaseAuth
 import FirebaseDataConnect
 import FriendlyFlixSDK
-import SwiftUI
 import os
+import SwiftUI
 
 @main
 struct FriendlyFlixApp: App {
@@ -29,7 +29,7 @@ struct FriendlyFlixApp: App {
   /// To use the local emulator, go to the active scheme, and add `-useEmulator YES`
   /// to the _Arguments Passed On Launch_ section.
   public var useEmulator: Bool {
-    let value =  UserDefaults.standard.bool(forKey: "useEmulator")
+    let value = UserDefaults.standard.bool(forKey: "useEmulator")
     logger.log("Using the emulator: \(value == true ? "YES" : "NO")")
     return value
   }
@@ -38,7 +38,7 @@ struct FriendlyFlixApp: App {
     FirebaseApp.configure()
     if useEmulator {
       DataConnect.friendlyFlixConnector.useEmulator(port: 9399)
-      Auth.auth().useEmulator(withHost: "localhost", port:9099)
+      Auth.auth().useEmulator(withHost: "localhost", port: 9099)
     }
 
     authenticationService = AuthenticationService()

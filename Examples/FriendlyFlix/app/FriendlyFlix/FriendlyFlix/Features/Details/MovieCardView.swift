@@ -15,8 +15,8 @@
 import FirebaseDataConnect
 import FriendlyFlixSDK
 import NukeUI
-import SwiftUI
 import os
+import SwiftUI
 
 struct MovieCardView: View {
   private let logger = Logger(subsystem: "FriendlyFlix", category: "moviecard")
@@ -34,6 +34,7 @@ struct MovieCardView: View {
   }
 
   // MARK: - Favourite handling
+
   private let isFavouriteRef: QueryRefObservation<
     GetIfFavoritedMovieQuery.Data,
     GetIfFavoritedMovieQuery.Variables
