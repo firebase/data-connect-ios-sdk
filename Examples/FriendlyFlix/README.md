@@ -82,7 +82,7 @@ Press the Run button in Xcode to run the sample app on the iOS Simulator.
      - Select a location for your Cloud SQL for PostgreSQL database (this sample uses `us-central1`). If you choose a different location, you'll also need to change the `data-connect-ios-sdk/Examples/FriendlyFlix/dataconnect/dataconnect.yaml` file.
      - Select the option to create a new Cloud SQL instance and fill in the following fields:
        - Cloud SQL Instance ID: `fdc-sql`
-       - Database name: `fdcdb`       
+       - Database name: `fdcdb`
        - Service ID: `dataconnect`
 1. Allow some time for the Cloud SQL instance to be provisioned. After it's provisioned, the instance
    can be managed in the [Cloud Console](https://console.cloud.google.com/sql).
