@@ -36,33 +36,47 @@ struct HomeScreen: View {
     )
   }
 
+  let heroMoviesRef: QueryRefObservation<ListMoviesQuery.Data, ListMoviesQuery.Variables>
   private var heroMovies: [Movie] {
-    connector.listMoviesQuery
-      .ref { optionalVars in
-        optionalVars.limit = 3
-        optionalVars.orderByReleaseYear = .DESC
-      }
+    heroMoviesRef
       .data?.movies.map(Movie.init) ?? []
   }
 
+  let topMoviesRef: QueryRefObservation<ListMoviesQuery.Data, ListMoviesQuery.Variables>
   private var topMovies: [Movie] {
-    connector.listMoviesQuery
-      .ref { optionalVars in
-        optionalVars.limit = 5
-        optionalVars.orderByRating = .DESC
-      }
-      .data?.movies.map(Movie.init) ?? []
+    topMoviesRef.data?.movies.map(Movie.init) ?? []
   }
 
-  let watchListRef: QueryRefObservation<
-    GetUserFavoriteMoviesQuery.Data,
-    GetUserFavoriteMoviesQuery.Variables
-  >
+  let watchListRef:
+    QueryRefObservation<
+      GetUserFavoriteMoviesQuery.Data,
+      GetUserFavoriteMoviesQuery.Variables
+    >
   private var watchList: [Movie] {
     watchListRef.data?.user?.favoriteMovies.map(Movie.init) ?? []
   }
 
+  private var isEmpty: Bool {
+    heroMovies.count == 0
+  }
+
+  private func refresh() async {
+    async let _ = heroMoviesRef.execute()
+    async let _ = topMoviesRef.execute()
+    async let _ = watchListRef.execute()
+  }
+
   init() {
+    heroMoviesRef = connector.listMoviesQuery
+      .ref { optionalVars in
+        optionalVars.limit = 3
+        optionalVars.orderByReleaseYear = .DESC
+      }
+    topMoviesRef = connector.listMoviesQuery
+      .ref { optionalVars in
+        optionalVars.limit = 5
+        optionalVars.orderByRating = .DESC
+      }
     watchListRef = connector.getUserFavoriteMoviesQuery.ref()
   }
 }
@@ -71,45 +85,62 @@ extension HomeScreen {
   var body: some View {
     NavigationStack {
       ScrollView {
-        TabView {
-          ForEach(heroMovies) { movie in
-            NavigationLink(value: movie) {
-              MovieTeaserView(
-                title: movie.title,
-                subtitle: movie.description,
-                imageUrl: movie.imageUrl
-              )
-              .matchedTransitionSource(id: movie.id, in: namespace)
-            }
-            .buttonStyle(.noHighlight)
-          }
-        }
-        .frame(height: 600)
-        .navigationDestination(for: Movie.self) { movie in
-          MovieCardView(showDetails: true, movie: movie)
-            .navigationTransition(.zoom(sourceID: movie.id, in: namespace))
-        }
-        .tabViewStyle(.page(indexDisplayMode: .always))
-
-        Group {
-          MovieListSection(namespace: namespace, title: "Top Movies", movies: topMovies)
-          if isSignedIn {
-            MovieListSection(namespace: namespace, title: "Watch List", movies: watchList)
-              .onAppear {
-                Task {
-                  try await watchListRef.execute()
-                }
+        if isEmpty {
+          GeometryReader { geometry in
+            ContentUnavailableView {
+              Label("No movies available", systemImage: "rectangle.on.rectangle.slash")
+            } description: {
+              VStack {
+                Text("Follow the instructions in the README.md file to get started.")
               }
+            }
+            .frame(width: geometry.size.width, height: geometry.size.height)
           }
+          .frame(height: UIScreen.main.bounds.height)
+        } else {
+          TabView {
+            ForEach(heroMovies) { movie in
+              NavigationLink(value: movie) {
+                MovieTeaserView(
+                  title: movie.title,
+                  subtitle: movie.description,
+                  imageUrl: movie.imageUrl
+                )
+                .matchedTransitionSource(id: movie.id, in: namespace)
+              }
+              .buttonStyle(.noHighlight)
+            }
+          }
+          .frame(height: 600)
+          .navigationDestination(for: Movie.self) { movie in
+            MovieCardView(showDetails: true, movie: movie)
+              .navigationTransition(.zoom(sourceID: movie.id, in: namespace))
+          }
+          .tabViewStyle(.page(indexDisplayMode: .always))
+
+          Group {
+            MovieListSection(namespace: namespace, title: "Top Movies", movies: topMovies)
+            if isSignedIn {
+              MovieListSection(namespace: namespace, title: "Watch List", movies: watchList)
+                .onAppear {
+                  Task {
+                    try await watchListRef.execute()
+                  }
+                }
+            }
+          }
+          .navigationDestination(for: [Movie].self) { movies in
+            MovieListScreen(namespace: namespace, movies: movies)
+          }
+          .navigationDestination(for: SectionedMovie.self) { sectionedMovie in
+            MovieCardView(showDetails: true, movie: sectionedMovie.movie)
+              .navigationTransition(.zoom(sourceID: sectionedMovie.id, in: namespace))
+          }
+          .padding()
         }
-        .navigationDestination(for: [Movie].self) { movies in
-          MovieListScreen(namespace: namespace, movies: movies)
-        }
-        .navigationDestination(for: SectionedMovie.self) { sectionedMovie in
-          MovieCardView(showDetails: true, movie: sectionedMovie.movie)
-            .navigationTransition(.zoom(sourceID: sectionedMovie.id, in: namespace))
-        }
-        .padding()
+      }
+      .refreshable {
+        await refresh()
       }
       .navigationTitle("Home")
       .toolbar {
