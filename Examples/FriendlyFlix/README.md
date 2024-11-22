@@ -8,20 +8,21 @@ This quickstart is a movie tracker app to demonstrate the use of Firebase Data C
 For more information about Firebase Data Connect visit [the docs](https://firebase.google.com/docs/data-connect/).
 
 
+## Prerequisites
+
+To use this quickstart, you'll need the following:
+- A computer running macOS
+- The latest version of [Xcode](https://developer.apple.com/xcode/)
+- The latest version of [Visual Studio Code](https://code.visualstudio.com/)
+- The [Firebase Data Connect VS Code Extension](https://marketplace.visualstudio.com/items?itemName=GoogleCloudTools.firebase-dataconnect-vscode)
+- The latest version of the [Firebase CLI](https://firebase.google.com/docs/cli#update-cli)
+
 ## Getting Started (local development)
 
 Follow these steps to get up and running with Firebase Data Connect locally (i.e., without setting up a production SQL instance). At the end of this guide, you will find instructions for connecting to a production SQL instance.
 
 For more detailed instructions,
 check out the [official documentation](https://firebase.google.com/docs/data-connect/quickstart-local).
-
-### Prerequisites
-
-To use this quickstart, you'll need the following:
-- A computer running macOS
-- Latest version of [Xcode](https://developer.apple.com/xcode/)
-- Latest version of [Visual Studio Code](https://code.visualstudio.com/)
-- The [Firebase Data Connect VS Code Extension](https://marketplace.visualstudio.com/items?itemName=GoogleCloudTools.firebase-dataconnect-vscode)
 
 ### 1. Connect to your Firebase project
 
@@ -54,14 +55,18 @@ open `data-connect-ios-sdk/Examples/FriendlyFlix/dataconnect/movie-connector/que
 
 ### 5. Run the app
 
-Press the Run button in Xcode to run the sample app on the iOS Simulator.
+1. Open `data-connect-ios-sdk/Examples/FriendlyFlix/app/FriendlyFlix/FriendlyFlix.xcodeproj` in Xcode
+2. Press the Run button in Xcode to run the sample app on the iOS Simulator.
 
-# Connect to a production instance of CloudSQL
+## Connect to a production instance of CloudSQL
+
+Once you've sucessfully run the app locally, you can set up a production instance of CloudSQL and deploy your Firebase Data Connect schema.
 
 ### 1. Connect to your Firebase project
 
-1. If you haven’t already, add an iOS app to your Firebase project, using `com.google.firebase.samples.FriendlyFlix` as the bundle ID.
- Click **Download GoogleService-Info.plist** to obtain your Firebase config file.
+1. If you haven’t already, add an iOS app to your Firebase project
+    * In the [Firebase console](https://console.firebase.google.com), click on **+ Add app** to add your project, using `com.google.firebase.samples.FriendlyFlix` as the bundle ID.
+    * Click **Download GoogleService-Info.plist** to obtain your Firebase config file.
 
 2. Move the `GoogleService-Info.plist` config file (downloaded in the previous step) into the root folder of the sample app in the
   `data-connect-ios-sdk/Examples/FriendlyFlix/app/FriendlyFlix/FriendlyFlix/GoogleService-Info.plist` directory, replacing the existing `GoogleService-Info.plist` (which contains dummy values).
@@ -75,20 +80,43 @@ Press the Run button in Xcode to run the sample app on the iOS Simulator.
     charged for usage of Firebase Data Connect or the
     [default Cloud SQL for PostgreSQL configuration](https://firebase.google.com/docs/data-connect/#pricing) during the preview.
 
-### 3. Provision a PostgreSQL database
+### 3. Enable Firebase Authentication
+
+To be able to sign in to the application, you need to enable Firebase Authentication for your Firebase project.
+
+1. In the Firebase console, navigate to the [Authentication section](https://console.firebase.google.com/project/_/authentication)
+2. Click on **Get started** to enable Firebase Authentication
+3. Click on **Email/Password**, then click on **Enable**, and then **Save** to enable Email/Password authentication for your project
+
+### 4. Provision a PostgreSQL database
 
 1. Navigate to the [Data Connect section](https://console.firebase.google.com/u/0/project/_/dataconnect)
-    of the Firebase console, click on the "Get Started" button and follow the setup workflow:
-     - Select a location for your Cloud SQL for PostgreSQL database (this sample uses `us-central1`). If you choose a different location, you'll also need to change the `data-connect-ios-sdk/Examples/FriendlyFlix/dataconnect/dataconnect.yaml` file.
-     - Select the option to create a new Cloud SQL instance and fill in the following fields:
+    of the Firebase console, click on the **Get started** button and follow the setup workflow:
+
+   - Select **Create new Cloud SQL instance**
+   - Select a location for your Cloud SQL for PostgreSQL database (this sample uses `us-central1`). If you choose a different location, you'll also need to change the `data-connect-ios-sdk/Examples/FriendlyFlix/dataconnect/dataconnect.yaml` file.
+   - Fill in the following fields for the **data source**:
        - Cloud SQL Instance ID: `fdc-sql`
        - Database name: `fdcdb`
        - Service ID: `dataconnect`
-1. Allow some time for the Cloud SQL instance to be provisioned. After it's provisioned, the instance
+2. Allow some time for the Cloud SQL instance to be provisioned. After it's provisioned, the instance
    can be managed in the [Cloud Console](https://console.cloud.google.com/sql).
 
+### 5. Deploy your schema to production
 
-### 4. Run the app
+1. Open the `data-connect-ios-sdk/Examples/FriendlyFlix` directory in VS Code.
+2. Click on the Firebase Data Connect icon on the VS Code sidebar to load the Extension.
+   a. Sign in with your Google Account if you haven't already.
+   b. Ensure the project you created in the previous section is selected.
+4. Click on "Deploy to Production"
 
-1. In Xcode, select Product > Schemed > Edit Scheme, and then disable the check box labeled "useEmulator" to use your production project instead.
+### 6. Populate your database
+
+1. Open the `data-connect-ios-sdk/Examples/FriendlyFlix/dataconnect/data_seed.gql` file
+2. Click on the **Run (Production - Project: your-project-name)** button to populate your database
+
+
+### 6. Run the app
+
+1. In Xcode, select **Product > Schemed > Edit Scheme**, and then disable the check box labeled "useEmulator" to use your production project instead.
 2. Press the Run button in Xcode to run the sample app on the iOS Simulator.
