@@ -109,3 +109,4 @@ xcodebuild.log
 
 Package.resolved
 GoogleService-Info.plist
+/Examples/FriendlyFlix/app/FriendlyFlix/FriendlyFlix/GoogleService-Info.plist
