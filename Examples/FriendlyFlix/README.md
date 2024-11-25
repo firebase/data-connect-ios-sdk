@@ -62,7 +62,8 @@ open `data-connect-ios-sdk/Examples/FriendlyFlix/dataconnect/movie-connector/que
 3. Select one of the iPhone Simulators as the run destination.
 4. Press the **Run** button in Xcode to run the sample app on the iOS Simulator.
 
-> [!Note] If you've used Firebase before, you might be wondering why you didn't have to download the
+> [!NOTE]
+> If you've used Firebase before, you might be wondering why you didn't have to download the
 > `GoogleService-Info.plist` file. This file is only required when connecting your app to a Firebase
 > project in the cloud, which you will do in the section.
 
