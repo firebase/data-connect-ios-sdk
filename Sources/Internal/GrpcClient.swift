@@ -14,9 +14,10 @@
 
 import Foundation
 
-@preconcurrency import FirebaseAppCheck
+@preconcurrency import FirebaseAppCheckInterop
 @preconcurrency import FirebaseAuth
 import FirebaseCore
+@preconcurrency import FirebaseCoreExtension
 import GRPC
 import Logging
 import NIOCore
@@ -47,7 +48,7 @@ actor GrpcClient: CustomStringConvertible {
 
   private let auth: Auth
 
-  private let appCheck: AppCheck?
+  private let appCheck: AppCheckInterop?
 
   private let callerSDKType: CallerSDKType
 
@@ -108,7 +109,7 @@ actor GrpcClient: CustomStringConvertible {
     serverSettings = settings
     self.connectorConfig = connectorConfig
     auth = Auth.auth(app: app)
-    appCheck = AppCheck.appCheck(app: app)
+    appCheck = ComponentType<AppCheckInterop>.instance(for: AppCheckInterop.self, in: app.container)
     self.callerSDKType = callerSDKType
 
     connectorName =
@@ -258,17 +259,11 @@ actor GrpcClient: CustomStringConvertible {
     }
 
     // Add AppCheck token if available
-    do {
-      if let token = try await appCheck?.token(forcingRefresh: false) {
-        headers.add(name: RequestHeaders.appCheckHeader, value: token.token)
-        DataConnectLogger.debug("App Check token added.")
-      } else {
-        DataConnectLogger.debug("App Check token unavailable. Not adding App Check header.")
-      }
-    } catch {
-      DataConnectLogger.debug(
-        "Cannot get App Check token successfully due to: \(error). Not adding App Check header."
-      )
+    if let token = await appCheck?.getToken(forcingRefresh: false) {
+      headers.add(name: RequestHeaders.appCheckHeader, value: token.token)
+      DataConnectLogger.debug("App Check token added.")
+    } else {
+      DataConnectLogger.debug("App Check token unavailable. Not adding App Check header.")
     }
 
     var options = CallOptions(customMetadata: headers)
