@@ -8,16 +8,20 @@ Firebase is an app development platform with tools to help you build, grow, and
 monetize your app. More information about Firebase can be found on the
 [official Firebase website](https://firebase.google.com).
 
+## Getting Started
+
+Learn how to develop on Data Connect - [Quick Start](https://firebase.google.com/docs/data-connect/quickstart).
+
+Try out a comprehensive sample app - [FriendlyFlix](https://github.com/firebase/data-connect-ios-sdk/tree/main/Examples/FriendlyFlix)
+
 ## Installation
+
+The Data Connect SDK should get automatically added as a dependency if you use generated SDKs. However, if you need to add it manually, use the following instructions for Swift Package Manager.
 
 ### Swift Package Manager
 
 Instructions for [Swift Package Manager](https://swift.org/package-manager/) support can be
 found in the [SwiftPackageManager.md](SwiftPackageManager.md) Markdown file.
-
-## Getting Started
-
-Learn how to develop on Data Connect - [Quick Start](https://firebase.google.com/docs/data-connect/quickstart).
 
 ## Contributing
 
