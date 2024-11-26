@@ -1,5 +1,5 @@
 # 11.5.0-beta
-- [added] FriendlyFlix - a comprehensive SwiftUI sample app. 
+- [added] FriendlyFlix - a comprehensive SwiftUI sample app.
 - [changed] Switched to using AppCheckInterop APIs to remove hard dependency on FirebaseAppCheck library.
 
 # 11.4.0-beta
