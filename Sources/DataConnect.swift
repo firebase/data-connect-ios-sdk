@@ -14,7 +14,6 @@
 
 import Foundation
 
-@preconcurrency import FirebaseAppCheck
 @preconcurrency import FirebaseAuth
 @preconcurrency import FirebaseCore
 
