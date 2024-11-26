@@ -45,6 +45,8 @@ let package = Package(
       dependencies: [
         .product(name: "GRPC", package: "grpc-swift"),
         .product(name: "FirebaseCore", package: "firebase-ios-sdk"),
+
+        // TODO: Add FirebaseAppCheckInterop as a dependency once its available as an external library
         // TODO: Investigate switching Auth to interop.
         .product(name: "FirebaseAuth", package: "firebase-ios-sdk"),
         .product(name: "GULEnvironment", package: "GoogleUtilities"),
