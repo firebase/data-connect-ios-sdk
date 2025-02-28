@@ -58,12 +58,12 @@ public struct DataConnectOperationResponse<T> : AnyDataConnectOperationResponse 
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public struct DataConnectOperationErrorInfo {
+public struct DataConnectOperationErrorInfo: Codable {
   public let message: String
   public let path: [PathSegment]
 
   @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-  public enum PathSegment {
+  public enum PathSegment: Codable {
     case field(String)
     case listIndex(Int)
   }
