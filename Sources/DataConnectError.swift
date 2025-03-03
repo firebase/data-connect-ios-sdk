@@ -44,7 +44,7 @@ public protocol AnyOperationFailureResponse {
   // JSON string
   var data: String? { get }
 
-  var errors: [OperationFailureResponse.ErrorInfo] { get }
+  var errors: [OperationFailureResponseErrorInfo] { get }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -52,20 +52,21 @@ public struct OperationFailureResponse<T> : AnyOperationFailureResponse {
   // JSON string
   public let data: String?
 
-  public let errors: [ErrorInfo]
+  public let errors: [OperationFailureResponseErrorInfo]
 
   public let decodedData: T?
 
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public struct OperationFailureResponseErrorInfo: Codable {
+  public let message: String
+  public let path: [PathSegment]
+
   @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-  public struct ErrorInfo: Codable {
-    public let message: String
-    public let path: [PathSegment]
-
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    public enum PathSegment: Codable {
-      case field(String)
-      case listIndex(Int)
-    }
-
+  public enum PathSegment: Codable {
+    case field(String)
+    case listIndex(Int)
   }
+
 }
