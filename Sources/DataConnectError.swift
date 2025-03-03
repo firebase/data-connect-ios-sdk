@@ -24,7 +24,7 @@ public enum DataConnectError: Error {
   case grpcNotConfigured
 
   /// failed to decode results from server
-  case decodeFailed(message: String, response: AnyOperationFailureResponse)
+  case decodeFailed(response: AnyOperationFailureResponse)
 
   /// Invalid uuid format during encoding / decoding of data
   case invalidUUID
@@ -36,7 +36,7 @@ public enum DataConnectError: Error {
   case invalidTimestampFormat
 
   /// generic operation execution error
-  case operationExecutionFailed(message: String, response: AnyOperationFailureResponse)
+  case operationExecutionFailed(response: AnyOperationFailureResponse)
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
