@@ -24,7 +24,7 @@ public enum DataConnectError: Error {
   case grpcNotConfigured
 
   /// failed to decode results from server
-  case decodeFailed(response: AnyDataConnectOperationResponse)
+  case decodeFailed(message: String, response: AnyOperationFailureResponse)
 
   /// Invalid uuid format during encoding / decoding of data
   case invalidUUID
@@ -36,37 +36,36 @@ public enum DataConnectError: Error {
   case invalidTimestampFormat
 
   /// generic operation execution error
-  case operationExecutionFailed(response: AnyDataConnectOperationResponse)
+  case operationExecutionFailed(message: String, response: AnyOperationFailureResponse)
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public protocol AnyDataConnectOperationResponse {
+public protocol AnyOperationFailureResponse {
   // JSON string
   var data: String? { get }
 
-  var errors: [DataConnectOperationErrorInfo] { get }
+  var errors: [OperationFailureResponse.ErrorInfo] { get }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public struct DataConnectOperationResponse<T> : AnyDataConnectOperationResponse {
+public struct OperationFailureResponse<T> : AnyOperationFailureResponse {
   // JSON string
   public let data: String?
 
-  public let errors: [DataConnectOperationErrorInfo]
+  public let errors: [ErrorInfo]
 
   public let decodedData: T?
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public struct DataConnectOperationErrorInfo: Codable {
-  public let message: String
-  public let path: [PathSegment]
 
   @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-  public enum PathSegment: Codable {
-    case field(String)
-    case listIndex(Int)
+  public struct ErrorInfo: Codable {
+    public let message: String
+    public let path: [PathSegment]
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    public enum PathSegment: Codable {
+      case field(String)
+      case listIndex(Int)
+    }
+
   }
-
 }
-
