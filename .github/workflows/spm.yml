@@ -56,7 +56,11 @@ jobs:
         os: [macos-14]
         # GitHub actions' runners do not include visionOS. https://github.com/actions/runner-images/issues/10559
         target: [iOS, tvOS, macOS, catalyst]
-        xcode: [Xcode_15.2, Xcode_15.4, Xcode_16]
+        include:
+          - os: macos-15
+            xcode: Xcode_16.2
+          - os: macos-14
+            xcode: Xcode_15.3
     runs-on: ${{ matrix.os }}
     env:
       FIREBASECI_USE_LATEST_GOOGLEAPPMEASUREMENT: 1
