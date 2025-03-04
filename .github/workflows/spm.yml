@@ -59,8 +59,10 @@ jobs:
         include:
           - os: macos-15
             xcode: Xcode_16.2
+            test: spm
           - os: macos-14
             xcode: Xcode_15.3
+            test: spm
     runs-on: ${{ matrix.os }}
     env:
       FIREBASECI_USE_LATEST_GOOGLEAPPMEASUREMENT: 1
