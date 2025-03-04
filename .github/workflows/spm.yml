@@ -30,7 +30,6 @@ jobs:
     env:
       FIREBASECI_USE_LATEST_GOOGLEAPPMEASUREMENT: 1
       FIREBASE_MAIN: 1
-      DISABLE_INTEGRATION_TESTS: 1
     steps:
       - uses: actions/checkout@v4
       - name: Generate Swift Package.resolved
@@ -62,7 +61,6 @@ jobs:
     env:
       FIREBASECI_USE_LATEST_GOOGLEAPPMEASUREMENT: 1
       FIREBASE_MAIN: 1
-      DISABLE_INTEGRATION_TESTS: 1
     steps:
     - uses: actions/checkout@v4
     - uses: actions/cache/restore@v4
@@ -75,3 +73,5 @@ jobs:
       run: ./setup-scripts.sh
     - name: Unit Tests
       run: scripts/third_party/travis/retry.sh scripts/build.sh FirebaseDataConnect ${{ matrix.target }} spm
+    - name: Integration Test Server
+      run: Tests/Integration/Emulator/start-emulator.sh synchronous
