@@ -17,6 +17,6 @@ git clone \
   https://github.com/firebase/firebase-ios-sdk.git \
 ;
 cd firebase-ios-sdk
-git checkout main -- scripts
+git checkout ap/dataconnect-build-script -- scripts
 cd ..
 ln -s firebase-ios-sdk/scripts scripts
