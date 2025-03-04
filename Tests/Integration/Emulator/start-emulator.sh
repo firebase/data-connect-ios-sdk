@@ -32,6 +32,6 @@ echo "Downloading emulator from ${EMULATOR_URL}"
 
 curl -o "${EMULATOR_FILENAME}" "${EMULATOR_URL}"
 
-chmod 755 "${EMULATOR_FILENAME}"
+#chmod 755 "${EMULATOR_FILENAME}"
 
 ./${EMULATOR_FILENAME} --logtostderr  dev --listen="127.0.0.1:3628"
