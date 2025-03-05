@@ -73,8 +73,6 @@ jobs:
       run: ./setup-scripts.sh
     - name: Install iOS Platform
       run: xcodebuild -downloadPlatform iOS
-    - name: Initialize xcodebuild
-      run: scripts/setup_spm_tests.sh
     - name: Integration Test Setup
       run: Tests/Integration/Emulator/start-emulator.sh synchronous
     - name: Unit Tests
