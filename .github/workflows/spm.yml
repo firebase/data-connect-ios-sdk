@@ -55,7 +55,7 @@ jobs:
       matrix:
         os: [macos-15]
         # GitHub actions' runners do not include visionOS. https://github.com/actions/runner-images/issues/10559
-        target: [iOS, macOS, catalyst]
+        target: [iOS, macOS, tvOS, catalyst]
         xcode: [Xcode_16.2]
     runs-on: ${{ matrix.os }}
     env:
