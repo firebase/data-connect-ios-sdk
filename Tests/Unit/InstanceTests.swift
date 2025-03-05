@@ -19,8 +19,15 @@ import XCTest
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class InstanceTests: XCTestCase {
-  static var defaultApp: FirebaseApp?
-  static var appTwo: FirebaseApp?
+  static var defaultApp: FirebaseApp? = {
+    FirebaseApp.configure(options: options)
+    return FirebaseApp.app()
+  }()
+
+  static var appTwo: FirebaseApp? = {
+    FirebaseApp.configure(name: "app-two", options: optionsTwo)
+    return FirebaseApp.app(name: "app-two")
+  }()
 
   static var options: FirebaseOptions = {
     let options = FirebaseOptions(googleAppID: "0:0000000000000:ios:0000000000000000",
@@ -50,18 +57,6 @@ class InstanceTests: XCTestCase {
     location: "us-central1",
     connector: "blogs"
   )
-
-  override class func setUp() {
-    if defaultApp == nil {
-      FirebaseApp.configure(options: options)
-      defaultApp = FirebaseApp.app()
-    }
-
-    if appTwo == nil {
-      FirebaseApp.configure(name: "app-two", options: optionsTwo)
-      appTwo = FirebaseApp.app(name: "app-two")
-    }
-  }
 
   // same connector config, same app, instance returned should be same
   func testSameInstance() throws {
