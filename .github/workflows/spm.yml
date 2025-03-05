@@ -71,6 +71,8 @@ jobs:
       run: sudo xcode-select -s /Applications/${{ matrix.xcode }}.app/Contents/Developer
     - name: Setup Scripts Directory
       run: ./setup-scripts.sh
+    - name: Initialize xcodebuild
+      run: scripts/setup_spm_tests.sh
     - name: Integration Test Setup
       run: Tests/Integration/Emulator/start-emulator.sh synchronous
     - name: Unit Tests
