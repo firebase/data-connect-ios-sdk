@@ -74,6 +74,6 @@ jobs:
     - name: Install iOS Platform
       run: xcodebuild -downloadPlatform iOS
     - name: Integration Test Setup
-      run: Tests/Integration/Emulator/start-emulator.sh synchronous
+      run: Tests/Integration/Emulator/start-emulator.sh
     - name: Unit and Integration Tests
       run: scripts/third_party/travis/retry.sh ./scripts/build.sh FirebaseDataConnect ${{ matrix.target }} spm
