@@ -18,5 +18,6 @@ git clone \
 ;
 cd firebase-ios-sdk
 git checkout main -- scripts
+git rev-parse HEAD
 cd ..
 ln -s firebase-ios-sdk/scripts scripts
