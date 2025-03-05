@@ -52,11 +52,15 @@ class InstanceTests: XCTestCase {
   )
 
   override class func setUp() {
-    FirebaseApp.configure(options: options)
-    defaultApp = FirebaseApp.app()
+    if defaultApp == nil {
+      FirebaseApp.configure(options: options)
+      defaultApp = FirebaseApp.app()
+    }
 
-    FirebaseApp.configure(name: "app-two", options: optionsTwo)
-    appTwo = FirebaseApp.app(name: "app-two")
+    if appTwo == nil {
+      FirebaseApp.configure(name: "app-two", options: optionsTwo)
+      appTwo = FirebaseApp.app(name: "app-two")
+    }
   }
 
   // same connector config, same app, instance returned should be same
