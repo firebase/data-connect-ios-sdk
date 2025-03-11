@@ -1,4 +1,4 @@
-// Copyright 2024 Google LLC
+// Copyright 2025 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ import GoogleUtilities_Environment
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct Version {
-  static let sdkVersion = "11.3.0-beta"
+  static let sdkVersion = "11.6.0-beta"
 
   // returns value of form gl-PLATFORM_NAME/PLATFORM_VERSION
   static func platformVersionHeader() -> String {
