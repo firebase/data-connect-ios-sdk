@@ -1,3 +1,6 @@
+# 11.6.0-beta
+- [changed] Dependency on Firebase iOS SDK changed to 'minimum version required' instead of an 'exact version'. This lets apps use the latest version of the Firebase iOS SDK.
+
 # 11.5.0-beta
 - [added] FriendlyFlix - a comprehensive SwiftUI sample app.
 - [changed] Switched to using AppCheckInterop APIs to remove hard dependency on FirebaseAppCheck library.
