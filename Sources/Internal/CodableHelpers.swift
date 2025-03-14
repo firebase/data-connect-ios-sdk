@@ -40,7 +40,7 @@ class Int64CodableConverter: CodableConverter {
     }
 
     guard let int64Value = Int64(input) else {
-      throw DataConnectError.decodeFailed
+      throw DataConnectError.appNotConfigured
     }
     return int64Value
   }

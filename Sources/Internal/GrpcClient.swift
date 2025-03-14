@@ -151,10 +151,16 @@ actor GrpcClient: CustomStringConvertible {
       DataConnectLogger
         .debug("executeQuery() receives response: \(resultsString, privacy: .private).")
 
+
       // Not doing error decoding here
       guard results.errors.isEmpty else {
-        throw DataConnectError
-          .operationExecutionFailed(messages: createErrorJson(errors: results.errors))
+        throw DataConnectError.operationExecutionFailed(
+          messages: createErrorJson(errors: results.errors),
+          response: OperationFailureResponseImpl(
+            jsonData: resultsString,
+            errorInfoList: []
+          )
+        )
       }
 
       if let decodedResults = try codec.decode(result: results.data, asType: resultType) {
@@ -163,7 +169,13 @@ actor GrpcClient: CustomStringConvertible {
         // In future, set this as error in OperationResult
         DataConnectLogger
           .debug("executeQuery() response: \(resultsString, privacy: .private) decode failed.")
-        throw DataConnectError.decodeFailed
+        throw DataConnectError.operationExecutionFailed(
+          messages: "decode failed",
+          response: OperationFailureResponseImpl(
+            jsonData: resultsString,
+            errorInfoList: []
+          )
+        )
       }
     } catch {
       DataConnectLogger.error(
@@ -201,8 +213,13 @@ actor GrpcClient: CustomStringConvertible {
         .debug("executeMutation() receives response: \(resultsString, privacy: .private).")
 
       guard results.errors.isEmpty else {
-        throw DataConnectError
-          .operationExecutionFailed(messages: createErrorJson(errors: results.errors))
+        throw DataConnectError.operationExecutionFailed(
+          messages: createErrorJson(errors: results.errors),
+          response: OperationFailureResponseImpl(
+            jsonData: resultsString,
+            errorInfoList: []
+          )
+        )
       }
 
       if let decodedResults = try codec.decode(result: results.data, asType: resultType) {
@@ -210,7 +227,13 @@ actor GrpcClient: CustomStringConvertible {
       } else {
         DataConnectLogger
           .debug("executeMutation() response: \(resultsString, privacy: .private) decode failed.")
-        throw DataConnectError.decodeFailed
+        throw DataConnectError.operationExecutionFailed(
+          messages: "decode failed",
+          response: OperationFailureResponseImpl(
+            jsonData: resultsString,
+            errorInfoList: []
+          )
+        )
       }
     } catch {
       DataConnectLogger.error(

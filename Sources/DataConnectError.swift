@@ -38,16 +38,16 @@ public enum DataConnectError: Error {
 
 // The data and errors sent to us from the backend in its response.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public struct OperationFailureResponse {
+public protocol OperationFailureResponse {
   // JSON string whose value is the "data" property provided by the backend in its response
   // payload; may be `nil` if the "data" property was not provided in the backend response and/or
   // was `null` in the backend response.
-  public let jsonData: String?
+  var jsonData: String? { get }
 
   // The list of errors in the "error" property provided by the backend in its response payload;
   // may be empty if the "errors" property was not provided in the backend response and/or was an
   // empty list in the backend response.
-  public let errorInfoList: [OperationFailureResponseErrorInfo]
+  var errorInfoList: [OperationFailureResponseErrorInfo] { get }
 
   // Returns `jsonData` string decoded into the given type, if decoding was successful when the
   // operation was executed. Returns `nil` if `jsonData` is `nil`, if `jsonData` was _not_ able to
@@ -56,7 +56,17 @@ public struct OperationFailureResponse {
   //
   // This function does _not_ do the decoding itself, but simply returns the decoded data, if any,
   // that was decoded at the time of the operation's execution.
-  public func decodedData<Data: Decodable>(asType: Data.Type = Data.self) -> Data?
+  func decodedData<Data: Decodable>(asType: Data.Type) -> Data?
+}
+
+struct OperationFailureResponseImpl : OperationFailureResponse {
+  public let jsonData: String?
+
+  public let errorInfoList: [OperationFailureResponseErrorInfo]
+
+  func decodedData<Data: Decodable>(asType: Data.Type = Data.self) -> Data? {
+    return nil;
+  }
 }
 
 // Information about an error provided by the backend in its response.
