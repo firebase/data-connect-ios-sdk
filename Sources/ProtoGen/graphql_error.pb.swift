@@ -7,7 +7,7 @@
 // For information on using the generated types, please see the documentation:
 //   https://github.com/apple/swift-protobuf/
 
-// Copyright 2024 Google LLC
+// Copyright 2025 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 /// - Upon query execution error, `ExecuteGraphql`, `ExecuteGraphqlRead`,
 /// `ExecuteMutation` and `ExecuteQuery` all return Code.OK with a list of
 /// `GraphqlError` in response body.
-public struct Google_Firebase_Dataconnect_V1beta_GraphqlError {
+public struct Google_Firebase_Dataconnect_V1_GraphqlError {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -67,7 +67,7 @@ public struct Google_Firebase_Dataconnect_V1beta_GraphqlError {
   ///
   /// Omitted in `ExecuteMutation` and `ExecuteQuery` since the caller shouldn't
   /// have access access the underlying GQL source.
-  public var locations: [Google_Firebase_Dataconnect_V1beta_SourceLocation] = []
+  public var locations: [Google_Firebase_Dataconnect_V1_SourceLocation] = []
 
   /// The result field which could not be populated due to error.
   ///
@@ -85,8 +85,8 @@ public struct Google_Firebase_Dataconnect_V1beta_GraphqlError {
   public mutating func clearPath() {self._path = nil}
 
   /// Additional error information.
-  public var extensions: Google_Firebase_Dataconnect_V1beta_GraphqlErrorExtensions {
-    get {return _extensions ?? Google_Firebase_Dataconnect_V1beta_GraphqlErrorExtensions()}
+  public var extensions: Google_Firebase_Dataconnect_V1_GraphqlErrorExtensions {
+    get {return _extensions ?? Google_Firebase_Dataconnect_V1_GraphqlErrorExtensions()}
     set {_extensions = newValue}
   }
   /// Returns true if `extensions` has been explicitly set.
@@ -99,11 +99,11 @@ public struct Google_Firebase_Dataconnect_V1beta_GraphqlError {
   public init() {}
 
   fileprivate var _path: SwiftProtobuf.Google_Protobuf_ListValue? = nil
-  fileprivate var _extensions: Google_Firebase_Dataconnect_V1beta_GraphqlErrorExtensions? = nil
+  fileprivate var _extensions: Google_Firebase_Dataconnect_V1_GraphqlErrorExtensions? = nil
 }
 
 /// SourceLocation references a location in a GraphQL source.
-public struct Google_Firebase_Dataconnect_V1beta_SourceLocation {
+public struct Google_Firebase_Dataconnect_V1_SourceLocation {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -122,7 +122,7 @@ public struct Google_Firebase_Dataconnect_V1beta_SourceLocation {
 /// GraphqlErrorExtensions contains additional information of `GraphqlError`.
 /// (-- TODO(b/305311379): include more detailed error fields:
 /// go/firemat:api:gql-errors.  --)
-public struct Google_Firebase_Dataconnect_V1beta_GraphqlErrorExtensions {
+public struct Google_Firebase_Dataconnect_V1_GraphqlErrorExtensions {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -138,16 +138,16 @@ public struct Google_Firebase_Dataconnect_V1beta_GraphqlErrorExtensions {
 }
 
 #if swift(>=5.5) && canImport(_Concurrency)
-extension Google_Firebase_Dataconnect_V1beta_GraphqlError: @unchecked Sendable {}
-extension Google_Firebase_Dataconnect_V1beta_SourceLocation: @unchecked Sendable {}
-extension Google_Firebase_Dataconnect_V1beta_GraphqlErrorExtensions: @unchecked Sendable {}
+extension Google_Firebase_Dataconnect_V1_GraphqlError: @unchecked Sendable {}
+extension Google_Firebase_Dataconnect_V1_SourceLocation: @unchecked Sendable {}
+extension Google_Firebase_Dataconnect_V1_GraphqlErrorExtensions: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "google.firebase.dataconnect.v1beta"
+fileprivate let _protobuf_package = "google.firebase.dataconnect.v1"
 
-extension Google_Firebase_Dataconnect_V1beta_GraphqlError: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension Google_Firebase_Dataconnect_V1_GraphqlError: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GraphqlError"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "message"),
@@ -191,7 +191,7 @@ extension Google_Firebase_Dataconnect_V1beta_GraphqlError: SwiftProtobuf.Message
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: Google_Firebase_Dataconnect_V1beta_GraphqlError, rhs: Google_Firebase_Dataconnect_V1beta_GraphqlError) -> Bool {
+  public static func ==(lhs: Google_Firebase_Dataconnect_V1_GraphqlError, rhs: Google_Firebase_Dataconnect_V1_GraphqlError) -> Bool {
     if lhs.message != rhs.message {return false}
     if lhs.locations != rhs.locations {return false}
     if lhs._path != rhs._path {return false}
@@ -201,7 +201,7 @@ extension Google_Firebase_Dataconnect_V1beta_GraphqlError: SwiftProtobuf.Message
   }
 }
 
-extension Google_Firebase_Dataconnect_V1beta_SourceLocation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension Google_Firebase_Dataconnect_V1_SourceLocation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SourceLocation"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "line"),
@@ -231,7 +231,7 @@ extension Google_Firebase_Dataconnect_V1beta_SourceLocation: SwiftProtobuf.Messa
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: Google_Firebase_Dataconnect_V1beta_SourceLocation, rhs: Google_Firebase_Dataconnect_V1beta_SourceLocation) -> Bool {
+  public static func ==(lhs: Google_Firebase_Dataconnect_V1_SourceLocation, rhs: Google_Firebase_Dataconnect_V1_SourceLocation) -> Bool {
     if lhs.line != rhs.line {return false}
     if lhs.column != rhs.column {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
@@ -239,7 +239,7 @@ extension Google_Firebase_Dataconnect_V1beta_SourceLocation: SwiftProtobuf.Messa
   }
 }
 
-extension Google_Firebase_Dataconnect_V1beta_GraphqlErrorExtensions: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension Google_Firebase_Dataconnect_V1_GraphqlErrorExtensions: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GraphqlErrorExtensions"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "file"),
@@ -264,7 +264,7 @@ extension Google_Firebase_Dataconnect_V1beta_GraphqlErrorExtensions: SwiftProtob
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: Google_Firebase_Dataconnect_V1beta_GraphqlErrorExtensions, rhs: Google_Firebase_Dataconnect_V1beta_GraphqlErrorExtensions) -> Bool {
+  public static func ==(lhs: Google_Firebase_Dataconnect_V1_GraphqlErrorExtensions, rhs: Google_Firebase_Dataconnect_V1_GraphqlErrorExtensions) -> Bool {
     if lhs.file != rhs.file {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true

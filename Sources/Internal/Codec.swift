@@ -18,9 +18,9 @@ import SwiftProtobuf
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 typealias FirebaseDataConnectExecuteMutationRequest =
-  Google_Firebase_Dataconnect_V1beta_ExecuteMutationRequest
+  Google_Firebase_Dataconnect_V1_ExecuteMutationRequest
 typealias FirebaseDataConnectExecuteQueryRequest =
-  Google_Firebase_Dataconnect_V1beta_ExecuteQueryRequest
+  Google_Firebase_Dataconnect_V1_ExecuteQueryRequest
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class Codec {
