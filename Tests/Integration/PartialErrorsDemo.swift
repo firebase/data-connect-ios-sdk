@@ -30,7 +30,7 @@ func demo(id: UUID, connector: KitchenSinkConnector) async throws
     }
 
     let response = switch dcError {
-      case .operationExecutionFailed(let messages, let response): response
+      case .operationExecutionFailed(_, let response): response
       default: throw dcError
     }
 
@@ -46,6 +46,12 @@ func demo(id: UUID, connector: KitchenSinkConnector) async throws
       print("Inserting 2nd entry with ID \(id) failed: \(error.message)")
     } else {
       print("Inserting 2nd entry with ID \(id) succeeded")
+    }
+
+    if let decodedData = response.decodedData(asType: InsertMultiplePeopleMutation.Data.self) {
+      print("Even though there was an error, decoding the data was successful:")
+      print("person1=\(decodedData.person1) person2=\(decodedData.person2)")
+      return decodedData
     }
 
     throw dcError
