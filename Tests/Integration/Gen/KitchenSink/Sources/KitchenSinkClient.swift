@@ -1,71 +1,69 @@
-// Copyright 2024 Google LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
 
-import FirebaseDataConnect
 import Foundation
 
+import FirebaseCore
+import FirebaseDataConnect
+
+
+
+
+
+
+
+
 public extension DataConnect {
-  static var kitchenSinkConnector: KitchenSinkConnector = {
-    let dc = DataConnect.dataConnect(connectorConfig: KitchenSinkConnector.connectorConfig)
+
+  static let kitchenSinkConnector: KitchenSinkConnector = {
+    let dc = DataConnect.dataConnect(connectorConfig: KitchenSinkConnector.connectorConfig, callerSDKType: .generated)
     return KitchenSinkConnector(dataConnect: dc)
   }()
+
 }
 
 public class KitchenSinkConnector {
-  var dataConnect: DataConnect
 
-  public static let connectorConfig = ConnectorConfig(
-    serviceId: "fdc-kitchensink",
-    location: "us-central1",
-    connector: "kitchen-sink"
-  )
+  let dataConnect: DataConnect
+
+  public static let connectorConfig = ConnectorConfig(serviceId: "fdc-kitchensink", location: "us-central1", connector: "kitchen-sink")
 
   init(dataConnect: DataConnect) {
     self.dataConnect = dataConnect
 
-    // init operations
-    createTestIdMutation = CreateTestIdMutation(dataConnect: dataConnect)
-    createTestAutoIdMutation = CreateTestAutoIdMutation(dataConnect: dataConnect)
-    createStandardScalarMutation = CreateStandardScalarMutation(dataConnect: dataConnect)
-    createScalarBoundaryMutation = CreateScalarBoundaryMutation(dataConnect: dataConnect)
-    createLargeNumMutation = CreateLargeNumMutation(dataConnect: dataConnect)
-    createLocalDateMutation = CreateLocalDateMutation(dataConnect: dataConnect)
-    createAnyValueTypeMutation = CreateAnyValueTypeMutation(dataConnect: dataConnect)
-    getStandardScalarQuery = GetStandardScalarQuery(dataConnect: dataConnect)
-    getScalarBoundaryQuery = GetScalarBoundaryQuery(dataConnect: dataConnect)
-    getLargeNumQuery = GetLargeNumQuery(dataConnect: dataConnect)
-    getLocalDateTypeQuery = GetLocalDateTypeQuery(dataConnect: dataConnect)
-    getAnyValueTypeQuery = GetAnyValueTypeQuery(dataConnect: dataConnect)
+    // init operations 
+    self.createTestIdMutation = CreateTestIdMutation(dataConnect: dataConnect)
+    self.createTestAutoIdMutation = CreateTestAutoIdMutation(dataConnect: dataConnect)
+    self.createStandardScalarMutation = CreateStandardScalarMutation(dataConnect: dataConnect)
+    self.createScalarBoundaryMutation = CreateScalarBoundaryMutation(dataConnect: dataConnect)
+    self.createLargeNumMutation = CreateLargeNumMutation(dataConnect: dataConnect)
+    self.createLocalDateMutation = CreateLocalDateMutation(dataConnect: dataConnect)
+    self.createAnyValueTypeMutation = CreateAnyValueTypeMutation(dataConnect: dataConnect)
+    self.insertMultiplePeopleMutation = InsertMultiplePeopleMutation(dataConnect: dataConnect)
+    self.getStandardScalarQuery = GetStandardScalarQuery(dataConnect: dataConnect)
+    self.getScalarBoundaryQuery = GetScalarBoundaryQuery(dataConnect: dataConnect)
+    self.getLargeNumQuery = GetLargeNumQuery(dataConnect: dataConnect)
+    self.getLocalDateTypeQuery = GetLocalDateTypeQuery(dataConnect: dataConnect)
+    self.getAnyValueTypeQuery = GetAnyValueTypeQuery(dataConnect: dataConnect)
+    
   }
 
-  public func useEmulator(host: String = DataConnect.EmulatorDefaults.host,
-                          port: Int = DataConnect.EmulatorDefaults.port) {
-    dataConnect.useEmulator(host: host, port: port)
+  public func useEmulator(host: String = DataConnect.EmulatorDefaults.host, port: Int = DataConnect.EmulatorDefaults.port) {
+    self.dataConnect.useEmulator(host: host, port: port)
   }
 
   // MARK: Operations
+public let createTestIdMutation: CreateTestIdMutation
+public let createTestAutoIdMutation: CreateTestAutoIdMutation
+public let createStandardScalarMutation: CreateStandardScalarMutation
+public let createScalarBoundaryMutation: CreateScalarBoundaryMutation
+public let createLargeNumMutation: CreateLargeNumMutation
+public let createLocalDateMutation: CreateLocalDateMutation
+public let createAnyValueTypeMutation: CreateAnyValueTypeMutation
+public let insertMultiplePeopleMutation: InsertMultiplePeopleMutation
+public let getStandardScalarQuery: GetStandardScalarQuery
+public let getScalarBoundaryQuery: GetScalarBoundaryQuery
+public let getLargeNumQuery: GetLargeNumQuery
+public let getLocalDateTypeQuery: GetLocalDateTypeQuery
+public let getAnyValueTypeQuery: GetAnyValueTypeQuery
 
-  public let createTestIdMutation: CreateTestIdMutation
-  public let createTestAutoIdMutation: CreateTestAutoIdMutation
-  public let createStandardScalarMutation: CreateStandardScalarMutation
-  public let createScalarBoundaryMutation: CreateScalarBoundaryMutation
-  public let createLargeNumMutation: CreateLargeNumMutation
-  public let createLocalDateMutation: CreateLocalDateMutation
-  public let createAnyValueTypeMutation: CreateAnyValueTypeMutation
-  public let getStandardScalarQuery: GetStandardScalarQuery
-  public let getScalarBoundaryQuery: GetScalarBoundaryQuery
-  public let getLargeNumQuery: GetLargeNumQuery
-  public let getLocalDateTypeQuery: GetLocalDateTypeQuery
-  public let getAnyValueTypeQuery: GetAnyValueTypeQuery
+
 }

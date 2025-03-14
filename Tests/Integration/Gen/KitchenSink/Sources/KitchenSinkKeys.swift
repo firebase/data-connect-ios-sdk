@@ -1,297 +1,453 @@
-// Copyright 2024 Google LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 import Foundation
 
 import FirebaseDataConnect
 
+
+
 public struct AnyValueTypeKey {
+  
   public private(set) var id: UUID
+  
 
   enum CodingKeys: String, CodingKey {
-    case id
+    
+    case  id
+    
   }
 }
 
-extension AnyValueTypeKey: Codable {
+extension AnyValueTypeKey : Codable {
   public init(from decoder: any Decoder) throws {
     var container = try decoder.container(keyedBy: CodingKeys.self)
     let codecHelper = CodecHelper<CodingKeys>()
 
-    id = try codecHelper.decode(UUID.self, forKey: .id, container: &container)
+    
+    self.id = try codecHelper.decode(UUID.self, forKey: .id, container: &container)
+    
   }
 
   public func encode(to encoder: Encoder) throws {
-    var container = encoder.container(keyedBy: CodingKeys.self)
-    let codecHelper = CodecHelper<CodingKeys>()
-
-    try codecHelper.encode(id, forKey: .id, container: &container)
-  }
+      var container = encoder.container(keyedBy: CodingKeys.self)
+      let codecHelper = CodecHelper<CodingKeys>()
+      
+      
+      try codecHelper.encode(id, forKey: .id, container: &container)
+      
+      
+    }
 }
 
-extension AnyValueTypeKey: Equatable {
+extension AnyValueTypeKey : Equatable {
   public static func == (lhs: AnyValueTypeKey, rhs: AnyValueTypeKey) -> Bool {
+    
     if lhs.id != rhs.id {
       return false
     }
-
+    
     return true
   }
 }
 
-extension AnyValueTypeKey: Hashable {
+extension AnyValueTypeKey : Hashable {
   public func hash(into hasher: inout Hasher) {
-    hasher.combine(id)
+    
+    hasher.combine(self.id)
+    
   }
 }
+
+extension AnyValueTypeKey : Sendable {}
+
+
 
 public struct LargeIntTypeKey {
+  
   public private(set) var id: UUID
+  
 
   enum CodingKeys: String, CodingKey {
-    case id
+    
+    case  id
+    
   }
 }
 
-extension LargeIntTypeKey: Codable {
+extension LargeIntTypeKey : Codable {
   public init(from decoder: any Decoder) throws {
     var container = try decoder.container(keyedBy: CodingKeys.self)
     let codecHelper = CodecHelper<CodingKeys>()
 
-    id = try codecHelper.decode(UUID.self, forKey: .id, container: &container)
+    
+    self.id = try codecHelper.decode(UUID.self, forKey: .id, container: &container)
+    
   }
 
   public func encode(to encoder: Encoder) throws {
-    var container = encoder.container(keyedBy: CodingKeys.self)
-    let codecHelper = CodecHelper<CodingKeys>()
-
-    try codecHelper.encode(id, forKey: .id, container: &container)
-  }
+      var container = encoder.container(keyedBy: CodingKeys.self)
+      let codecHelper = CodecHelper<CodingKeys>()
+      
+      
+      try codecHelper.encode(id, forKey: .id, container: &container)
+      
+      
+    }
 }
 
-extension LargeIntTypeKey: Equatable {
+extension LargeIntTypeKey : Equatable {
   public static func == (lhs: LargeIntTypeKey, rhs: LargeIntTypeKey) -> Bool {
+    
     if lhs.id != rhs.id {
       return false
     }
-
+    
     return true
   }
 }
 
-extension LargeIntTypeKey: Hashable {
+extension LargeIntTypeKey : Hashable {
   public func hash(into hasher: inout Hasher) {
-    hasher.combine(id)
+    
+    hasher.combine(self.id)
+    
   }
 }
+
+extension LargeIntTypeKey : Sendable {}
+
+
 
 public struct LocalDateTypeKey {
+  
   public private(set) var id: UUID
+  
 
   enum CodingKeys: String, CodingKey {
-    case id
+    
+    case  id
+    
   }
 }
 
-extension LocalDateTypeKey: Codable {
+extension LocalDateTypeKey : Codable {
   public init(from decoder: any Decoder) throws {
     var container = try decoder.container(keyedBy: CodingKeys.self)
     let codecHelper = CodecHelper<CodingKeys>()
 
-    id = try codecHelper.decode(UUID.self, forKey: .id, container: &container)
+    
+    self.id = try codecHelper.decode(UUID.self, forKey: .id, container: &container)
+    
   }
 
   public func encode(to encoder: Encoder) throws {
-    var container = encoder.container(keyedBy: CodingKeys.self)
-    let codecHelper = CodecHelper<CodingKeys>()
-
-    try codecHelper.encode(id, forKey: .id, container: &container)
-  }
+      var container = encoder.container(keyedBy: CodingKeys.self)
+      let codecHelper = CodecHelper<CodingKeys>()
+      
+      
+      try codecHelper.encode(id, forKey: .id, container: &container)
+      
+      
+    }
 }
 
-extension LocalDateTypeKey: Equatable {
+extension LocalDateTypeKey : Equatable {
   public static func == (lhs: LocalDateTypeKey, rhs: LocalDateTypeKey) -> Bool {
+    
     if lhs.id != rhs.id {
       return false
     }
-
+    
     return true
   }
 }
 
-extension LocalDateTypeKey: Hashable {
+extension LocalDateTypeKey : Hashable {
   public func hash(into hasher: inout Hasher) {
-    hasher.combine(id)
+    
+    hasher.combine(self.id)
+    
   }
 }
+
+extension LocalDateTypeKey : Sendable {}
+
+
+
+public struct PersonKey {
+  
+  public private(set) var id: UUID
+  
+
+  enum CodingKeys: String, CodingKey {
+    
+    case  id
+    
+  }
+}
+
+extension PersonKey : Codable {
+  public init(from decoder: any Decoder) throws {
+    var container = try decoder.container(keyedBy: CodingKeys.self)
+    let codecHelper = CodecHelper<CodingKeys>()
+
+    
+    self.id = try codecHelper.decode(UUID.self, forKey: .id, container: &container)
+    
+  }
+
+  public func encode(to encoder: Encoder) throws {
+      var container = encoder.container(keyedBy: CodingKeys.self)
+      let codecHelper = CodecHelper<CodingKeys>()
+      
+      
+      try codecHelper.encode(id, forKey: .id, container: &container)
+      
+      
+    }
+}
+
+extension PersonKey : Equatable {
+  public static func == (lhs: PersonKey, rhs: PersonKey) -> Bool {
+    
+    if lhs.id != rhs.id {
+      return false
+    }
+    
+    return true
+  }
+}
+
+extension PersonKey : Hashable {
+  public func hash(into hasher: inout Hasher) {
+    
+    hasher.combine(self.id)
+    
+  }
+}
+
+extension PersonKey : Sendable {}
+
+
 
 public struct ScalarBoundaryKey {
+  
   public private(set) var id: UUID
+  
 
   enum CodingKeys: String, CodingKey {
-    case id
+    
+    case  id
+    
   }
 }
 
-extension ScalarBoundaryKey: Codable {
+extension ScalarBoundaryKey : Codable {
   public init(from decoder: any Decoder) throws {
     var container = try decoder.container(keyedBy: CodingKeys.self)
     let codecHelper = CodecHelper<CodingKeys>()
 
-    id = try codecHelper.decode(UUID.self, forKey: .id, container: &container)
+    
+    self.id = try codecHelper.decode(UUID.self, forKey: .id, container: &container)
+    
   }
 
   public func encode(to encoder: Encoder) throws {
-    var container = encoder.container(keyedBy: CodingKeys.self)
-    let codecHelper = CodecHelper<CodingKeys>()
-
-    try codecHelper.encode(id, forKey: .id, container: &container)
-  }
+      var container = encoder.container(keyedBy: CodingKeys.self)
+      let codecHelper = CodecHelper<CodingKeys>()
+      
+      
+      try codecHelper.encode(id, forKey: .id, container: &container)
+      
+      
+    }
 }
 
-extension ScalarBoundaryKey: Equatable {
+extension ScalarBoundaryKey : Equatable {
   public static func == (lhs: ScalarBoundaryKey, rhs: ScalarBoundaryKey) -> Bool {
+    
     if lhs.id != rhs.id {
       return false
     }
-
+    
     return true
   }
 }
 
-extension ScalarBoundaryKey: Hashable {
+extension ScalarBoundaryKey : Hashable {
   public func hash(into hasher: inout Hasher) {
-    hasher.combine(id)
+    
+    hasher.combine(self.id)
+    
   }
 }
+
+extension ScalarBoundaryKey : Sendable {}
+
+
 
 public struct StandardScalarsKey {
+  
   public private(set) var id: UUID
+  
 
   enum CodingKeys: String, CodingKey {
-    case id
+    
+    case  id
+    
   }
 }
 
-extension StandardScalarsKey: Codable {
+extension StandardScalarsKey : Codable {
   public init(from decoder: any Decoder) throws {
     var container = try decoder.container(keyedBy: CodingKeys.self)
     let codecHelper = CodecHelper<CodingKeys>()
 
-    id = try codecHelper.decode(UUID.self, forKey: .id, container: &container)
+    
+    self.id = try codecHelper.decode(UUID.self, forKey: .id, container: &container)
+    
   }
 
   public func encode(to encoder: Encoder) throws {
-    var container = encoder.container(keyedBy: CodingKeys.self)
-    let codecHelper = CodecHelper<CodingKeys>()
-
-    try codecHelper.encode(id, forKey: .id, container: &container)
-  }
+      var container = encoder.container(keyedBy: CodingKeys.self)
+      let codecHelper = CodecHelper<CodingKeys>()
+      
+      
+      try codecHelper.encode(id, forKey: .id, container: &container)
+      
+      
+    }
 }
 
-extension StandardScalarsKey: Equatable {
+extension StandardScalarsKey : Equatable {
   public static func == (lhs: StandardScalarsKey, rhs: StandardScalarsKey) -> Bool {
+    
     if lhs.id != rhs.id {
       return false
     }
-
+    
     return true
   }
 }
 
-extension StandardScalarsKey: Hashable {
+extension StandardScalarsKey : Hashable {
   public func hash(into hasher: inout Hasher) {
-    hasher.combine(id)
+    
+    hasher.combine(self.id)
+    
   }
 }
+
+extension StandardScalarsKey : Sendable {}
+
+
 
 public struct TestAutoIdKey {
+  
   public private(set) var id: UUID
+  
 
   enum CodingKeys: String, CodingKey {
-    case id
+    
+    case  id
+    
   }
 }
 
-extension TestAutoIdKey: Codable {
+extension TestAutoIdKey : Codable {
   public init(from decoder: any Decoder) throws {
     var container = try decoder.container(keyedBy: CodingKeys.self)
     let codecHelper = CodecHelper<CodingKeys>()
 
-    id = try codecHelper.decode(UUID.self, forKey: .id, container: &container)
+    
+    self.id = try codecHelper.decode(UUID.self, forKey: .id, container: &container)
+    
   }
 
   public func encode(to encoder: Encoder) throws {
-    var container = encoder.container(keyedBy: CodingKeys.self)
-    let codecHelper = CodecHelper<CodingKeys>()
-
-    try codecHelper.encode(id, forKey: .id, container: &container)
-  }
+      var container = encoder.container(keyedBy: CodingKeys.self)
+      let codecHelper = CodecHelper<CodingKeys>()
+      
+      
+      try codecHelper.encode(id, forKey: .id, container: &container)
+      
+      
+    }
 }
 
-extension TestAutoIdKey: Equatable {
+extension TestAutoIdKey : Equatable {
   public static func == (lhs: TestAutoIdKey, rhs: TestAutoIdKey) -> Bool {
+    
     if lhs.id != rhs.id {
       return false
     }
-
+    
     return true
   }
 }
 
-extension TestAutoIdKey: Hashable {
+extension TestAutoIdKey : Hashable {
   public func hash(into hasher: inout Hasher) {
-    hasher.combine(id)
+    
+    hasher.combine(self.id)
+    
   }
 }
+
+extension TestAutoIdKey : Sendable {}
+
+
 
 public struct TestIdKey {
+  
   public private(set) var id: UUID
+  
 
   enum CodingKeys: String, CodingKey {
-    case id
+    
+    case  id
+    
   }
 }
 
-extension TestIdKey: Codable {
+extension TestIdKey : Codable {
   public init(from decoder: any Decoder) throws {
     var container = try decoder.container(keyedBy: CodingKeys.self)
     let codecHelper = CodecHelper<CodingKeys>()
 
-    id = try codecHelper.decode(UUID.self, forKey: .id, container: &container)
+    
+    self.id = try codecHelper.decode(UUID.self, forKey: .id, container: &container)
+    
   }
 
   public func encode(to encoder: Encoder) throws {
-    var container = encoder.container(keyedBy: CodingKeys.self)
-    let codecHelper = CodecHelper<CodingKeys>()
-
-    try codecHelper.encode(id, forKey: .id, container: &container)
-  }
+      var container = encoder.container(keyedBy: CodingKeys.self)
+      let codecHelper = CodecHelper<CodingKeys>()
+      
+      
+      try codecHelper.encode(id, forKey: .id, container: &container)
+      
+      
+    }
 }
 
-extension TestIdKey: Equatable {
+extension TestIdKey : Equatable {
   public static func == (lhs: TestIdKey, rhs: TestIdKey) -> Bool {
+    
     if lhs.id != rhs.id {
       return false
     }
-
+    
     return true
   }
 }
 
-extension TestIdKey: Hashable {
+extension TestIdKey : Hashable {
   public func hash(into hasher: inout Hasher) {
-    hasher.combine(id)
+    
+    hasher.combine(self.id)
+    
   }
 }
+
+extension TestIdKey : Sendable {}
+
+
