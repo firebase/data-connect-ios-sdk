@@ -151,7 +151,7 @@ actor GrpcClient: CustomStringConvertible {
       DataConnectLogger
         .debug("executeQuery() receives response: \(resultsString, privacy: .private).")
 
-      //lets decode partial errors. We need these whether we succeed or fail
+      // lets decode partial errors. We need these whether we succeed or fail
       let errorInfoList = createErrorInfoList(errors: results.errors)
 
       // check if decode succeeds
@@ -224,7 +224,7 @@ actor GrpcClient: CustomStringConvertible {
       DataConnectLogger
         .debug("executeMutation() receives response: \(resultsString, privacy: .private).")
 
-      //lets decode partial errors. We need these whether we succeed or fail
+      // lets decode partial errors. We need these whether we succeed or fail
       var errorInfoList = createErrorInfoList(errors: results.errors)
 
       // check if decode succeeds
@@ -285,7 +285,8 @@ actor GrpcClient: CustomStringConvertible {
     }
   }
 
-  private func createErrorInfoList(errors: [FirebaseDataConnectGraphqlError]) -> [OperationFailureResponse.ErrorInfo] {
+  private func createErrorInfoList(errors: [FirebaseDataConnectGraphqlError])
+    -> [OperationFailureResponse.ErrorInfo] {
     let errorList = errors.compactMap { errorProto in
       do {
         let errorJsonData = try errorProto.jsonUTF8Data()

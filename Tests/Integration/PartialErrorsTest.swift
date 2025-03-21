@@ -19,7 +19,6 @@ import FirebaseCore
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class PartialErrorTests: IntegrationTestBase {
-
   override func setUp(completion: @escaping ((any Error)?) -> Void) {
     Task {
       do {
@@ -36,15 +35,14 @@ final class PartialErrorTests: IntegrationTestBase {
   // Decode should fail so there isn't any partially encoded data
   @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
   func testDuplicatePrimaryKeys() async throws {
-
     let id = UUID()
 
     do {
       let results = try await DataConnect.kitchenSinkConnector.insertMultiplePeopleMutation.execute(
-        id: id, name1: "name1", name2: "name2").data
+        id: id, name1: "name1", name2: "name2"
+      ).data
       print("results \(results)")
     } catch let dcError as DataConnectOperationError {
-
       guard let response = dcError.response else {
         XCTAssertFalse(false, "No response received from partial error")
         throw dcError
@@ -66,9 +64,8 @@ final class PartialErrorTests: IntegrationTestBase {
   func testPartiallyDecodedData() async throws {
     let id = UUID()
     do {
-      _  = try await DataConnect.kitchenSinkConnector.deleteNonExistentPeopleMutation.execute(id: id)
+      _ = try await DataConnect.kitchenSinkConnector.deleteNonExistentPeopleMutation.execute(id: id)
     } catch let dcError as DataConnectOperationError {
-
       guard let response = dcError.response else {
         XCTAssertFalse(false, "No response received from partial error")
         throw dcError
@@ -76,7 +73,7 @@ final class PartialErrorTests: IntegrationTestBase {
 
       if let data = response.data(
         asType: DeleteNonExistentPeopleMutation.Data.self
-      )  {
+      ) {
         XCTAssertNil(data.person2)
         XCTAssertTrue(data.person1?.id == id)
       } else {
@@ -84,5 +81,4 @@ final class PartialErrorTests: IntegrationTestBase {
       }
     }
   }
-
 }

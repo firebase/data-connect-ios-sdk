@@ -37,7 +37,6 @@ public extension DataConnectError {
 /// Type erased DataConnectError
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct AnyDataConnectError: DataConnectError {
-
   private let dataConnectError: DataConnectError
 
   init<E: DataConnectError>(dataConnectError: E) {
@@ -72,20 +71,17 @@ public extension DataConnectDomainError {
   }
 }
 
-
 /// Error code within an error domain
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public protocol DataConnectErrorCode: CustomStringConvertible, Equatable, Sendable, CaseIterable { }
+public protocol DataConnectErrorCode: CustomStringConvertible, Equatable, Sendable, CaseIterable {}
 
 // MARK: Data Connect Initialization Errors
 
 /// Error initializing Data Connect
 public struct DataConnectInitError: DataConnectDomainError {
-
   public struct Code: DataConnectErrorCode {
     private let code: String
-    private init(_ code: String) { self.code =  code }
-
+    private init(_ code: String) { self.code = code }
 
     public static let appNotConfigured = Code("appNotConfigured")
     public static let grpcNotConfigured = Code("grpcNotConfigured")
@@ -109,11 +105,13 @@ public struct DataConnectInitError: DataConnectDomainError {
     self.message = message
   }
 
-  static func appNotConfigured(message: String? = nil, cause: Error? = nil) -> DataConnectInitError {
+  static func appNotConfigured(message: String? = nil,
+                               cause: Error? = nil) -> DataConnectInitError {
     return DataConnectInitError(code: .appNotConfigured, message: message, cause: cause)
   }
 
-  static func grpcNotConfigured(message: String? = nil, cause: Error? = nil) -> DataConnectInitError {
+  static func grpcNotConfigured(message: String? = nil,
+                                cause: Error? = nil) -> DataConnectInitError {
     return DataConnectInitError(code: .grpcNotConfigured, message: message, cause: cause)
   }
 }
@@ -139,7 +137,7 @@ public struct DataConnectCodecError: DataConnectDomainError {
         decodingFailed,
         invalidUUID,
         invalidTimestampFormat,
-        invalidLocalDateFormat
+        invalidLocalDateFormat,
       ]
     }
 
@@ -162,24 +160,24 @@ public struct DataConnectCodecError: DataConnectDomainError {
     return DataConnectCodecError(code: .encodingFailed, message: message, cause: cause)
   }
 
- static func decodingFailed(message: String? = nil, cause: Error? = nil) -> DataConnectCodecError {
-   return DataConnectCodecError(code: .decodingFailed, message: message, cause: cause)
- }
+  static func decodingFailed(message: String? = nil, cause: Error? = nil) -> DataConnectCodecError {
+    return DataConnectCodecError(code: .decodingFailed, message: message, cause: cause)
+  }
 
   static func invalidUUID(message: String? = nil, cause: Error? = nil) -> DataConnectCodecError {
     return DataConnectCodecError(code: .invalidUUID, message: message, cause: cause)
   }
 
-  static func invalidTimestampFormat(message: String? = nil, cause: Error? = nil) -> DataConnectCodecError {
+  static func invalidTimestampFormat(message: String? = nil,
+                                     cause: Error? = nil) -> DataConnectCodecError {
     return DataConnectCodecError(code: .invalidTimestampFormat, message: message, cause: cause)
   }
 
-  static func invalidLocalDateFormat(message: String? = nil, cause: Error? = nil) -> DataConnectCodecError {
+  static func invalidLocalDateFormat(message: String? = nil,
+                                     cause: Error? = nil) -> DataConnectCodecError {
     return DataConnectCodecError(code: .invalidLocalDateFormat, message: message, cause: cause)
   }
-
 }
-
 
 // MARK: Operation Execution Error including Partial Errors
 
@@ -200,17 +198,17 @@ public struct DataConnectOperationError: DataConnectError {
     self.message = message
   }
 
-  static func executionFailed(message: String? = nil, cause: Error? = nil, response: OperationFailureResponse? = nil) -> DataConnectOperationError {
+  static func executionFailed(message: String? = nil, cause: Error? = nil,
+                              response: OperationFailureResponse? = nil)
+    -> DataConnectOperationError {
     return DataConnectOperationError(message: message, cause: cause, response: response)
   }
-
 }
-
 
 // The data and errors sent to us from the backend in its response.
 // New struct, that contains the data and errors sent to us
 // from the backend in its response.
-public struct OperationFailureResponse : Sendable {
+public struct OperationFailureResponse: Sendable {
   // JSON string whose value is the "data" property provided by the backend in
   // its response payload; may be `nil` if the "data" property was not provided
   // in the backend response and/or was `null` in the backend response.
@@ -237,11 +235,9 @@ public struct OperationFailureResponse : Sendable {
     return data as? Data
   }
 
-  internal init(
-    rawJsonData: String? = nil,
-    errors: [ErrorInfo],
-    data: Sendable?
-  ) {
+  init(rawJsonData: String? = nil,
+       errors: [ErrorInfo],
+       data: Sendable?) {
     self.rawJsonData = rawJsonData
     self.errors = errors
     self.data = data
@@ -258,7 +254,6 @@ public struct OperationFailureResponse : Sendable {
       case listIndex(Int)
     }
   }
-
 }
 
 // Information about an error provided by the backend in its response.
@@ -281,9 +276,9 @@ public extension OperationFailureResponse.ErrorInfo.PathSegment {
   func encode(to encoder: any Encoder) throws {
     var container = encoder.singleValueContainer()
     switch self {
-    case .field(let fieldVal):
+    case let .field(fieldVal):
       try container.encode(fieldVal)
-    case .listIndex(let indexVal):
+    case let .listIndex(indexVal):
       try container.encode(indexVal)
     }
   }
