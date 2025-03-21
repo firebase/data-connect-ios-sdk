@@ -1,4 +1,4 @@
-// Copyright 2024 Google LLC
+// Copyright 2025 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -133,7 +133,7 @@ actor GrpcClient: CustomStringConvertible {
     async throws -> OperationResult<ResultType> {
     guard let client else {
       DataConnectLogger.error("When calling executeQuery(), grpc client has not been configured.")
-      throw DataConnectError.grpcNotConfigured
+      throw DataConnectInitError.grpcNotConfigured()
     }
 
     let codec = Codec()
@@ -151,37 +151,49 @@ actor GrpcClient: CustomStringConvertible {
       DataConnectLogger
         .debug("executeQuery() receives response: \(resultsString, privacy: .private).")
 
+      //lets decode partial errors. We need these whether we succeed or fail
+      let errorInfoList = createErrorInfoList(errors: results.errors)
 
-      // Not doing error decoding here
-      guard results.errors.isEmpty else {
-        throw DataConnectError.operationExecutionFailed(
-          messages: createErrorJson(errors: results.errors),
-          response: OperationFailureResponseImpl(
-            jsonData: resultsString,
-            errorInfoList: []
-          )
-        )
-      }
+      // check if decode succeeds
+      do {
+        let decodedResults = try codec.decode(result: results.data, asType: resultType)
 
-      if let decodedResults = try codec.decode(result: results.data, asType: resultType) {
-        return OperationResult(data: decodedResults)
-      } else {
-        // In future, set this as error in OperationResult
-        DataConnectLogger
-          .debug("executeQuery() response: \(resultsString, privacy: .private) decode failed.")
-        throw DataConnectError.operationExecutionFailed(
-          messages: "decode failed",
-          response: OperationFailureResponseImpl(
-            jsonData: resultsString,
-            errorInfoList: []
+        // even though decode succeeded, we may still have received partial errors
+        if !errorInfoList.isEmpty {
+          let failureResponse = OperationFailureResponse(
+            rawJsonData: resultsString, errors: errorInfoList,
+            data: decodedResults
           )
-        )
+          throw DataConnectOperationError.executionFailed(
+            response: failureResponse
+          )
+        } else {
+          return OperationResult(data: decodedResults)
+        }
+
+      } catch {
+        // we failed to decode
+        if !errorInfoList.isEmpty {
+          let failureResponse = OperationFailureResponse(
+            rawJsonData: resultsString,
+            errors: errorInfoList,
+            data: nil
+          )
+          throw DataConnectOperationError
+            .executionFailed(
+              cause: error,
+              response: failureResponse
+            )
+        } else {
+          throw DataConnectCodecError.decodingFailed(cause: error)
+        }
       }
     } catch {
+      // we failed at executing the call
       DataConnectLogger.error(
         "executeQuery(): \(requestString, privacy: .private) grpc call FAILED with \(error)."
       )
-      throw error
+      throw DataConnectOperationError.executionFailed(cause: error)
     }
   }
 
@@ -193,7 +205,7 @@ actor GrpcClient: CustomStringConvertible {
     guard let client else {
       DataConnectLogger
         .error("When calling executeMutation(), grpc client has not been configured.")
-      throw DataConnectError.grpcNotConfigured
+      throw DataConnectInitError.grpcNotConfigured()
     }
 
     let codec = Codec()
@@ -212,28 +224,42 @@ actor GrpcClient: CustomStringConvertible {
       DataConnectLogger
         .debug("executeMutation() receives response: \(resultsString, privacy: .private).")
 
-      guard results.errors.isEmpty else {
-        throw DataConnectError.operationExecutionFailed(
-          messages: createErrorJson(errors: results.errors),
-          response: OperationFailureResponseImpl(
-            jsonData: resultsString,
-            errorInfoList: []
-          )
-        )
-      }
+      //lets decode partial errors. We need these whether we succeed or fail
+      var errorInfoList = createErrorInfoList(errors: results.errors)
 
-      if let decodedResults = try codec.decode(result: results.data, asType: resultType) {
-        return OperationResult(data: decodedResults)
-      } else {
-        DataConnectLogger
-          .debug("executeMutation() response: \(resultsString, privacy: .private) decode failed.")
-        throw DataConnectError.operationExecutionFailed(
-          messages: "decode failed",
-          response: OperationFailureResponseImpl(
-            jsonData: resultsString,
-            errorInfoList: []
+      // check if decode succeeds
+      do {
+        let decodedResults = try codec.decode(result: results.data, asType: resultType)
+
+        // even though decode succeeded, we may still have received partial errors
+        if !errorInfoList.isEmpty {
+          let failureResponse = OperationFailureResponse(
+            rawJsonData: resultsString, errors: errorInfoList,
+            data: decodedResults
           )
-        )
+          throw DataConnectOperationError.executionFailed(
+            response: failureResponse
+          )
+        } else {
+          return OperationResult(data: decodedResults)
+        }
+
+      } catch {
+        // we failed to decode
+        if !errorInfoList.isEmpty {
+          let failureResponse = OperationFailureResponse(
+            rawJsonData: resultsString,
+            errors: errorInfoList,
+            data: nil
+          )
+          throw DataConnectOperationError
+            .executionFailed(
+              cause: error,
+              response: failureResponse
+            )
+        } else {
+          throw DataConnectCodecError.decodingFailed(cause: error)
+        }
       }
     } catch {
       DataConnectLogger.error(
@@ -257,6 +283,24 @@ actor GrpcClient: CustomStringConvertible {
       DataConnectLogger.error("Error encoding partial error list")
       return nil
     }
+  }
+
+  private func createErrorInfoList(errors: [FirebaseDataConnectGraphqlError]) -> [OperationFailureResponse.ErrorInfo] {
+    let errorList = errors.compactMap { errorProto in
+      do {
+        let errorJsonData = try errorProto.jsonUTF8Data()
+        let jsonDecoder = JSONDecoder()
+        let errorInfo = try jsonDecoder.decode(
+          OperationFailureResponse.ErrorInfo.self,
+          from: errorJsonData
+        )
+        return errorInfo
+      } catch {
+        DataConnectLogger.error("Error decoding GraphQLError \(error)")
+        return nil
+      }
+    }
+    return errorList
   }
 
   func createCallOptions() async -> CallOptions {

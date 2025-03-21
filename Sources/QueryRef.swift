@@ -1,4 +1,4 @@
-// Copyright 2024 Google LLC
+// Copyright 2025 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -71,12 +71,12 @@ struct QueryRequest<Variable: OperationVariable>: OperationRequest, Hashable, Eq
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public protocol QueryRef: OperationRef {
   // This call starts query execution and publishes data
-  func subscribe() async throws -> AnyPublisher<Result<ResultData, DataConnectError>, Never>
+  func subscribe() async throws -> AnyPublisher<Result<ResultData, AnyDataConnectError>, Never>
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVariable>: QueryRef {
-  private let resultsPublisher = PassthroughSubject<Result<ResultData, DataConnectError>,
+  private let resultsPublisher = PassthroughSubject<Result<ResultData, AnyDataConnectError>,
     Never>()
 
   private let request: QueryRequest<Variable>
@@ -90,7 +90,7 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
 
   // This call starts query execution and publishes data to data var
   // In v0, it simply reloads query results
-  public func subscribe() -> AnyPublisher<Result<ResultData, DataConnectError>, Never> {
+  public func subscribe() -> AnyPublisher<Result<ResultData, AnyDataConnectError>, Never> {
     Task {
       do {
         _ = try await reloadResults()
@@ -196,7 +196,7 @@ public class QueryRefObservableObject<
   /// Use this function ONLY if you plan to use the Query Ref outside of SwiftUI context - (UIKit,
   /// background updates,...)
   public func subscribe() async throws
-    -> AnyPublisher<Result<ResultData, DataConnectError>, Never> {
+    -> AnyPublisher<Result<ResultData, AnyDataConnectError>, Never> {
     return await baseRef.subscribe()
   }
 }
@@ -272,7 +272,7 @@ public class QueryRefObservation<
   /// Use this function ONLY if you plan to use the Query Ref outside of SwiftUI context - (UIKit,
   /// background updates,...)
   public func subscribe() async throws
-    -> AnyPublisher<Result<ResultData, DataConnectError>, Never> {
+    -> AnyPublisher<Result<ResultData, AnyDataConnectError>, Never> {
     return await baseRef.subscribe()
   }
 }

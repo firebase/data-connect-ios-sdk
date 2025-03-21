@@ -1,4 +1,4 @@
-// Copyright 2024 Google LLC
+// Copyright 2025 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,74 +14,277 @@
 
 import Foundation
 
-/// Represents an error returned by the DataConnect service
+// MARK: Base Error Definitions
+
+/// Protocol representing an error returned by the DataConnect service
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public enum DataConnectError: Error {
-  /// no firebase app specified. configure not complete
-  case appNotConfigured
-
-  /// failed to configure gRPC
-  case grpcNotConfigured
-
-  /// Invalid uuid format during encoding / decoding of data
-  case invalidUUID
-
-  /// date components specified to initialize LocalDate are invalid
-  case invalidLocalDateFormat
-
-  /// timestamp components specified to initialize Timestamp are invalid
-  case invalidTimestampFormat
-
-  /// generic operation execution error
-  case operationExecutionFailed(messages: String?, response: OperationFailureResponse)
+public protocol DataConnectError: Error, CustomDebugStringConvertible, CustomStringConvertible {
+  var message: String? { get }
+  var cause: Error? { get }
 }
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public extension DataConnectError {
+  var debugDescription: String {
+    return "{\(Self.self), message: \(message ?? "nil"), cause: \(String(describing: cause))}"
+  }
+
+  var description: String {
+    return debugDescription
+  }
+}
+
+/// Type erased DataConnectError
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public struct AnyDataConnectError: DataConnectError {
+
+  private let dataConnectError: DataConnectError
+
+  init<E: DataConnectError>(dataConnectError: E) {
+    self.dataConnectError = dataConnectError
+  }
+
+  public var message: String? {
+    return dataConnectError.message
+  }
+
+  public var cause: (any Error)? {
+    return dataConnectError.cause
+  }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+/// Represents an error domain which can have more granular error codes
+public protocol DataConnectDomainError: DataConnectError {
+  associatedtype ErrorCode: DataConnectErrorCode
+
+  var code: ErrorCode { get }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public extension DataConnectDomainError {
+  var debugDescription: String {
+    return "{\(Self.self), code: \(code), message: \(message ?? "nil"), cause: \(String(describing: cause))}"
+  }
+
+  var description: String {
+    return debugDescription
+  }
+}
+
+
+/// Error code within an error domain
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public protocol DataConnectErrorCode: CustomStringConvertible, Equatable, Sendable, CaseIterable { }
+
+// MARK: Data Connect Initialization Errors
+
+/// Error initializing Data Connect
+public struct DataConnectInitError: DataConnectDomainError {
+
+  public struct Code: DataConnectErrorCode {
+    private let code: String
+    private init(_ code: String) { self.code =  code }
+
+
+    public static let appNotConfigured = Code("appNotConfigured")
+    public static let grpcNotConfigured = Code("grpcNotConfigured")
+
+    public static var allCases: [DataConnectInitError.Code] {
+      return [appNotConfigured, grpcNotConfigured]
+    }
+
+    public var description: String { return code }
+  }
+
+  public let code: Code
+
+  public private(set) var message: String?
+
+  public private(set) var cause: Error?
+
+  private init(code: Code, message: String? = nil, cause: Error? = nil) {
+    self.code = code
+    self.cause = cause
+    self.message = message
+  }
+
+  static func appNotConfigured(message: String? = nil, cause: Error? = nil) -> DataConnectInitError {
+    return DataConnectInitError(code: .appNotConfigured, message: message, cause: cause)
+  }
+
+  static func grpcNotConfigured(message: String? = nil, cause: Error? = nil) -> DataConnectInitError {
+    return DataConnectInitError(code: .grpcNotConfigured, message: message, cause: cause)
+  }
+}
+
+// MARK: Data Codec Errors
+
+/// Data Encoding / Decoding Error
+public struct DataConnectCodecError: DataConnectDomainError {
+  public struct Code: DataConnectErrorCode {
+    private let code: String
+
+    private init(_ code: String) { self.code = code }
+
+    public static let encodingFailed = Code("encodingFailed")
+    public static let decodingFailed = Code("decodingFailed")
+    public static let invalidUUID = Code("invalidUUID")
+    public static let invalidTimestampFormat = Code("invalidTimestampFormat")
+    public static let invalidLocalDateFormat = Code("invalidLocalDateFormat")
+
+    public static var allCases: [DataConnectCodecError.Code] {
+      return [
+        encodingFailed,
+        decodingFailed,
+        invalidUUID,
+        invalidTimestampFormat,
+        invalidLocalDateFormat
+      ]
+    }
+
+    public var description: String { return code }
+  }
+
+  public let code: Code
+
+  public var message: String?
+
+  public var cause: (any Error)?
+
+  private init(code: Code, message: String? = nil, cause: Error? = nil) {
+    self.code = code
+    self.message = message
+    self.cause = cause
+  }
+
+  static func encodingFailed(message: String? = nil, cause: Error? = nil) -> DataConnectCodecError {
+    return DataConnectCodecError(code: .encodingFailed, message: message, cause: cause)
+  }
+
+ static func decodingFailed(message: String? = nil, cause: Error? = nil) -> DataConnectCodecError {
+   return DataConnectCodecError(code: .decodingFailed, message: message, cause: cause)
+ }
+
+  static func invalidUUID(message: String? = nil, cause: Error? = nil) -> DataConnectCodecError {
+    return DataConnectCodecError(code: .invalidUUID, message: message, cause: cause)
+  }
+
+  static func invalidTimestampFormat(message: String? = nil, cause: Error? = nil) -> DataConnectCodecError {
+    return DataConnectCodecError(code: .invalidTimestampFormat, message: message, cause: cause)
+  }
+
+  static func invalidLocalDateFormat(message: String? = nil, cause: Error? = nil) -> DataConnectCodecError {
+    return DataConnectCodecError(code: .invalidLocalDateFormat, message: message, cause: cause)
+  }
+
+}
+
+
+// MARK: Operation Execution Error including Partial Errors
+
+/// Data Connect Operation Failed
+public struct DataConnectOperationError: DataConnectError {
+  public var kind: String {
+    return "operationError"
+  }
+
+  public var message: String?
+
+  public var cause: (any Error)?
+
+  public private(set) var response: OperationFailureResponse? = nil
+
+  private init(message: String? = nil, cause: Error? = nil, response: OperationFailureResponse?) {
+    self.response = response
+    self.message = message
+  }
+
+  static func executionFailed(message: String? = nil, cause: Error? = nil, response: OperationFailureResponse? = nil) -> DataConnectOperationError {
+    return DataConnectOperationError(message: message, cause: cause, response: response)
+  }
+
+}
+
 
 // The data and errors sent to us from the backend in its response.
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public protocol OperationFailureResponse {
-  // JSON string whose value is the "data" property provided by the backend in its response
-  // payload; may be `nil` if the "data" property was not provided in the backend response and/or
-  // was `null` in the backend response.
-  var jsonData: String? { get }
+// New struct, that contains the data and errors sent to us
+// from the backend in its response.
+public struct OperationFailureResponse : Sendable {
+  // JSON string whose value is the "data" property provided by the backend in
+  // its response payload; may be `nil` if the "data" property was not provided
+  // in the backend response and/or was `null` in the backend response.
+  public private(set) var rawJsonData: String?
 
-  // The list of errors in the "error" property provided by the backend in its response payload;
-  // may be empty if the "errors" property was not provided in the backend response and/or was an
-  // empty list in the backend response.
-  var errorInfoList: [OperationFailureResponseErrorInfo] { get }
+  // The list of errors in the "error" property provided by the backend in
+  // its response payload; may be empty if the "errors" property was not
+  // provided in the backend response and/or was an empty list in the backend response.
+  public private(set) var errors: [ErrorInfo]
 
-  // Returns `jsonData` string decoded into the given type, if decoding was successful when the
-  // operation was executed. Returns `nil` if `jsonData` is `nil`, if `jsonData` was _not_ able to
-  // be decoded when the operation was executed, or if the given type is _not_ equal to the `Data`
-  // type that was used when the operation was executed.
+  // (Partially) decoded data
+  private let data: Sendable?
+
+  // Returns `jsonData` string decoded into the given type, if decoding was
+  // successful when the operation was executed. Returns `nil` if `jsonData`
+  // is `nil`, if `jsonData` was _not_ able to be decoded when the operation
+  // was executed, or if the given type is _not_ equal to the `Data` type that
+  // was used when the operation was executed.
   //
-  // This function does _not_ do the decoding itself, but simply returns the decoded data, if any,
-  // that was decoded at the time of the operation's execution.
-  func decodedData<Data: Decodable>(asType: Data.Type) -> Data?
-}
-
-struct OperationFailureResponseImpl : OperationFailureResponse {
-  public let jsonData: String?
-
-  public let errorInfoList: [OperationFailureResponseErrorInfo]
-
-  func decodedData<Data: Decodable>(asType: Data.Type = Data.self) -> Data? {
-    return nil;
+  // This function does _not_ do the decoding itself, but simply returns
+  // the decoded data, if any, that was decoded at the time of the
+  // operation's execution.
+  func data<Data: Decodable>(asType: Data.Type = Data.self) -> Data? {
+    return data as? Data
   }
+
+  internal init(
+    rawJsonData: String? = nil,
+    errors: [ErrorInfo],
+    data: Sendable?
+  ) {
+    self.rawJsonData = rawJsonData
+    self.errors = errors
+    self.data = data
+  }
+
+  public struct ErrorInfo: Codable, Sendable {
+    // The error message.
+    public let message: String
+    // The path to the field to which this error applies.
+    public let path: [PathSegment]
+
+    public enum PathSegment: Codable, Equatable, Sendable {
+      case field(String)
+      case listIndex(Int)
+    }
+  }
+
 }
 
 // Information about an error provided by the backend in its response.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public struct OperationFailureResponseErrorInfo: Codable {
-  // The error message.
-  public let message: String
 
-  // The path to the field to which this error applies.
-  public let path: [PathSegment]
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public extension OperationFailureResponse.ErrorInfo.PathSegment {
+  init(from decoder: any Decoder) throws {
+    let container = try decoder.singleValueContainer()
 
-  @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-  public enum PathSegment: Codable, Equatable {
-    case field(String)
-    case listIndex(Int)
+    do {
+      let field = try container.decode(String.self)
+      self = .field(field)
+    } catch {
+      let index = try container.decode(Int.self)
+      self = .listIndex(index)
+    }
+  }
+
+  func encode(to encoder: any Encoder) throws {
+    var container = encoder.singleValueContainer()
+    switch self {
+    case .field(let fieldVal):
+      try container.encode(fieldVal)
+    case .listIndex(let indexVal):
+      try container.encode(indexVal)
+    }
   }
 }
-

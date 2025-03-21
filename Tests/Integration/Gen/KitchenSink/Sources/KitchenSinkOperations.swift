@@ -1158,6 +1158,119 @@ name2: String
 
 
 
+public class DeleteNonExistentPeopleMutation{
+
+  let dataConnect: DataConnect
+
+  init(dataConnect: DataConnect) {
+    self.dataConnect = dataConnect
+  }
+
+  public static let OperationName = "DeleteNonExistentPeople"
+
+  public typealias Ref = MutationRef<DeleteNonExistentPeopleMutation.Data,DeleteNonExistentPeopleMutation.Variables>
+
+  public struct Variables: OperationVariable {
+  
+        
+        public var
+id: UUID
+
+
+    
+    
+    
+    public init (
+        
+id: UUID
+
+        
+        ) {
+        self.id = id
+        
+
+        
+    }
+
+    public static func == (lhs: Variables, rhs: Variables) -> Bool {
+      
+        return lhs.id == rhs.id
+              
+    }
+
+    
+public func hash(into hasher: inout Hasher) {
+  
+  hasher.combine(id)
+  
+}
+
+    enum CodingKeys: String, CodingKey {
+      
+      case id
+      
+    }
+
+    public func encode(to encoder: Encoder) throws {
+      var container = encoder.container(keyedBy: CodingKeys.self)
+      let codecHelper = CodecHelper<CodingKeys>()
+      
+      
+      try codecHelper.encode(id, forKey: .id, container: &container)
+      
+      
+    }
+
+  }
+
+  public struct Data: Decodable, Sendable {
+
+
+
+public var 
+person1: PersonKey?
+
+
+
+
+public var 
+person2: PersonKey?
+
+  }
+
+  public func ref(
+        
+id: UUID
+
+        ) -> MutationRef<DeleteNonExistentPeopleMutation.Data,DeleteNonExistentPeopleMutation.Variables>  {
+        var variables = DeleteNonExistentPeopleMutation.Variables(id:id)
+        
+
+        let ref = dataConnect.mutation(name: "DeleteNonExistentPeople", variables: variables, resultsDataType:DeleteNonExistentPeopleMutation.Data.self)
+        return ref as MutationRef<DeleteNonExistentPeopleMutation.Data,DeleteNonExistentPeopleMutation.Variables>
+   }
+
+  @MainActor
+   public func execute(
+        
+id: UUID
+
+        ) async throws -> OperationResult<DeleteNonExistentPeopleMutation.Data> {
+        var variables = DeleteNonExistentPeopleMutation.Variables(id:id)
+        
+        
+        let ref = dataConnect.mutation(name: "DeleteNonExistentPeople", variables: variables, resultsDataType:DeleteNonExistentPeopleMutation.Data.self)
+        
+        return try await ref.execute()
+        
+   }
+}
+
+
+
+
+
+
 public class GetStandardScalarQuery{
 
   let dataConnect: DataConnect

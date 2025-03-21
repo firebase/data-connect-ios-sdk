@@ -66,8 +66,15 @@ mutation createAnyValueType($id: UUID!, $props: Any!) @auth(level: PUBLIC) {
 
 # Notice how both "inserts" use the same ID; this means that one of them
 # will necessarily fail because you can't have two rows with the same ID.
-mutation InsertMultiplePeople($id: UUID!, $name1: String!, $name2: String!) {
+mutation InsertMultiplePeople($id: UUID!, $name1: String!, $name2: String!) @auth(level: PUBLIC) {
   person1: person_insert(data: { id: $id, name: $name1 })
-  person2: person_insert(data: { id: $id, name: $name2 })
+  person2: person_insert(data: { id: $id, name: $name2 }) @check(expr: "false")
 }
 
+# ID for second person does not exist. 
+# so first one will succeed but second should fail
+mutation DeleteNonExistentPeople($id: UUID!) @auth(level: PUBLIC) {
+    person1_insert: person_insert(data: { id: $id, name: "name1" })
+    person1: person_delete(id: $id)
+    person2: person_delete(id: "11A7649B-8FF5-485B-AFBF-2EA5F28894DF")
+}

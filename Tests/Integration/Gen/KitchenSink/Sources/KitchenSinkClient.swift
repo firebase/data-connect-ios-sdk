@@ -38,6 +38,7 @@ public class KitchenSinkConnector {
     self.createLocalDateMutation = CreateLocalDateMutation(dataConnect: dataConnect)
     self.createAnyValueTypeMutation = CreateAnyValueTypeMutation(dataConnect: dataConnect)
     self.insertMultiplePeopleMutation = InsertMultiplePeopleMutation(dataConnect: dataConnect)
+    self.deleteNonExistentPeopleMutation = DeleteNonExistentPeopleMutation(dataConnect: dataConnect)
     self.getStandardScalarQuery = GetStandardScalarQuery(dataConnect: dataConnect)
     self.getScalarBoundaryQuery = GetScalarBoundaryQuery(dataConnect: dataConnect)
     self.getLargeNumQuery = GetLargeNumQuery(dataConnect: dataConnect)
@@ -59,6 +60,7 @@ public let createLargeNumMutation: CreateLargeNumMutation
 public let createLocalDateMutation: CreateLocalDateMutation
 public let createAnyValueTypeMutation: CreateAnyValueTypeMutation
 public let insertMultiplePeopleMutation: InsertMultiplePeopleMutation
+public let deleteNonExistentPeopleMutation: DeleteNonExistentPeopleMutation
 public let getStandardScalarQuery: GetStandardScalarQuery
 public let getScalarBoundaryQuery: GetScalarBoundaryQuery
 public let getLargeNumQuery: GetLargeNumQuery
