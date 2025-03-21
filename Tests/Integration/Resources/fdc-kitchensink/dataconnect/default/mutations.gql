@@ -71,7 +71,7 @@ mutation InsertMultiplePeople($id: UUID!, $name1: String!, $name2: String!) @aut
   person2: person_insert(data: { id: $id, name: $name2 }) @check(expr: "false")
 }
 
-# ID for second person does not exist. 
+# ID for second person does not exist.
 # so first one will succeed but second should fail
 mutation DeleteNonExistentPeople($id: UUID!) @auth(level: PUBLIC) {
     person1_insert: person_insert(data: { id: $id, name: "name1" })
