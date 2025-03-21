@@ -1,4 +1,4 @@
-// Copyright 2024 Google LLC
+// Copyright 2025 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ public struct LocalDate: Codable, Comparable, CustomStringConvertible, Equatable
     dateComponents.calendar = calendar
     guard dateComponents.isValidDate,
           let date = dateComponents.date else {
-      throw DataConnectError.invalidLocalDateFormat
+      throw DataConnectCodecError.invalidLocalDateFormat()
     }
     self.date = date
 
@@ -70,7 +70,7 @@ public struct LocalDate: Codable, Comparable, CustomStringConvertible, Equatable
 
   private func convert(dateString: String) throws -> Date {
     guard let date = dateFormatter.date(from: dateString) else {
-      throw DataConnectError.invalidLocalDateFormat
+      throw DataConnectCodecError.invalidLocalDateFormat()
     }
     return date
   }

@@ -1,17 +1,3 @@
-// Copyright 2024 Google LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 import Foundation
 
 import FirebaseDataConnect
@@ -56,6 +42,8 @@ extension AnyValueTypeKey: Hashable {
   }
 }
 
+extension AnyValueTypeKey: Sendable {}
+
 public struct LargeIntTypeKey {
   public private(set) var id: UUID
 
@@ -95,6 +83,8 @@ extension LargeIntTypeKey: Hashable {
     hasher.combine(id)
   }
 }
+
+extension LargeIntTypeKey: Sendable {}
 
 public struct LocalDateTypeKey {
   public private(set) var id: UUID
@@ -136,6 +126,50 @@ extension LocalDateTypeKey: Hashable {
   }
 }
 
+extension LocalDateTypeKey: Sendable {}
+
+public struct PersonKey {
+  public private(set) var id: UUID
+
+  enum CodingKeys: String, CodingKey {
+    case id
+  }
+}
+
+extension PersonKey: Codable {
+  public init(from decoder: any Decoder) throws {
+    var container = try decoder.container(keyedBy: CodingKeys.self)
+    let codecHelper = CodecHelper<CodingKeys>()
+
+    id = try codecHelper.decode(UUID.self, forKey: .id, container: &container)
+  }
+
+  public func encode(to encoder: Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    let codecHelper = CodecHelper<CodingKeys>()
+
+    try codecHelper.encode(id, forKey: .id, container: &container)
+  }
+}
+
+extension PersonKey: Equatable {
+  public static func == (lhs: PersonKey, rhs: PersonKey) -> Bool {
+    if lhs.id != rhs.id {
+      return false
+    }
+
+    return true
+  }
+}
+
+extension PersonKey: Hashable {
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(id)
+  }
+}
+
+extension PersonKey: Sendable {}
+
 public struct ScalarBoundaryKey {
   public private(set) var id: UUID
 
@@ -175,6 +209,8 @@ extension ScalarBoundaryKey: Hashable {
     hasher.combine(id)
   }
 }
+
+extension ScalarBoundaryKey: Sendable {}
 
 public struct StandardScalarsKey {
   public private(set) var id: UUID
@@ -216,6 +252,8 @@ extension StandardScalarsKey: Hashable {
   }
 }
 
+extension StandardScalarsKey: Sendable {}
+
 public struct TestAutoIdKey {
   public private(set) var id: UUID
 
@@ -256,6 +294,8 @@ extension TestAutoIdKey: Hashable {
   }
 }
 
+extension TestAutoIdKey: Sendable {}
+
 public struct TestIdKey {
   public private(set) var id: UUID
 
@@ -295,3 +335,5 @@ extension TestIdKey: Hashable {
     hasher.combine(id)
   }
 }
+
+extension TestIdKey: Sendable {}

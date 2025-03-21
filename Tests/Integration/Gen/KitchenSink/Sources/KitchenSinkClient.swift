@@ -1,29 +1,21 @@
-// Copyright 2024 Google LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
 
-import FirebaseDataConnect
 import Foundation
 
+import FirebaseCore
+import FirebaseDataConnect
+
 public extension DataConnect {
-  static var kitchenSinkConnector: KitchenSinkConnector = {
-    let dc = DataConnect.dataConnect(connectorConfig: KitchenSinkConnector.connectorConfig)
+  static let kitchenSinkConnector: KitchenSinkConnector = {
+    let dc = DataConnect.dataConnect(
+      connectorConfig: KitchenSinkConnector.connectorConfig,
+      callerSDKType: .generated
+    )
     return KitchenSinkConnector(dataConnect: dc)
   }()
 }
 
 public class KitchenSinkConnector {
-  var dataConnect: DataConnect
+  let dataConnect: DataConnect
 
   public static let connectorConfig = ConnectorConfig(
     serviceId: "fdc-kitchensink",
@@ -42,6 +34,8 @@ public class KitchenSinkConnector {
     createLargeNumMutation = CreateLargeNumMutation(dataConnect: dataConnect)
     createLocalDateMutation = CreateLocalDateMutation(dataConnect: dataConnect)
     createAnyValueTypeMutation = CreateAnyValueTypeMutation(dataConnect: dataConnect)
+    insertMultiplePeopleMutation = InsertMultiplePeopleMutation(dataConnect: dataConnect)
+    deleteNonExistentPeopleMutation = DeleteNonExistentPeopleMutation(dataConnect: dataConnect)
     getStandardScalarQuery = GetStandardScalarQuery(dataConnect: dataConnect)
     getScalarBoundaryQuery = GetScalarBoundaryQuery(dataConnect: dataConnect)
     getLargeNumQuery = GetLargeNumQuery(dataConnect: dataConnect)
@@ -63,6 +57,8 @@ public class KitchenSinkConnector {
   public let createLargeNumMutation: CreateLargeNumMutation
   public let createLocalDateMutation: CreateLocalDateMutation
   public let createAnyValueTypeMutation: CreateAnyValueTypeMutation
+  public let insertMultiplePeopleMutation: InsertMultiplePeopleMutation
+  public let deleteNonExistentPeopleMutation: DeleteNonExistentPeopleMutation
   public let getStandardScalarQuery: GetStandardScalarQuery
   public let getScalarBoundaryQuery: GetScalarBoundaryQuery
   public let getLargeNumQuery: GetLargeNumQuery
