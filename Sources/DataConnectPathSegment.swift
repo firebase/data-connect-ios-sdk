@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-public enum PathSegment: Codable, Equatable, Sendable {
+public enum DataConnectPathSegment: Codable, Equatable, Sendable {
   case field(String)
   case listIndex(Int)
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public extension PathSegment {
+public extension DataConnectPathSegment {
   init(from decoder: any Decoder) throws {
     let container = try decoder.singleValueContainer()
 
