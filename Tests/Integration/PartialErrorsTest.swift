@@ -48,7 +48,7 @@ final class PartialErrorTests: IntegrationTestBase {
         throw dcError
       }
 
-      let foo1Path = [OperationFailureResponse.ErrorInfo.PathSegment.field("person2")]
+      let foo1Path = [PathSegment.field("person2")]
       let error = response.errors.first(where: { $0.path == foo1Path })
       XCTAssertNotNil(error)
 

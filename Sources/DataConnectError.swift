@@ -248,38 +248,5 @@ public struct OperationFailureResponse: Sendable {
     public let message: String
     // The path to the field to which this error applies.
     public let path: [PathSegment]
-
-    public enum PathSegment: Codable, Equatable, Sendable {
-      case field(String)
-      case listIndex(Int)
-    }
-  }
-}
-
-// Information about an error provided by the backend in its response.
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public extension OperationFailureResponse.ErrorInfo.PathSegment {
-  init(from decoder: any Decoder) throws {
-    let container = try decoder.singleValueContainer()
-
-    do {
-      let field = try container.decode(String.self)
-      self = .field(field)
-    } catch {
-      let index = try container.decode(Int.self)
-      self = .listIndex(index)
-    }
-  }
-
-  func encode(to encoder: any Encoder) throws {
-    var container = encoder.singleValueContainer()
-    switch self {
-    case let .field(fieldVal):
-      try container.encode(fieldVal)
-    case let .listIndex(indexVal):
-      try container.encode(indexVal)
-    }
   }
 }
