@@ -183,14 +183,8 @@ public struct DataConnectCodecError: DataConnectDomainError {
 
 /// Data Connect Operation Failed
 public struct DataConnectOperationError: DataConnectError {
-  public var kind: String {
-    return "operationError"
-  }
-
   public var message: String?
-
   public var cause: (any Error)?
-
   public private(set) var response: OperationFailureResponse? = nil
 
   private init(message: String? = nil, cause: Error? = nil, response: OperationFailureResponse?) {
