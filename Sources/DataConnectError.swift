@@ -20,13 +20,13 @@ import Foundation
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public protocol DataConnectError: Error, CustomDebugStringConvertible, CustomStringConvertible {
   var message: String? { get }
-  var cause: Error? { get }
+  var underlyingError: Error? { get }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public extension DataConnectError {
   var debugDescription: String {
-    return "{\(Self.self), message: \(message ?? "nil"), cause: \(String(describing: cause))}"
+    return "{\(Self.self), message: \(message ?? "nil"), cause: \(String(describing: underlyingError))}"
   }
 
   var description: String {
@@ -47,8 +47,8 @@ public struct AnyDataConnectError: DataConnectError {
     return dataConnectError.message
   }
 
-  public var cause: (any Error)? {
-    return dataConnectError.cause
+  public var underlyingError: (any Error)? {
+    return dataConnectError.underlyingError
   }
 }
 
@@ -56,14 +56,13 @@ public struct AnyDataConnectError: DataConnectError {
 /// Represents an error domain which can have more granular error codes
 public protocol DataConnectDomainError: DataConnectError {
   associatedtype ErrorCode: DataConnectErrorCode
-
   var code: ErrorCode { get }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public extension DataConnectDomainError {
   var debugDescription: String {
-    return "{\(Self.self), code: \(code), message: \(message ?? "nil"), cause: \(String(describing: cause))}"
+    return "{\(Self.self), code: \(code), message: \(message ?? "nil"), cause: \(String(describing: underlyingError))}"
   }
 
   var description: String {
@@ -97,11 +96,11 @@ public struct DataConnectInitError: DataConnectDomainError {
 
   public let message: String?
 
-  public let cause: Error?
+  public let underlyingError: Error?
 
   private init(code: Code, message: String? = nil, cause: Error? = nil) {
     self.code = code
-    self.cause = cause
+    underlyingError = cause
     self.message = message
   }
 
@@ -148,12 +147,12 @@ public struct DataConnectCodecError: DataConnectDomainError {
 
   public let message: String?
 
-  public let cause: (any Error)?
+  public let underlyingError: (any Error)?
 
   private init(code: Code, message: String? = nil, cause: Error? = nil) {
     self.code = code
     self.message = message
-    self.cause = cause
+    underlyingError = cause
   }
 
   static func encodingFailed(message: String? = nil, cause: Error? = nil) -> DataConnectCodecError {
@@ -184,12 +183,13 @@ public struct DataConnectCodecError: DataConnectDomainError {
 /// Data Connect Operation Failed
 public struct DataConnectOperationError: DataConnectError {
   public let message: String?
-  public let cause: (any Error)?
+  public let underlyingError: (any Error)?
   public let response: OperationFailureResponse?
 
-  private init(message: String? = nil, cause: Error? = nil, response: OperationFailureResponse? = nil) {
+  private init(message: String? = nil, cause: Error? = nil,
+               response: OperationFailureResponse? = nil) {
     self.response = response
-    self.cause = cause
+    underlyingError = cause
     self.message = message
   }
 
