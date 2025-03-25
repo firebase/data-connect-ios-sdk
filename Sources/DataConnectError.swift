@@ -95,9 +95,9 @@ public struct DataConnectInitError: DataConnectDomainError {
 
   public let code: Code
 
-  public private(set) var message: String?
+  public let message: String?
 
-  public private(set) var cause: Error?
+  public let cause: Error?
 
   private init(code: Code, message: String? = nil, cause: Error? = nil) {
     self.code = code
@@ -146,9 +146,9 @@ public struct DataConnectCodecError: DataConnectDomainError {
 
   public let code: Code
 
-  public var message: String?
+  public let message: String?
 
-  public var cause: (any Error)?
+  public let cause: (any Error)?
 
   private init(code: Code, message: String? = nil, cause: Error? = nil) {
     self.code = code
@@ -183,12 +183,13 @@ public struct DataConnectCodecError: DataConnectDomainError {
 
 /// Data Connect Operation Failed
 public struct DataConnectOperationError: DataConnectError {
-  public var message: String?
-  public var cause: (any Error)?
-  public private(set) var response: OperationFailureResponse? = nil
+  public let message: String?
+  public let cause: (any Error)?
+  public let response: OperationFailureResponse?
 
-  private init(message: String? = nil, cause: Error? = nil, response: OperationFailureResponse?) {
+  private init(message: String? = nil, cause: Error? = nil, response: OperationFailureResponse? = nil) {
     self.response = response
+    self.cause = cause
     self.message = message
   }
 
@@ -206,12 +207,12 @@ public struct OperationFailureResponse: Sendable {
   // JSON string whose value is the "data" property provided by the backend in
   // its response payload; may be `nil` if the "data" property was not provided
   // in the backend response and/or was `null` in the backend response.
-  public private(set) var rawJsonData: String?
+  public let rawJsonData: String?
 
   // The list of errors in the "error" property provided by the backend in
   // its response payload; may be empty if the "errors" property was not
   // provided in the backend response and/or was an empty list in the backend response.
-  public private(set) var errors: [ErrorInfo]
+  public let errors: [ErrorInfo]
 
   // (Partially) decoded data
   private let data: Sendable?
