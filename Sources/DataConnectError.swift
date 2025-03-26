@@ -36,19 +36,11 @@ public extension DataConnectError {
 
 /// Type erased DataConnectError
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public struct AnyDataConnectError: DataConnectError {
+public struct AnyDataConnectError: Error {
   public let dataConnectError: DataConnectError
 
   init<E: DataConnectError>(dataConnectError: E) {
     self.dataConnectError = dataConnectError
-  }
-
-  public var message: String? {
-    return dataConnectError.message
-  }
-
-  public var underlyingError: (any Error)? {
-    return dataConnectError.underlyingError
   }
 }
 

@@ -168,7 +168,7 @@ public class QueryRefObservableObject<
             self.data = resultData
             self.lastError = nil
           case let .failure(dcerror):
-            self.lastError = dcerror
+            self.lastError = dcerror.dataConnectError
           }
         })
     }
@@ -244,7 +244,7 @@ public class QueryRefObservation<
             self.data = resultData
             self.lastError = nil
           case let .failure(dcerror):
-            self.lastError = dcerror
+            self.lastError = dcerror.dataConnectError
           }
         })
     }
