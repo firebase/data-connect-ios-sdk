@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Foundation
 import Combine
+import Foundation
 import XCTest
 
 import FirebaseCore
@@ -21,11 +21,10 @@ import FirebaseCore
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class ErrorTypesTests: XCTestCase {
-
   private var pubCancellable: AnyCancellable?
   private let errPublisher = PassthroughSubject<Result<String, AnyDataConnectError>, Never>()
 
-  func throwInitError() throws  {
+  func throwInitError() throws {
     throw DataConnectInitError.appNotConfigured()
   }
 
@@ -38,17 +37,15 @@ final class ErrorTypesTests: XCTestCase {
   }
 
   func testPublisherErrorType() throws {
-
     let errExpectation = XCTestExpectation(description: "Expect a Domain Erro")
 
-    pubCancellable = errPublisher.sink( receiveValue: { result in
+    pubCancellable = errPublisher.sink(receiveValue: { result in
       switch result {
-      case .success(_):
+      case .success:
         XCTFail("Unexpectedly got success. We expect a failure with error")
       case let .failure(dcerror):
         if let initErr = dcerror.dataConnectError as? DataConnectInitError,
-           initErr.code == .appNotConfigured
-        {
+           initErr.code == .appNotConfigured {
           // got Init domain error
           errExpectation.fulfill()
         } else {
