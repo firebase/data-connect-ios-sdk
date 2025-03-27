@@ -173,9 +173,18 @@ public struct DataConnectCodecError: DataConnectDomainError {
 
 // MARK: - Operation Execution Error including Partial Errors
 
-/// Data Connect Operation Failed
+/// An error that occurs during the execution of a Data Connect operation.
+///
+/// This error can arise due to various reasons, such as network issues, server-side errors,
+/// or problems with the operation itself. It may include an optional underlying error,
+/// a message describing the failure, and an optional response from the failed operation.
+///
 /// When available, the ``response`` will contain more error information and any partially decoded
 /// result
+///
+/// - SeeAlso: `DataConnectError` for the base error type.
+///
+
 public struct DataConnectOperationError: DataConnectError {
   public let message: String?
   public let underlyingError: (any Error)?
