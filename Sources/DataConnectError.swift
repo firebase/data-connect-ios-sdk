@@ -65,7 +65,7 @@ public extension DataConnectDomainError {
   }
 }
 
-/// Error code within an error domain
+/// A type that represents an error code within an error domain.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public protocol DataConnectErrorCode: CustomStringConvertible, Equatable, Sendable, CaseIterable {}
 
@@ -235,15 +235,13 @@ public struct OperationFailureResponse: Sendable {
   // (Partially) decoded data
   private let data: Sendable?
 
-  /// Returns ``rawJsonData`` string decoded into the given type, if decoding was
-  /// successful when the operation was executed. Returns `nil` if `rawJsonData`
-  /// is `nil`, if ``rawJsonData`` was _not_ able to be decoded when the operation
-  /// was executed, or if the given type is _not_ equal to the `Data` type that
-  /// was used when the operation was executed.
+  /// Returns `rawJsonData` string decoded into the given type, if decoding was
+  /// successful when the operation was executed.
   ///
-  /// This function does _not_ do the decoding itself, but simply returns
-  /// the decoded data, if any, that was decoded at the time of the
-  /// operation's execution.
+  /// - Parameter asType: The type to decode the `rawJsonData` into (defaults to the inferred
+  /// generic parameter).
+  /// - Returns: The decoded data of type `Data` (generic parameter), if decoding to the
+  /// generic parameter was successful when the operation was executed, `nil` otherwise.
   public func data<Data: Decodable>(asType: Data.Type = Data.self) -> Data? {
     return data as? Data
   }
