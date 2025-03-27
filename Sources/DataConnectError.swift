@@ -17,6 +17,8 @@ import Foundation
 // MARK: - Base Error Definitions
 
 /// A type representing an error returned by the DataConnect service
+///
+/// - SeeAlso: ``DataConnectError`` for the base error type.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public protocol DataConnectError: Error, CustomDebugStringConvertible, CustomStringConvertible {
   var message: String? { get }
@@ -69,7 +71,13 @@ public protocol DataConnectErrorCode: CustomStringConvertible, Equatable, Sendab
 
 // MARK: - Data Connect Initialization Errors
 
-/// Error initializing Data Connect
+/// An error that occurs during the initialization of the Data Connect service.
+///
+/// This error can arise due to various reasons, such as missing configurations or
+/// issues with the underlying gRPC setup. It provides specific error codes
+/// to pinpoint the cause of the initialization failure.
+///
+/// - SeeAlso: ``DataConnectDomainError`` for the base error type.
 public struct DataConnectInitError: DataConnectDomainError {
   public struct Code: DataConnectErrorCode {
     private let code: String
@@ -110,7 +118,13 @@ public struct DataConnectInitError: DataConnectDomainError {
 
 // MARK: - Data Codec Errors
 
-/// Data Encoding / Decoding Error
+/// An error that occurs during the encoding or decoding of data within the Data Connect service.
+///
+/// This error can arise due to various reasons, such as invalid data formats,
+/// incorrect UUIDs, or issues with timestamp/date formats. It provides specific error codes
+/// to pinpoint the cause of the encoding/decoding failure.
+///
+/// - SeeAlso: ``DataConnectDomainError`` for the base error type.
 public struct DataConnectCodecError: DataConnectDomainError {
   public struct Code: DataConnectErrorCode {
     private let code: String
@@ -230,7 +244,7 @@ public struct OperationFailureResponse: Sendable {
   /// This function does _not_ do the decoding itself, but simply returns
   /// the decoded data, if any, that was decoded at the time of the
   /// operation's execution.
-  func data<Data: Decodable>(asType: Data.Type = Data.self) -> Data? {
+  public func data<Data: Decodable>(asType: Data.Type = Data.self) -> Data? {
     return data as? Data
   }
 
