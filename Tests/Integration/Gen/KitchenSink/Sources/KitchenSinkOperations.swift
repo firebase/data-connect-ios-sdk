@@ -1,4 +1,4 @@
-// Copyright 2024 Google LLC
+// Copyright 2025 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,12 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import FirebaseDataConnect
 import Foundation
+
+import FirebaseCore
+import FirebaseDataConnect
 
 // MARK: Common Enums
 
-public enum OrderDirection: String, Codable {
+public enum OrderDirection: String, Codable, Sendable {
   case ASC
   case DESC
 }
@@ -27,7 +29,7 @@ public enum OrderDirection: String, Codable {
 public class CreateTestIdMutation {
   let dataConnect: DataConnect
 
-  public init(dataConnect: DataConnect) {
+  init(dataConnect: DataConnect) {
     self.dataConnect = dataConnect
   }
 
@@ -63,14 +65,14 @@ public class CreateTestIdMutation {
     }
   }
 
-  public struct Data: Decodable {
+  public struct Data: Decodable, Sendable {
     public var
       testId_insert: TestIdKey
   }
 
   public func ref(id: UUID)
     -> MutationRef<CreateTestIdMutation.Data, CreateTestIdMutation.Variables> {
-    let variables = CreateTestIdMutation.Variables(id: id)
+    var variables = CreateTestIdMutation.Variables(id: id)
 
     let ref = dataConnect.mutation(
       name: "createTestId",
@@ -80,8 +82,9 @@ public class CreateTestIdMutation {
     return ref as MutationRef<CreateTestIdMutation.Data, CreateTestIdMutation.Variables>
   }
 
+  @MainActor
   public func execute(id: UUID) async throws -> OperationResult<CreateTestIdMutation.Data> {
-    let variables = CreateTestIdMutation.Variables(id: id)
+    var variables = CreateTestIdMutation.Variables(id: id)
 
     let ref = dataConnect.mutation(
       name: "createTestId",
@@ -96,7 +99,7 @@ public class CreateTestIdMutation {
 public class CreateTestAutoIdMutation {
   let dataConnect: DataConnect
 
-  public init(dataConnect: DataConnect) {
+  init(dataConnect: DataConnect) {
     self.dataConnect = dataConnect
   }
 
@@ -109,14 +112,14 @@ public class CreateTestAutoIdMutation {
 
   public struct Variables: OperationVariable {}
 
-  public struct Data: Decodable {
+  public struct Data: Decodable, Sendable {
     public var
       testAutoId_insert: TestAutoIdKey
   }
 
   public func ref(
   ) -> MutationRef<CreateTestAutoIdMutation.Data, CreateTestAutoIdMutation.Variables> {
-    let variables = CreateTestAutoIdMutation.Variables()
+    var variables = CreateTestAutoIdMutation.Variables()
 
     let ref = dataConnect.mutation(
       name: "createTestAutoId",
@@ -126,9 +129,10 @@ public class CreateTestAutoIdMutation {
     return ref as MutationRef<CreateTestAutoIdMutation.Data, CreateTestAutoIdMutation.Variables>
   }
 
+  @MainActor
   public func execute(
   ) async throws -> OperationResult<CreateTestAutoIdMutation.Data> {
-    let variables = CreateTestAutoIdMutation.Variables()
+    var variables = CreateTestAutoIdMutation.Variables()
 
     let ref = dataConnect.mutation(
       name: "createTestAutoId",
@@ -143,7 +147,7 @@ public class CreateTestAutoIdMutation {
 public class CreateStandardScalarMutation {
   let dataConnect: DataConnect
 
-  public init(dataConnect: DataConnect) {
+  init(dataConnect: DataConnect) {
     self.dataConnect = dataConnect
   }
 
@@ -221,7 +225,7 @@ public class CreateStandardScalarMutation {
     }
   }
 
-  public struct Data: Decodable {
+  public struct Data: Decodable, Sendable {
     public var
       standardScalars_insert: StandardScalarsKey
   }
@@ -235,7 +239,7 @@ public class CreateStandardScalarMutation {
                   decimal: Double)
     -> MutationRef<CreateStandardScalarMutation.Data,
       CreateStandardScalarMutation.Variables> {
-    let variables = CreateStandardScalarMutation.Variables(
+    var variables = CreateStandardScalarMutation.Variables(
       id: id,
       number: number,
       text: text,
@@ -253,6 +257,7 @@ public class CreateStandardScalarMutation {
     >
   }
 
+  @MainActor
   public func execute(id: UUID,
 
                       number: Int,
@@ -261,7 +266,7 @@ public class CreateStandardScalarMutation {
 
                       decimal: Double) async throws
     -> OperationResult<CreateStandardScalarMutation.Data> {
-    let variables = CreateStandardScalarMutation.Variables(
+    var variables = CreateStandardScalarMutation.Variables(
       id: id,
       number: number,
       text: text,
@@ -281,7 +286,7 @@ public class CreateStandardScalarMutation {
 public class CreateScalarBoundaryMutation {
   let dataConnect: DataConnect
 
-  public init(dataConnect: DataConnect) {
+  init(dataConnect: DataConnect) {
     self.dataConnect = dataConnect
   }
 
@@ -372,7 +377,7 @@ public class CreateScalarBoundaryMutation {
     }
   }
 
-  public struct Data: Decodable {
+  public struct Data: Decodable, Sendable {
     public var
       scalarBoundary_insert: ScalarBoundaryKey
   }
@@ -388,7 +393,7 @@ public class CreateScalarBoundaryMutation {
                   minDecimal: Double)
     -> MutationRef<CreateScalarBoundaryMutation.Data,
       CreateScalarBoundaryMutation.Variables> {
-    let variables = CreateScalarBoundaryMutation.Variables(
+    var variables = CreateScalarBoundaryMutation.Variables(
       id: id,
       maxNumber: maxNumber,
       minNumber: minNumber,
@@ -407,6 +412,7 @@ public class CreateScalarBoundaryMutation {
     >
   }
 
+  @MainActor
   public func execute(id: UUID,
 
                       maxNumber: Int,
@@ -417,7 +423,7 @@ public class CreateScalarBoundaryMutation {
 
                       minDecimal: Double) async throws
     -> OperationResult<CreateScalarBoundaryMutation.Data> {
-    let variables = CreateScalarBoundaryMutation.Variables(
+    var variables = CreateScalarBoundaryMutation.Variables(
       id: id,
       maxNumber: maxNumber,
       minNumber: minNumber,
@@ -438,7 +444,7 @@ public class CreateScalarBoundaryMutation {
 public class CreateLargeNumMutation {
   let dataConnect: DataConnect
 
-  public init(dataConnect: DataConnect) {
+  init(dataConnect: DataConnect) {
     self.dataConnect = dataConnect
   }
 
@@ -513,7 +519,7 @@ public class CreateLargeNumMutation {
     }
   }
 
-  public struct Data: Decodable {
+  public struct Data: Decodable, Sendable {
     public var
       largeIntType_insert: LargeIntTypeKey
   }
@@ -526,7 +532,7 @@ public class CreateLargeNumMutation {
 
                   minNum: Int64)
     -> MutationRef<CreateLargeNumMutation.Data, CreateLargeNumMutation.Variables> {
-    let variables = CreateLargeNumMutation.Variables(
+    var variables = CreateLargeNumMutation.Variables(
       id: id,
       num: num,
       maxNum: maxNum,
@@ -541,6 +547,7 @@ public class CreateLargeNumMutation {
     return ref as MutationRef<CreateLargeNumMutation.Data, CreateLargeNumMutation.Variables>
   }
 
+  @MainActor
   public func execute(id: UUID,
 
                       num: Int64,
@@ -548,7 +555,7 @@ public class CreateLargeNumMutation {
                       maxNum: Int64,
 
                       minNum: Int64) async throws -> OperationResult<CreateLargeNumMutation.Data> {
-    let variables = CreateLargeNumMutation.Variables(
+    var variables = CreateLargeNumMutation.Variables(
       id: id,
       num: num,
       maxNum: maxNum,
@@ -568,7 +575,7 @@ public class CreateLargeNumMutation {
 public class CreateLocalDateMutation {
   let dataConnect: DataConnect
 
-  public init(dataConnect: DataConnect) {
+  init(dataConnect: DataConnect) {
     self.dataConnect = dataConnect
   }
 
@@ -620,7 +627,7 @@ public class CreateLocalDateMutation {
     }
   }
 
-  public struct Data: Decodable {
+  public struct Data: Decodable, Sendable {
     public var
       localDateType_insert: LocalDateTypeKey
   }
@@ -630,7 +637,7 @@ public class CreateLocalDateMutation {
                   localDate: LocalDate)
     -> MutationRef<CreateLocalDateMutation.Data,
       CreateLocalDateMutation.Variables> {
-    let variables = CreateLocalDateMutation.Variables(id: id, localDate: localDate)
+    var variables = CreateLocalDateMutation.Variables(id: id, localDate: localDate)
 
     let ref = dataConnect.mutation(
       name: "createLocalDate",
@@ -640,11 +647,12 @@ public class CreateLocalDateMutation {
     return ref as MutationRef<CreateLocalDateMutation.Data, CreateLocalDateMutation.Variables>
   }
 
+  @MainActor
   public func execute(id: UUID,
 
                       localDate: LocalDate) async throws
     -> OperationResult<CreateLocalDateMutation.Data> {
-    let variables = CreateLocalDateMutation.Variables(id: id, localDate: localDate)
+    var variables = CreateLocalDateMutation.Variables(id: id, localDate: localDate)
 
     let ref = dataConnect.mutation(
       name: "createLocalDate",
@@ -659,7 +667,7 @@ public class CreateLocalDateMutation {
 public class CreateAnyValueTypeMutation {
   let dataConnect: DataConnect
 
-  public init(dataConnect: DataConnect) {
+  init(dataConnect: DataConnect) {
     self.dataConnect = dataConnect
   }
 
@@ -711,7 +719,7 @@ public class CreateAnyValueTypeMutation {
     }
   }
 
-  public struct Data: Decodable {
+  public struct Data: Decodable, Sendable {
     public var
       anyValueType_insert: AnyValueTypeKey
   }
@@ -722,7 +730,7 @@ public class CreateAnyValueTypeMutation {
     CreateAnyValueTypeMutation.Data,
     CreateAnyValueTypeMutation.Variables
   > {
-    let variables = CreateAnyValueTypeMutation.Variables(id: id, props: props)
+    var variables = CreateAnyValueTypeMutation.Variables(id: id, props: props)
 
     let ref = dataConnect.mutation(
       name: "createAnyValueType",
@@ -735,11 +743,12 @@ public class CreateAnyValueTypeMutation {
     >
   }
 
+  @MainActor
   public func execute(id: UUID,
 
                       props: AnyValue) async throws
     -> OperationResult<CreateAnyValueTypeMutation.Data> {
-    let variables = CreateAnyValueTypeMutation.Variables(id: id, props: props)
+    var variables = CreateAnyValueTypeMutation.Variables(id: id, props: props)
 
     let ref = dataConnect.mutation(
       name: "createAnyValueType",
@@ -751,10 +760,206 @@ public class CreateAnyValueTypeMutation {
   }
 }
 
+public class InsertMultiplePeopleMutation {
+  let dataConnect: DataConnect
+
+  init(dataConnect: DataConnect) {
+    self.dataConnect = dataConnect
+  }
+
+  public static let OperationName = "InsertMultiplePeople"
+
+  public typealias Ref = MutationRef<
+    InsertMultiplePeopleMutation.Data,
+    InsertMultiplePeopleMutation.Variables
+  >
+
+  public struct Variables: OperationVariable {
+    public var
+      id: UUID
+
+    public var
+      name1: String
+
+    public var
+      name2: String
+
+    public init(id: UUID,
+
+                name1: String,
+
+                name2: String) {
+      self.id = id
+      self.name1 = name1
+      self.name2 = name2
+    }
+
+    public static func == (lhs: Variables, rhs: Variables) -> Bool {
+      return lhs.id == rhs.id &&
+        lhs.name1 == rhs.name1 &&
+        lhs.name2 == rhs.name2
+    }
+
+    public func hash(into hasher: inout Hasher) {
+      hasher.combine(id)
+
+      hasher.combine(name1)
+
+      hasher.combine(name2)
+    }
+
+    enum CodingKeys: String, CodingKey {
+      case id
+
+      case name1
+
+      case name2
+    }
+
+    public func encode(to encoder: Encoder) throws {
+      var container = encoder.container(keyedBy: CodingKeys.self)
+      let codecHelper = CodecHelper<CodingKeys>()
+
+      try codecHelper.encode(id, forKey: .id, container: &container)
+
+      try codecHelper.encode(name1, forKey: .name1, container: &container)
+
+      try codecHelper.encode(name2, forKey: .name2, container: &container)
+    }
+  }
+
+  public struct Data: Decodable, Sendable {
+    public var
+      person1: PersonKey
+
+    public var
+      person2: PersonKey
+  }
+
+  public func ref(id: UUID,
+
+                  name1: String,
+
+                  name2: String)
+    -> MutationRef<InsertMultiplePeopleMutation.Data,
+      InsertMultiplePeopleMutation.Variables> {
+    var variables = InsertMultiplePeopleMutation.Variables(id: id, name1: name1, name2: name2)
+
+    let ref = dataConnect.mutation(
+      name: "InsertMultiplePeople",
+      variables: variables,
+      resultsDataType: InsertMultiplePeopleMutation.Data.self
+    )
+    return ref as MutationRef<
+      InsertMultiplePeopleMutation.Data,
+      InsertMultiplePeopleMutation.Variables
+    >
+  }
+
+  @MainActor
+  public func execute(id: UUID,
+
+                      name1: String,
+
+                      name2: String) async throws
+    -> OperationResult<InsertMultiplePeopleMutation.Data> {
+    var variables = InsertMultiplePeopleMutation.Variables(id: id, name1: name1, name2: name2)
+
+    let ref = dataConnect.mutation(
+      name: "InsertMultiplePeople",
+      variables: variables,
+      resultsDataType: InsertMultiplePeopleMutation.Data.self
+    )
+
+    return try await ref.execute()
+  }
+}
+
+public class DeleteNonExistentPeopleMutation {
+  let dataConnect: DataConnect
+
+  init(dataConnect: DataConnect) {
+    self.dataConnect = dataConnect
+  }
+
+  public static let OperationName = "DeleteNonExistentPeople"
+
+  public typealias Ref = MutationRef<
+    DeleteNonExistentPeopleMutation.Data,
+    DeleteNonExistentPeopleMutation.Variables
+  >
+
+  public struct Variables: OperationVariable {
+    public var
+      id: UUID
+
+    public init(id: UUID) {
+      self.id = id
+    }
+
+    public static func == (lhs: Variables, rhs: Variables) -> Bool {
+      return lhs.id == rhs.id
+    }
+
+    public func hash(into hasher: inout Hasher) {
+      hasher.combine(id)
+    }
+
+    enum CodingKeys: String, CodingKey {
+      case id
+    }
+
+    public func encode(to encoder: Encoder) throws {
+      var container = encoder.container(keyedBy: CodingKeys.self)
+      let codecHelper = CodecHelper<CodingKeys>()
+
+      try codecHelper.encode(id, forKey: .id, container: &container)
+    }
+  }
+
+  public struct Data: Decodable, Sendable {
+    public var
+      person1: PersonKey?
+
+    public var
+      person2: PersonKey?
+  }
+
+  public func ref(id: UUID)
+    -> MutationRef<DeleteNonExistentPeopleMutation.Data,
+      DeleteNonExistentPeopleMutation.Variables> {
+    var variables = DeleteNonExistentPeopleMutation.Variables(id: id)
+
+    let ref = dataConnect.mutation(
+      name: "DeleteNonExistentPeople",
+      variables: variables,
+      resultsDataType: DeleteNonExistentPeopleMutation.Data.self
+    )
+    return ref as MutationRef<
+      DeleteNonExistentPeopleMutation.Data,
+      DeleteNonExistentPeopleMutation.Variables
+    >
+  }
+
+  @MainActor
+  public func execute(id: UUID) async throws
+    -> OperationResult<DeleteNonExistentPeopleMutation.Data> {
+    var variables = DeleteNonExistentPeopleMutation.Variables(id: id)
+
+    let ref = dataConnect.mutation(
+      name: "DeleteNonExistentPeople",
+      variables: variables,
+      resultsDataType: DeleteNonExistentPeopleMutation.Data.self
+    )
+
+    return try await ref.execute()
+  }
+}
+
 public class GetStandardScalarQuery {
   let dataConnect: DataConnect
 
-  public init(dataConnect: DataConnect) {
+  init(dataConnect: DataConnect) {
     self.dataConnect = dataConnect
   }
 
@@ -793,8 +998,8 @@ public class GetStandardScalarQuery {
     }
   }
 
-  public struct Data: Decodable {
-    public struct StandardScalars: Decodable, Hashable, Equatable, Identifiable {
+  public struct Data: Decodable, Sendable {
+    public struct StandardScalars: Decodable, Sendable, Hashable, Equatable, Identifiable {
       public var
         id: UUID
 
@@ -852,7 +1057,7 @@ public class GetStandardScalarQuery {
   public func ref(id: UUID)
     -> QueryRefObservableObject<GetStandardScalarQuery.Data,
       GetStandardScalarQuery.Variables> {
-    let variables = GetStandardScalarQuery.Variables(id: id)
+    var variables = GetStandardScalarQuery.Variables(id: id)
 
     let ref = dataConnect.query(
       name: "GetStandardScalar",
@@ -866,8 +1071,9 @@ public class GetStandardScalarQuery {
     >
   }
 
+  @MainActor
   public func execute(id: UUID) async throws -> OperationResult<GetStandardScalarQuery.Data> {
-    let variables = GetStandardScalarQuery.Variables(id: id)
+    var variables = GetStandardScalarQuery.Variables(id: id)
 
     let ref = dataConnect.query(
       name: "GetStandardScalar",
@@ -887,7 +1093,7 @@ public class GetStandardScalarQuery {
 public class GetScalarBoundaryQuery {
   let dataConnect: DataConnect
 
-  public init(dataConnect: DataConnect) {
+  init(dataConnect: DataConnect) {
     self.dataConnect = dataConnect
   }
 
@@ -926,8 +1132,8 @@ public class GetScalarBoundaryQuery {
     }
   }
 
-  public struct Data: Decodable {
-    public struct ScalarBoundary: Decodable {
+  public struct Data: Decodable, Sendable {
+    public struct ScalarBoundary: Decodable, Sendable {
       public var
         maxNumber: Int
 
@@ -971,7 +1177,7 @@ public class GetScalarBoundaryQuery {
   public func ref(id: UUID)
     -> QueryRefObservableObject<GetScalarBoundaryQuery.Data,
       GetScalarBoundaryQuery.Variables> {
-    let variables = GetScalarBoundaryQuery.Variables(id: id)
+    var variables = GetScalarBoundaryQuery.Variables(id: id)
 
     let ref = dataConnect.query(
       name: "GetScalarBoundary",
@@ -985,8 +1191,9 @@ public class GetScalarBoundaryQuery {
     >
   }
 
+  @MainActor
   public func execute(id: UUID) async throws -> OperationResult<GetScalarBoundaryQuery.Data> {
-    let variables = GetScalarBoundaryQuery.Variables(id: id)
+    var variables = GetScalarBoundaryQuery.Variables(id: id)
 
     let ref = dataConnect.query(
       name: "GetScalarBoundary",
@@ -1006,7 +1213,7 @@ public class GetScalarBoundaryQuery {
 public class GetLargeNumQuery {
   let dataConnect: DataConnect
 
-  public init(dataConnect: DataConnect) {
+  init(dataConnect: DataConnect) {
     self.dataConnect = dataConnect
   }
 
@@ -1042,8 +1249,8 @@ public class GetLargeNumQuery {
     }
   }
 
-  public struct Data: Decodable {
-    public struct LargeIntType: Decodable {
+  public struct Data: Decodable, Sendable {
+    public struct LargeIntType: Decodable, Sendable {
       public var
         num: Int64
 
@@ -1081,7 +1288,7 @@ public class GetLargeNumQuery {
     GetLargeNumQuery.Data,
     GetLargeNumQuery.Variables
   > {
-    let variables = GetLargeNumQuery.Variables(id: id)
+    var variables = GetLargeNumQuery.Variables(id: id)
 
     let ref = dataConnect.query(
       name: "GetLargeNum",
@@ -1092,8 +1299,9 @@ public class GetLargeNumQuery {
     return ref as! QueryRefObservableObject<GetLargeNumQuery.Data, GetLargeNumQuery.Variables>
   }
 
+  @MainActor
   public func execute(id: UUID) async throws -> OperationResult<GetLargeNumQuery.Data> {
-    let variables = GetLargeNumQuery.Variables(id: id)
+    var variables = GetLargeNumQuery.Variables(id: id)
 
     let ref = dataConnect.query(
       name: "GetLargeNum",
@@ -1113,7 +1321,7 @@ public class GetLargeNumQuery {
 public class GetLocalDateTypeQuery {
   let dataConnect: DataConnect
 
-  public init(dataConnect: DataConnect) {
+  init(dataConnect: DataConnect) {
     self.dataConnect = dataConnect
   }
 
@@ -1152,8 +1360,8 @@ public class GetLocalDateTypeQuery {
     }
   }
 
-  public struct Data: Decodable {
-    public struct LocalDateType: Decodable {
+  public struct Data: Decodable, Sendable {
+    public struct LocalDateType: Decodable, Sendable {
       public var
         localDate: LocalDate?
 
@@ -1181,7 +1389,7 @@ public class GetLocalDateTypeQuery {
     GetLocalDateTypeQuery.Data,
     GetLocalDateTypeQuery.Variables
   > {
-    let variables = GetLocalDateTypeQuery.Variables(id: id)
+    var variables = GetLocalDateTypeQuery.Variables(id: id)
 
     let ref = dataConnect.query(
       name: "GetLocalDateType",
@@ -1195,8 +1403,9 @@ public class GetLocalDateTypeQuery {
     >
   }
 
+  @MainActor
   public func execute(id: UUID) async throws -> OperationResult<GetLocalDateTypeQuery.Data> {
-    let variables = GetLocalDateTypeQuery.Variables(id: id)
+    var variables = GetLocalDateTypeQuery.Variables(id: id)
 
     let ref = dataConnect.query(
       name: "GetLocalDateType",
@@ -1216,7 +1425,7 @@ public class GetLocalDateTypeQuery {
 public class GetAnyValueTypeQuery {
   let dataConnect: DataConnect
 
-  public init(dataConnect: DataConnect) {
+  init(dataConnect: DataConnect) {
     self.dataConnect = dataConnect
   }
 
@@ -1255,8 +1464,8 @@ public class GetAnyValueTypeQuery {
     }
   }
 
-  public struct Data: Decodable {
-    public struct AnyValueType: Decodable {
+  public struct Data: Decodable, Sendable {
+    public struct AnyValueType: Decodable, Sendable {
       public var
         props: AnyValue
 
@@ -1280,7 +1489,7 @@ public class GetAnyValueTypeQuery {
     GetAnyValueTypeQuery.Data,
     GetAnyValueTypeQuery.Variables
   > {
-    let variables = GetAnyValueTypeQuery.Variables(id: id)
+    var variables = GetAnyValueTypeQuery.Variables(id: id)
 
     let ref = dataConnect.query(
       name: "GetAnyValueType",
@@ -1294,8 +1503,9 @@ public class GetAnyValueTypeQuery {
     >
   }
 
+  @MainActor
   public func execute(id: UUID) async throws -> OperationResult<GetAnyValueTypeQuery.Data> {
-    let variables = GetAnyValueTypeQuery.Variables(id: id)
+    var variables = GetAnyValueTypeQuery.Variables(id: id)
 
     let ref = dataConnect.query(
       name: "GetAnyValueType",

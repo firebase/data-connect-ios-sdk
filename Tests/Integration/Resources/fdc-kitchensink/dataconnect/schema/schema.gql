@@ -54,3 +54,8 @@ type AnyValueType @table {
     id: UUID!
     props: Any!
 }
+
+type Person @table {
+  name: String!
+}
+

@@ -40,6 +40,7 @@ class IntegrationTestBase: XCTestCase {
     if defaultApp == nil {
       FirebaseApp.configure(options: options)
       defaultApp = FirebaseApp.app()
+      FirebaseConfiguration.shared.setLoggerLevel(.debug)
     }
     DataConnect.kitchenSinkConnector.useEmulator(port: 3628)
   }
