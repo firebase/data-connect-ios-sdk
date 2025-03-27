@@ -1,3 +1,7 @@
+# 11.7.0
+- [changed] Refactored the base `DataConnectError` error type to be a protocol instead of an enum and introduced concrete error types `DataConnectInitError`, `DataConnectCodecError`, `DataConnectOperationError`. Note that if you have code using a `switch` on the previous error enum, you will need to update that code. See the [PR] (https://github.com/firebase/data-connect-ios-sdk/pull/42) for a usage example and `DataConnectError.swift` for implementation details.  
+- [added] Support for partial errors via the above mentioned `DataConnectOperationError`. 
+
 # 11.6.0-beta
 - [changed] Dependency on Firebase iOS SDK changed to 'minimum version required' instead of an 'exact version'. This lets apps use the latest version of the Firebase iOS SDK.
 
