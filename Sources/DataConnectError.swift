@@ -47,7 +47,8 @@ public struct AnyDataConnectError: Error {
   }
 }
 
-/// Represents an error domain which can have more granular error codes
+/// A type that represents an error domain with granular error codes.
+/// - SeeAlso: ``DataConnectError`` for the base error type.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public protocol DataConnectDomainError: DataConnectError {
   associatedtype ErrorCode: DataConnectErrorCode
