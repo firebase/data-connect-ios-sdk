@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public enum DataConnectPathSegment: Codable, Equatable, Sendable {
   case field(String)
   case listIndex(Int)

@@ -14,9 +14,9 @@
 
 import Foundation
 
-// MARK: Base Error Definitions
+// MARK: - Base Error Definitions
 
-/// Protocol representing an error returned by the DataConnect service
+/// A type representing an error returned by the DataConnect service
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public protocol DataConnectError: Error, CustomDebugStringConvertible, CustomStringConvertible {
   var message: String? { get }
@@ -26,7 +26,7 @@ public protocol DataConnectError: Error, CustomDebugStringConvertible, CustomStr
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public extension DataConnectError {
   var debugDescription: String {
-    return "{\(Self.self), message: \(message ?? "nil"), cause: \(String(describing: underlyingError))}"
+    return "{\(Self.self), message: \(message ?? "nil"), underlyingError: \(String(describing: underlyingError))}"
   }
 
   var description: String {
@@ -34,9 +34,10 @@ public extension DataConnectError {
   }
 }
 
-/// Type erased DataConnectError
+/// A structure representing a type-erased ``DataConnectError``.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct AnyDataConnectError: Error {
+  /// Contained ``DataConnectError``
   public let dataConnectError: DataConnectError
 
   init<E: DataConnectError>(dataConnectError: E) {
@@ -44,8 +45,8 @@ public struct AnyDataConnectError: Error {
   }
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 /// Represents an error domain which can have more granular error codes
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public protocol DataConnectDomainError: DataConnectError {
   associatedtype ErrorCode: DataConnectErrorCode
   var code: ErrorCode { get }
@@ -54,7 +55,7 @@ public protocol DataConnectDomainError: DataConnectError {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public extension DataConnectDomainError {
   var debugDescription: String {
-    return "{\(Self.self), code: \(code), message: \(message ?? "nil"), cause: \(String(describing: underlyingError))}"
+    return "{\(Self.self), code: \(code), message: \(message ?? "nil"), underlyingError: \(String(describing: underlyingError))}"
   }
 
   var description: String {
@@ -66,7 +67,7 @@ public extension DataConnectDomainError {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public protocol DataConnectErrorCode: CustomStringConvertible, Equatable, Sendable, CaseIterable {}
 
-// MARK: Data Connect Initialization Errors
+// MARK: - Data Connect Initialization Errors
 
 /// Error initializing Data Connect
 public struct DataConnectInitError: DataConnectDomainError {
@@ -107,7 +108,7 @@ public struct DataConnectInitError: DataConnectDomainError {
   }
 }
 
-// MARK: Data Codec Errors
+// MARK: - Data Codec Errors
 
 /// Data Encoding / Decoding Error
 public struct DataConnectCodecError: DataConnectDomainError {
@@ -170,9 +171,11 @@ public struct DataConnectCodecError: DataConnectDomainError {
   }
 }
 
-// MARK: Operation Execution Error including Partial Errors
+// MARK: - Operation Execution Error including Partial Errors
 
 /// Data Connect Operation Failed
+/// When available, the ``response`` will contain more error information and any partially decoded
+/// result
 public struct DataConnectOperationError: DataConnectError {
   public let message: String?
   public let underlyingError: (any Error)?
@@ -192,32 +195,32 @@ public struct DataConnectOperationError: DataConnectError {
   }
 }
 
-// The data and errors sent to us from the backend in its response.
-// New struct, that contains the data and errors sent to us
-// from the backend in its response.
+/// Contains the data and errors sent to us from the backend in its response.
+/// The ``OperationFailureResponse`` if present, is available as part of the
+/// ``DataConnectOperationError``
 public struct OperationFailureResponse: Sendable {
-  // JSON string whose value is the "data" property provided by the backend in
-  // its response payload; may be `nil` if the "data" property was not provided
-  // in the backend response and/or was `null` in the backend response.
+  /// JSON string whose value is the "data" property provided by the backend in
+  /// its response payload; may be `nil` if the "data" property was not provided
+  /// in the backend response and/or was `null` in the backend response.
   public let rawJsonData: String?
 
-  // The list of errors in the "error" property provided by the backend in
-  // its response payload; may be empty if the "errors" property was not
-  // provided in the backend response and/or was an empty list in the backend response.
+  /// The list of errors in the "error" property provided by the backend in
+  /// its response payload; may be empty if the "errors" property was not
+  /// provided in the backend response and/or was an empty list in the backend response.
   public let errors: [ErrorInfo]
 
   // (Partially) decoded data
   private let data: Sendable?
 
-  // Returns `jsonData` string decoded into the given type, if decoding was
-  // successful when the operation was executed. Returns `nil` if `jsonData`
-  // is `nil`, if `jsonData` was _not_ able to be decoded when the operation
-  // was executed, or if the given type is _not_ equal to the `Data` type that
-  // was used when the operation was executed.
-  //
-  // This function does _not_ do the decoding itself, but simply returns
-  // the decoded data, if any, that was decoded at the time of the
-  // operation's execution.
+  /// Returns ``rawJsonData`` string decoded into the given type, if decoding was
+  /// successful when the operation was executed. Returns `nil` if `rawJsonData`
+  /// is `nil`, if ``rawJsonData`` was _not_ able to be decoded when the operation
+  /// was executed, or if the given type is _not_ equal to the `Data` type that
+  /// was used when the operation was executed.
+  ///
+  /// This function does _not_ do the decoding itself, but simply returns
+  /// the decoded data, if any, that was decoded at the time of the
+  /// operation's execution.
   func data<Data: Decodable>(asType: Data.Type = Data.self) -> Data? {
     return data as? Data
   }
@@ -231,9 +234,9 @@ public struct OperationFailureResponse: Sendable {
   }
 
   public struct ErrorInfo: Codable, Sendable {
-    // The error message.
+    /// The error message (if available)
     public let message: String
-    // The path to the field to which this error applies.
+    /// The path to the field to which this error applies.
     public let path: [DataConnectPathSegment]
   }
 }

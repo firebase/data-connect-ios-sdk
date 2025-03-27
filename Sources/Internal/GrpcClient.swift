@@ -154,7 +154,13 @@ actor GrpcClient: CustomStringConvertible {
       // lets decode partial errors. We need these whether we succeed or fail
       let errorInfoList = createErrorInfoList(errors: results.errors)
 
-      // check if decode succeeds
+      /*
+       - if decode succeeds, errorList isEmpty = return data
+       - if decode succeeds, errorList notEmpty = throw OperationError with decodedData
+       - if decode fails,
+              - if errorList notEmpty -> throw OperationError with no decodedData
+                else -> throw decodeFailed with the inner error.
+       */
       do {
         let decodedResults = try codec.decode(result: results.data, asType: resultType)
 
@@ -171,6 +177,9 @@ actor GrpcClient: CustomStringConvertible {
           return OperationResult(data: decodedResults)
         }
 
+      } catch let operationErr as DataConnectOperationError {
+        // simply rethrow to avoid wrapping error
+        throw operationErr
       } catch {
         // we failed to decode
         if !errorInfoList.isEmpty {
@@ -225,9 +234,15 @@ actor GrpcClient: CustomStringConvertible {
         .debug("executeMutation() receives response: \(resultsString, privacy: .private).")
 
       // lets decode partial errors. We need these whether we succeed or fail
-      var errorInfoList = createErrorInfoList(errors: results.errors)
+      let errorInfoList = createErrorInfoList(errors: results.errors)
 
-      // check if decode succeeds
+      /*
+       - if decode succeeds, errorList isEmpty = return data
+       - if decode succeeds, errorList notEmpty = throw OperationError with decodedData
+       - if decode fails,
+              - if errorList notEmpty -> throw OperationError with no decodedData
+                else -> throw decodeFailed with the inner error.
+       */
       do {
         let decodedResults = try codec.decode(result: results.data, asType: resultType)
 
@@ -244,6 +259,9 @@ actor GrpcClient: CustomStringConvertible {
           return OperationResult(data: decodedResults)
         }
 
+      } catch let operationErr as DataConnectOperationError {
+        // simply rethrow to avoid wrapping error
+        throw operationErr
       } catch {
         // we failed to decode
         if !errorInfoList.isEmpty {
