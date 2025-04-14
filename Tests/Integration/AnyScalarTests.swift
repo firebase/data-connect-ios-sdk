@@ -153,6 +153,21 @@ final class AnyScalarTests: IntegrationTestBase {
     XCTAssertEqual(testDouble, decodedResult)
   }
 
+  func testAnyValueUUID() async throws {
+    let anyValueId = UUID()
+    _ = try await DataConnect.kitchenSinkConnector.createAnyValueTypeMutation.ref(
+      id: anyValueId,
+      props: AnyValue(codableValue: anyValueId)
+    ).execute()
+
+    let result = try await DataConnect.kitchenSinkConnector.getAnyValueTypeQuery.ref(id: anyValueId)
+      .execute()
+    let anyValueResult = result.data.anyValueType?.props
+    let decodedResult = try anyValueResult?.decodeValue(UUID.self)
+
+    XCTAssertEqual(anyValueId, decodedResult)
+  }
+
   func testAnyValueDoubleMin() async throws {
     let testDouble = Double.leastNormalMagnitude
     let anyTestData = try AnyValue(codableValue: testDouble)
@@ -222,5 +237,27 @@ final class AnyScalarTests: IntegrationTestBase {
     let decodedResult = try anyValueResult?.decodeValue(AnyValueTestStruct.self)
 
     XCTAssertEqual(structVal, decodedResult)
+  }
+
+  func testAnyValueArray() async throws {
+    let intArray = {
+      var ia = [Double]()
+      for _ in 1 ... 10 {
+        ia.append(Double.random(in: Double.leastNormalMagnitude ... Double.greatestFiniteMagnitude))
+      }
+      return ia
+    }()
+
+    let anyValueId = UUID()
+    _ = try await DataConnect.kitchenSinkConnector.createAnyValueTypeMutation
+      .execute(id: anyValueId, props: AnyValue(codableValue: intArray))
+
+    let result = try await DataConnect.kitchenSinkConnector.getAnyValueTypeQuery.execute(
+      id: anyValueId
+    )
+    let anyValueResult = result.data.anyValueType?.props
+    let decodedResult = try anyValueResult?.decodeValue([Double].self)
+
+    XCTAssertEqual(intArray, decodedResult)
   }
 }

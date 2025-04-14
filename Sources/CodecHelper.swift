@@ -61,5 +61,41 @@ public class CodecHelper<K: CodingKey> {
     return try container.decode(type, forKey: forKey)
   }
 
+  // This is public because the class is used by generated SDK code
   public init() {}
+}
+
+class SingleValueCodecHelper {
+  func encodeSingle(_ value: Encodable, container: inout SingleValueEncodingContainer) throws {
+    switch value {
+    case let int64Value as Int64:
+      let int64Converter = Int64CodableConverter()
+      let int64Value = try int64Converter.encode(input: int64Value)
+      try container.encode(int64Value)
+    case let uuidValue as UUID:
+      let uuidConverter = UUIDCodableConverter()
+      let uuidValue = try uuidConverter.encode(input: uuidValue)
+      try container.encode(uuidValue)
+    default:
+      try container.encode(value)
+    }
+  }
+
+  func decodeSingle<T: Decodable>(_ type: T.Type,
+                                  container: inout SingleValueDecodingContainer) throws -> T {
+    if type == Int64.self || type == Int64?.self {
+      let int64String = try? container.decode(String.self)
+      let int64Converter = Int64CodableConverter()
+      let int64Value = try int64Converter.decode(input: int64String)
+      return int64Value as! T
+    } else if type == UUID.self || type == UUID?.self {
+      let uuidString = try container.decode(String.self)
+      let uuidConverter = UUIDCodableConverter()
+      let uuidDecoded = try uuidConverter.decode(input: uuidString)
+
+      return uuidDecoded as! T
+    } else {
+      return try container.decode(type)
+    }
+  }
 }
