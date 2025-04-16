@@ -1,4 +1,8 @@
+# 11.7.1
+- [fixed] `AnyValue` type fixes to support decoding values fetched using PostgreSQL `jsonb_build_object`.  `AnyValue` now internally stores data as a JSON value / dictionary instead of `Swift.Data`.
+
 # 11.7.0
+- [changed] Firebase Data Connect has exited beta and is now generally available for use.
 - [changed] **Breaking Change:** Refactored the base `DataConnectError` error type to be a protocol instead of an enum and introduced concrete error types `DataConnectInitError`, `DataConnectCodecError`, `DataConnectOperationError`. Note that if you have code using a `switch` on the previous error enum, you will need to update that code. See the [PR] (https://github.com/firebase/data-connect-ios-sdk/pull/42) for a usage example and `DataConnectError.swift` for implementation details.
 - [added] Support for partial errors via the above mentioned `DataConnectOperationError`.
 
