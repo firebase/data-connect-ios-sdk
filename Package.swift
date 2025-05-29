@@ -27,6 +27,7 @@ let package = Package(
       name: "FirebaseDataConnect",
       targets: ["FirebaseDataConnect"]
     ),
+    .executable(name: "Start FDC Dev Env", targets: ["StartDevEnv"])
   ],
   dependencies: [
     firebaseDependency(),
@@ -67,6 +68,11 @@ let package = Package(
         .copy("Resources/fdc-kitchensink"),
       ]
     ),
+    .executableTarget(name: "StartDevEnv",
+                      dependencies: [],
+                      path: "Tools/Commands/StartDevEnv",
+                      resources: [.copy("Resources")])
+
   ]
 )
 
