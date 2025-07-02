@@ -217,6 +217,15 @@ public struct DataConnectOperationError: DataConnectError {
     -> DataConnectOperationError {
     return DataConnectOperationError(message: message, cause: cause, response: response)
   }
+
+  // include the underlying errors from errorInfo list in the description
+  public var debugDescription: String {
+    let errorInfos = response?.errors.compactMap {
+      $0.message
+    }.joined(separator: "\n")
+
+    return "{\(Self.self), \nerrors: \(errorInfos) \noriginatingError: \(String(describing: underlyingError))}"
+  }
 }
 
 /// Contains the data and errors sent to us from the backend in its response.
