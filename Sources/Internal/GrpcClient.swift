@@ -194,7 +194,23 @@ actor GrpcClient: CustomStringConvertible {
               response: failureResponse
             )
         } else {
-          throw DataConnectCodecError.decodingFailed(cause: error)
+          // Check for unique constraint violation
+          if let decodingError = error as? DecodingError,
+             case .valueNotFound = decodingError,
+             let errorInfo = errorInfoList.first(where: { $0.message.lowercased().contains("unique") && $0.message.lowercased().contains("constraint") }) {
+            let failureResponse = OperationFailureResponse(
+              rawJsonData: resultsString,
+              errors: errorInfoList,
+              data: nil
+            )
+            throw DataConnectOperationError.uniqueConstraintFailed(
+              message: errorInfo.message,
+              cause: error,
+              response: failureResponse
+            )
+          } else {
+            throw DataConnectCodecError.decodingFailed(cause: error)
+          }
         }
       }
     } catch {
@@ -202,7 +218,12 @@ actor GrpcClient: CustomStringConvertible {
       DataConnectLogger.error(
         "executeQuery(): \(requestString, privacy: .private) grpc call FAILED with \(error)."
       )
-      throw DataConnectOperationError.executionFailed(cause: error)
+      // Ensure this also uses the genericOperationError code if it's a DataConnectOperationError
+      if let opError = error as? DataConnectOperationError {
+        throw opError // It would already have a code, or be an older version of the error.
+      } else {
+        throw DataConnectOperationError.executionFailed(cause: error)
+      }
     }
   }
 
@@ -283,7 +304,15 @@ actor GrpcClient: CustomStringConvertible {
       DataConnectLogger.error(
         "executeMutation(): \(requestString, privacy: .private) grpc call FAILED with \(error)."
       )
-      throw error
+      // Ensure this also uses the genericOperationError code if it's a DataConnectOperationError
+      if let opError = error as? DataConnectOperationError {
+        throw opError // It would already have a code.
+      } else if error is DataConnectCodecError || error is DataConnectInitError {
+        throw error // Rethrow existing specific DataConnect errors
+      } else {
+        // Wrap other errors in DataConnectOperationError with generic code
+        throw DataConnectOperationError.executionFailed(cause: error)
+      }
     }
   }
 

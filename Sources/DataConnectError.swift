@@ -199,14 +199,30 @@ public struct DataConnectCodecError: DataConnectDomainError {
 ///
 /// - SeeAlso: `DataConnectError` for the base error type.
 ///
+public struct DataConnectOperationError: DataConnectDomainError {
+  public struct Code: DataConnectErrorCode {
+    private let code: String
+    private init(_ code: String) { self.code = code }
 
-public struct DataConnectOperationError: DataConnectError {
+    public static let uniqueConstraintFailed = Code("uniqueConstraintFailed")
+    public static let genericOperationError = Code("genericOperationError")
+    // Add other specific operation error codes here if needed in the future
+
+    public static var allCases: [DataConnectOperationError.Code] {
+      return [uniqueConstraintFailed, genericOperationError]
+    }
+
+    public var description: String { return code }
+  }
+
+  public let code: Code
   public let message: String?
   public let underlyingError: (any Error)?
   public let response: OperationFailureResponse?
 
-  private init(message: String? = nil, cause: Error? = nil,
+  private init(code: Code, message: String? = nil, cause: Error? = nil,
                response: OperationFailureResponse? = nil) {
+    self.code = code
     self.response = response
     underlyingError = cause
     self.message = message
@@ -215,7 +231,15 @@ public struct DataConnectOperationError: DataConnectError {
   static func executionFailed(message: String? = nil, cause: Error? = nil,
                               response: OperationFailureResponse? = nil)
     -> DataConnectOperationError {
-    return DataConnectOperationError(message: message, cause: cause, response: response)
+    return DataConnectOperationError(code: .genericOperationError, message: message, cause: cause, response: response)
+  }
+
+  static func uniqueConstraintFailed(message: String? = nil, cause: Error? = nil,
+                                     response: OperationFailureResponse? = nil)
+    -> DataConnectOperationError {
+    // Ensure the message clearly indicates a unique constraint failure if not already present
+    let updatedMessage = message ?? "Unique constraint failed."
+    return DataConnectOperationError(code: .uniqueConstraintFailed, message: updatedMessage, cause: cause, response: response)
   }
 }
 
