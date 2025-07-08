@@ -1,3 +1,6 @@
+# 11.7.2
+- [fixed] `DataConnectOperationError` now includes underlying server error messages in the debug description instead of a generic decoding error. [Issue](https://github.com/firebase/firebase-ios-sdk/issues/14945)
+
 # 11.7.1
 - [fixed] `AnyValue` type fixes to support decoding values fetched using PostgreSQL `jsonb_build_object`.  `AnyValue` now internally stores data as a JSON value / dictionary instead of `Swift.Data`.
 
