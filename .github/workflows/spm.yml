@@ -73,8 +73,6 @@ jobs:
       run: sudo xcode-select -s /Applications/${{ matrix.xcode }}.app/Contents/Developer
     - name: Setup Scripts Directory
       run: ./setup-scripts.sh
-    - name: Install iOS Platform
-      run: xcodebuild -downloadPlatform iOS
     - name: Integration Test Setup
       run: Tests/Integration/Emulator/start-emulator.sh
     - name: Unit and Integration Tests
