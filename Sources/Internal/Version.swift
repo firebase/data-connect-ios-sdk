@@ -18,7 +18,7 @@ import GoogleUtilities_Environment
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct Version {
-  static let sdkVersion = "11.7.1"
+  static let sdkVersion = "11.7.2"
 
   // returns value of form gl-PLATFORM_NAME/PLATFORM_VERSION
   static func platformVersionHeader() -> String {
@@ -30,7 +30,11 @@ struct Version {
 
   // returns the build time major version of swift
   static func swiftVersion() -> String {
-    #if swift(>=6)
+    #if swift(>=6.2)
+      return "6.2"
+    #elseif swift(>=6.1)
+      return "6.1"
+    #elseif swift(>=6)
       return "6"
     #elseif swift(>=5.10)
       return "5.10"
