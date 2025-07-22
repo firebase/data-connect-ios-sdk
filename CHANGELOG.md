@@ -1,3 +1,6 @@
+# 11.7.3
+- [changed] Firebase Core SDK dependency version range has been extended to include the 12.x version. `DataConnectOperationError` now includes underlying server error messages in the debug description instead of a generic decoding error. [#15139](https://github.com/firebase/firebase-ios-sdk/issues/15139)
+
 # 11.7.2
 - [fixed] `DataConnectOperationError` now includes underlying server error messages in the debug description instead of a generic decoding error. [#14945](https://github.com/firebase/firebase-ios-sdk/issues/14945)
 
