@@ -23,9 +23,9 @@ struct SetupDevEnv {
   static func main() {
     let currentDirectoryPath = FileManager.default.currentDirectoryPath
     print("Attempting to start Data Connect Tools in Directory: \(currentDirectoryPath)")
-    
+
     let executor = ShellExecutor()
-    
+
     do {
       // When the `Start FDC Tools` process is stopped from Xcode,
       // it still leaves an orphaned code-server process since SIGKILL isn't received by the
@@ -34,7 +34,7 @@ struct SetupDevEnv {
     } catch {
       print("❌ Error killing process \(error)")
     }
-    
+
     do {
       let commandToRun = "curl -sL https://firebase.tools/dataconnect | bash"
       try executor.run(commandToRun)
@@ -43,5 +43,3 @@ struct SetupDevEnv {
     }
   }
 }
-
-

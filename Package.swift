@@ -74,7 +74,11 @@ let package = Package(
         .copy("Resources/fdc-kitchensink"),
       ]
     ),
-    .testTarget(name: "ShellExecutorTests", dependencies: ["ShellExecutor"], path: "Tests/ShellExecutor")
+    .testTarget(
+      name: "ShellExecutorTests",
+      dependencies: ["ShellExecutor"],
+      path: "Tests/ShellExecutor"
+    ),
   ]
 )
 
