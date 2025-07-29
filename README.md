@@ -2,7 +2,7 @@
 
 This repository contains the source code of Firebase Data Connect Swift SDKs for development on iOS and other Apple platforms.
 
-Firebase Data Connect (https://firebase.google.com/docs/data-connect) lets you build applications with CloudSQL for PostgreSQL
+Firebase Data Connect (https://firebase.google.com/docs/data-connect) lets you build applications with CloudSQL for PostgreSQL.
 
 Firebase is an app development platform with tools to help you build, grow, and
 monetize your app. More information about Firebase can be found on the
@@ -51,9 +51,9 @@ There are other paths to get setup with Firebase Data Connect tools such as from
 
 ## Sample App and Code Lab
 
-    * [Codelab](https://firebase.google.com/codelabs/firebase-dataconnect-ios#0)
+* [Codelab](https://firebase.google.com/codelabs/firebase-dataconnect-ios#0)
 
-    * Sample app - [FriendlyFlix](https://github.com/firebase/data-connect-ios-sdk/tree/main/Examples/FriendlyFlix)
+* Comprehensive Sample app - [FriendlyFlix](https://github.com/firebase/data-connect-ios-sdk/tree/main/Examples/FriendlyFlix)
 
 ### Swift Package Manager
 Instructions for [Swift Package Manager](https://swift.org/package-manager/) support can be
