@@ -21,74 +21,76 @@ public struct ShellExecutor {
   public init() {}
 
   public func run(_ command: String) throws {
-    print("⚙️ ShellExecutor: Running command \"\(command)\"...")
+    #if os(macOS)
+      print("⚙️ ShellExecutor: Running command \"\(command)\"...")
 
-    let process = Process()
-    let outputPipe = Pipe()
-    let errorPipe = Pipe()
+      let process = Process()
+      let outputPipe = Pipe()
+      let errorPipe = Pipe()
 
-    // --- 1. Set up signal handling to forward termination signals ---
-    // This array will hold our signal sources to keep them alive.
-    var signalSources: [DispatchSourceSignal] = []
+      // --- 1. Set up signal handling to forward termination signals ---
+      // This array will hold our signal sources to keep them alive.
+      var signalSources: [DispatchSourceSignal] = []
 
-    // We'll trap SIGINT (Ctrl-C) and SIGTERM (the default kill signal).
-    let signalsToTrap: [Int32] = [SIGINT, SIGTERM]
+      // We'll trap SIGINT (Ctrl-C) and SIGTERM (the default kill signal).
+      let signalsToTrap: [Int32] = [SIGINT, SIGTERM]
 
-    for signal in signalsToTrap {
-      // The Foundation signal() function is used to establish a C-style signal handler.
-      // By setting it to SIG_IGN, we tell the system to ignore the default behavior for this
-      // signal,
-      // allowing our custom DispatchSource handler to take precedence without the app terminating
-      // immediately.
-      Foundation.signal(signal, SIG_IGN)
+      for signal in signalsToTrap {
+        // The Foundation signal() function is used to establish a C-style signal handler.
+        // By setting it to SIG_IGN, we tell the system to ignore the default behavior for this
+        // signal,
+        // allowing our custom DispatchSource handler to take precedence without the app terminating
+        // immediately.
+        Foundation.signal(signal, SIG_IGN)
 
-      let source = DispatchSource.makeSignalSource(signal: signal, queue: .main)
+        let source = DispatchSource.makeSignalSource(signal: signal, queue: .main)
 
-      source.setEventHandler {
-        print("\n🚨 Caught signal \(signal). Terminating child process...")
-        // Forward the termination signal to the child process.
-        process.terminate()
+        source.setEventHandler {
+          print("\n🚨 Caught signal \(signal). Terminating child process...")
+          // Forward the termination signal to the child process.
+          process.terminate()
+        }
+        source.resume()
+        signalSources.append(source)
       }
-      source.resume()
-      signalSources.append(source)
-    }
 
-    // --- 2. The rest of the setup is the same ---
-    process.standardOutput = outputPipe
-    process.standardError = errorPipe
-    process.executableURL = URL(fileURLWithPath: "/bin/zsh")
-    process.arguments = ["-c", command]
+      // --- 2. The rest of the setup is the same ---
+      process.standardOutput = outputPipe
+      process.standardError = errorPipe
+      process.executableURL = URL(fileURLWithPath: "/bin/zsh")
+      process.arguments = ["-c", command]
 
-    let printData = { (fileHandle: FileHandle) in
-      let data = fileHandle.availableData
-      if !data.isEmpty, let output = String(data: data, encoding: .utf8) {
-        print(output, terminator: "")
+      let printData = { (fileHandle: FileHandle) in
+        let data = fileHandle.availableData
+        if !data.isEmpty, let output = String(data: data, encoding: .utf8) {
+          print(output, terminator: "")
+        }
       }
-    }
 
-    outputPipe.fileHandleForReading.readabilityHandler = printData
-    errorPipe.fileHandleForReading.readabilityHandler = printData
+      outputPipe.fileHandleForReading.readabilityHandler = printData
+      errorPipe.fileHandleForReading.readabilityHandler = printData
 
-    // --- 3. Run the process and clean up ---
-    try process.run()
-    // It's helpful to print the child's process ID for debugging.
-    print("   ↳ Child process started with PID: \(process.processIdentifier)")
+      // --- 3. Run the process and clean up ---
+      try process.run()
+      // It's helpful to print the child's process ID for debugging.
+      print("   ↳ Child process started with PID: \(process.processIdentifier)")
 
-    process.waitUntilExit()
+      process.waitUntilExit()
 
-    // Once the process is done, we can cancel our signal sources.
-    signalSources.forEach { $0.cancel() }
+      // Once the process is done, we can cancel our signal sources.
+      signalSources.forEach { $0.cancel() }
 
-    print("") // Final newline for clean formatting
+      print("") // Final newline for clean formatting
 
-    if process.terminationStatus == 0 {
-      print("✅ ShellExecutor: Command finished successfully.")
-    } else if process.terminationReason == .uncaughtSignal {
-      // Handle the case where the child was terminated by our signal handler.
-      print("✅ ShellExecutor: Child process terminated as expected.")
-    } else {
-      print("❌ ShellExecutor: Command failed with exit code \(process.terminationStatus).")
-    }
+      if process.terminationStatus == 0 {
+        print("✅ ShellExecutor: Command finished successfully.")
+      } else if process.terminationReason == .uncaughtSignal {
+        // Handle the case where the child was terminated by our signal handler.
+        print("✅ ShellExecutor: Child process terminated as expected.")
+      } else {
+        print("❌ ShellExecutor: Command failed with exit code \(process.terminationStatus).")
+      }
+    #endif // if macos
   }
 
   /// Finds and kills a process listening on a specific TCP port.
@@ -96,71 +98,76 @@ public struct ShellExecutor {
   /// - Parameter port: The TCP port number of the process to terminate.
   /// - Throws: `ProcessError` if the process cannot be found or killed.
   public func killProcessOnPort(_ port: UInt) throws {
-    print("🔍 Attempting to find process on port \(port)...")
+    #if os(macOS)
+      print("🔍 Attempting to find process on port \(port)...")
 
-    let task = Process()
-    let pipe = Pipe()
+      let task = Process()
+      let pipe = Pipe()
 
-    // We use `lsof` to find the Process ID (PID)
-    // -t: Terse output, gives just the PID
-    // -i tcp:<port>: Looks for processes with a TCP connection on the given port
-    // -sTCP:LISTEN: Filters for processes in the LISTEN state
-    task.executableURL = URL(fileURLWithPath: "/usr/sbin/lsof")
-    task.arguments = ["-t", "-i", "tcp:\(port)", "-sTCP:LISTEN"]
-    task.standardOutput = pipe
+      // We use `lsof` to find the Process ID (PID)
+      // -t: Terse output, gives just the PID
+      // -i tcp:<port>: Looks for processes with a TCP connection on the given port
+      // -sTCP:LISTEN: Filters for processes in the LISTEN state
+      task.executableURL = URL(fileURLWithPath: "/usr/sbin/lsof")
+      task.arguments = ["-t", "-i", "tcp:\(port)", "-sTCP:LISTEN"]
+      task.standardOutput = pipe
 
-    do {
-      try task.run()
-      task.waitUntilExit()
+      do {
+        try task.run()
+        task.waitUntilExit()
 
-      let data = pipe.fileHandleForReading.readDataToEndOfFile()
-      if let output = String(data: data, encoding: .utf8)?
-        .trimmingCharacters(in: .whitespacesAndNewlines), !output.isEmpty {
-        // Ensure the output is a valid integer PID
-        guard let pid = Int32(output) else {
-          throw ProcessError.couldNotGetPID
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        if let output = String(data: data, encoding: .utf8)?
+          .trimmingCharacters(in: .whitespacesAndNewlines), !output.isEmpty {
+          // Ensure the output is a valid integer PID
+          guard let pid = Int32(output) else {
+            throw ProcessError.couldNotGetPID
+          }
+
+          print("🔥 Found process with PID \(pid). Terminating...")
+
+          // Use the `kill` C function to send a SIGKILL signal
+          if kill(pid, SIGKILL) == -1 {
+            // If kill fails, check errno for the reason
+            let errorDescription = String(cString: strerror(errno))
+            throw ProcessError
+              .commandFailed(
+                description: "Failed to kill process \(pid). Reason: \(errorDescription)"
+              )
+          }
+
+          print("✅ Process with PID \(pid) terminated successfully.")
+
+        } else {
+          print("👍 No process found listening on port \(port).")
+          // Depending on your use case, you might want to throw an error here or just return.
+          // For this example, we'll throw to indicate nothing was killed.
+          throw ProcessError.processNotFound
         }
-
-        print("🔥 Found process with PID \(pid). Terminating...")
-
-        // Use the `kill` C function to send a SIGKILL signal
-        if kill(pid, SIGKILL) == -1 {
-          // If kill fails, check errno for the reason
-          let errorDescription = String(cString: strerror(errno))
-          throw ProcessError
-            .commandFailed(
-              description: "Failed to kill process \(pid). Reason: \(errorDescription)"
-            )
-        }
-
-        print("✅ Process with PID \(pid) terminated successfully.")
-
-      } else {
-        print("👍 No process found listening on port \(port).")
-        // Depending on your use case, you might want to throw an error here or just return.
-        // For this example, we'll throw to indicate nothing was killed.
-        throw ProcessError.processNotFound
+      } catch {
+        // If `task.run()` fails, it will throw an error.
+        throw ProcessError.commandFailed(description: error.localizedDescription)
       }
-    } catch {
-      // If `task.run()` fails, it will throw an error.
-      throw ProcessError.commandFailed(description: error.localizedDescription)
-    }
+    #endif // if macos
   }
 }
 
-public enum ProcessError: Error, CustomStringConvertible {
-  case processNotFound
-  case commandFailed(description: String)
-  case couldNotGetPID
+#if os(macOS)
+  public enum ProcessError: Error, CustomStringConvertible {
+    case processNotFound
+    case commandFailed(description: String)
+    case couldNotGetPID
 
-  public var description: String {
-    switch self {
-    case .processNotFound:
-      return "No process found on the specified port."
-    case let .commandFailed(description):
-      return "Command failed: \(description)"
-    case .couldNotGetPID:
-      return "Could not extract PID from command output."
+    public var description: String {
+      switch self {
+      case .processNotFound:
+        return "No process found on the specified port."
+      case let .commandFailed(description):
+        return "Command failed: \(description)"
+      case .couldNotGetPID:
+        return "Could not extract PID from command output."
+      }
     }
   }
-}
+
+#endif // if macos

@@ -13,33 +13,37 @@
 // limitations under the License.
 
 import Foundation
+
 import ShellExecutor
 
 // port on which FDC tools (code-server) listen
 let FDC_TOOLS_PORT: UInt = 9394
 
+@available(macOS 12.0, *)
 @main
 struct SetupDevEnv {
   static func main() {
-    let currentDirectoryPath = FileManager.default.currentDirectoryPath
-    print("Attempting to start Data Connect Tools in Directory: \(currentDirectoryPath)")
+    #if os(macOS)
+      let currentDirectoryPath = FileManager.default.currentDirectoryPath
+      print("Attempting to start Data Connect Tools in Directory: \(currentDirectoryPath)")
 
-    let executor = ShellExecutor()
+      let executor = ShellExecutor()
 
-    do {
-      // When the `Start FDC Tools` process is stopped from Xcode,
-      // it still leaves an orphaned code-server process since SIGKILL isn't received by the
-      // command line utility
-      try executor.killProcessOnPort(FDC_TOOLS_PORT)
-    } catch {
-      print("❌ Error killing process \(error)")
-    }
+      do {
+        // When the `Start FDC Tools` process is stopped from Xcode,
+        // it still leaves an orphaned code-server process since SIGKILL isn't received by the
+        // command line utility
+        try executor.killProcessOnPort(FDC_TOOLS_PORT)
+      } catch {
+        print("❌ Error killing process \(error)")
+      }
 
-    do {
-      let commandToRun = "curl -sL https://firebase.tools/dataconnect | bash"
-      try executor.run(commandToRun)
-    } catch {
-      print("❌ Error running command: \(error)")
-    }
+      do {
+        let commandToRun = "curl -sL https://firebase.tools/dataconnect | bash"
+        try executor.run(commandToRun)
+      } catch {
+        print("❌ Error running command: \(error)")
+      }
+    #endif // if macos
   }
 }

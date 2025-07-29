@@ -76,4 +76,4 @@ jobs:
     - name: Integration Test Setup
       run: Tests/Integration/Emulator/start-emulator.sh
     - name: Unit and Integration Tests
-      run: scripts/third_party/travis/retry.sh ./scripts/build.sh FirebaseDataConnect ${{ matrix.target }} spm
+      run: scripts/third_party/travis/retry.sh ./scripts/build.sh FirebaseDataConnect-Package ${{ matrix.target }} spm
