@@ -15,6 +15,7 @@
 @testable import ShellExecutor
 import XCTest
 
+@available(macOS 12.0, *)
 final class ShellExecutorTests: XCTestCase {
   var executor: ShellExecutor!
 
