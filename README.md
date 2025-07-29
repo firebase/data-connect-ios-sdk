@@ -27,11 +27,10 @@ This process shows you how to setup Firebase Data Connect tools with Xcode.
         * This ensures that Firebase Data Connect tools start in the correct folder each time. 
 * Run the `Start FDC Tools` target selecting `My Mac` as the device.
 * This should start the tools in a separate browser window (or tab).
-* Now that you have the tools, try out our codelab
-    * [Codelab](https://firebase.google.com/codelabs/firebase-dataconnect-ios#0)
-* Learn more about designing schemas, queries and mutations [Design Schemas](https://firebase.google.com/docs/data-connect/schemas-guide)
+* Now that you have the tools, try out our [Codelab](https://firebase.google.com/codelabs/firebase-dataconnect-ios#0)
+* Learn more about designing schemas, queries and mutations - [Design Schemas](https://firebase.google.com/docs/data-connect/schemas-guide)
     
-* Generated SDKs are Swift packages. Add the generated SDKs to your project as a Local Package dependency.
+* Generated SDKs are Swift packages. Add the generated SDKs to your project as a Local Package dependency and start using them in your app.
     * Generated APIs support `@Observable` (Observation framework) for easy integration into SwiftUI apps.
         * UIKit apps can make use of the underlying `Combine` publishers.
     * All Query and Mutation APIs are `async` calls and can participate in Swift concurrency.
