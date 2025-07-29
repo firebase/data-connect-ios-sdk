@@ -1,6 +1,6 @@
 # 11.9.0
 - [added] Start Firebase Data Connect Schema and Query design tools from Xcode.
- 
+
 # 11.8.0
 - [changed] Firebase Core SDK dependency version range has been extended to include the 12.x version. [#15139](https://github.com/firebase/firebase-ios-sdk/issues/15139)
 
