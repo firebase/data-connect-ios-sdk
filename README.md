@@ -12,7 +12,10 @@ monetize your app. More information about Firebase can be found on the
 
 This process shows you how to setup Firebase Data Connect tools with Xcode.
 
-* `git clone` the Firebase Data Connect iOS SDK.
+* Get the Firebase Data Connect iOS SDK.
+    ```
+    git clone https://github.com/firebase/data-connect-ios-sdk.git
+    ```
 * Add it as a local package dependency in your Xcode project
     * From your Xcode project, select `File -> Add Package Dependencies -> Add Local`.
     * Select the `data-connect-ios-sdk` folder containing the cloned SDK.
@@ -48,9 +51,9 @@ There are other paths to get setup with Firebase Data Connect tools such as from
 
 ## Sample App and Code Lab
 
-Codelab [Codelab](https://firebase.google.com/codelabs/firebase-dataconnect-ios#0)
+    * [Codelab](https://firebase.google.com/codelabs/firebase-dataconnect-ios#0)
 
-Sample app - [FriendlyFlix](https://github.com/firebase/data-connect-ios-sdk/tree/main/Examples/FriendlyFlix)
+    * Sample app - [FriendlyFlix](https://github.com/firebase/data-connect-ios-sdk/tree/main/Examples/FriendlyFlix)
 
 ### Swift Package Manager
 Instructions for [Swift Package Manager](https://swift.org/package-manager/) support can be
