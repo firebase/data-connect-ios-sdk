@@ -58,7 +58,8 @@ let package = Package(
     .executableTarget(
       name: "SetupDevEnv",
       dependencies: ["ShellExecutor"],
-      path: "Tools/SetupDevEnv"
+      path: "Tools/SetupDevEnv",
+      resources: [.copy("Resources")]
     ),
     .testTarget(
       name: "FirebaseDataConnectUnit",
