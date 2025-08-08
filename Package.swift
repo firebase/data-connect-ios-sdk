@@ -74,7 +74,7 @@ let package = Package(
       resources: [
         .copy("Resources/fdc-kitchensink"),
       ]
-    )
+    ),
   ]
 )
 

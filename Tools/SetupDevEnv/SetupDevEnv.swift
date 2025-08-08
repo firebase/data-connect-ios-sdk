@@ -60,11 +60,10 @@ struct SetupDevEnv {
     #endif // if macos
   }
 
-  
-    /// Copies a folder named "Templates" from the package's resource bundle
-    /// to the current working directory.
-    static func copyTemplateProjectToWorkingDirectory() throws {
-#if os(macOS)
+  /// Copies a folder named "Templates" from the package's resource bundle
+  /// to the current working directory.
+  static func copyTemplateProjectToWorkingDirectory() throws {
+    #if os(macOS)
       let fileManager = FileManager.default
 
       let workingDirectoryURL = URL(fileURLWithPath: fileManager.currentDirectoryPath)
@@ -113,12 +112,12 @@ struct SetupDevEnv {
           .appendingPathComponent("GoogleService-Info.plist")
         try fileManager.copyItem(at: sourcePlistUrl, to: destinationPlist)
       }
-      #endif
-    }
+    #endif
+  }
 
-    // Looks for dataconnect.yaml file within the specified folder recursively
-    static func containsDataConnectProject(folderURL: URL) -> Bool {
-      #if os(macOS)
+  // Looks for dataconnect.yaml file within the specified folder recursively
+  static func containsDataConnectProject(folderURL: URL) -> Bool {
+    #if os(macOS)
       let fileManager = FileManager.default
       if let enumerator = fileManager.enumerator(
         at: folderURL,
@@ -132,8 +131,7 @@ struct SetupDevEnv {
           }
         }
       }
-#endif
-      return false
-    }
- 
+    #endif
+    return false
+  }
 }
