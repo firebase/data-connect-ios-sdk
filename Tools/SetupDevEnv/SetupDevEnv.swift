@@ -19,7 +19,7 @@ import ShellExecutor
 // port on which FDC tools (code-server) listen
 let FDC_TOOLS_PORT: UInt = 9394
 
-@available(macOS 13.0, *)
+@available(macOS 12.0, *)
 @main
 struct SetupDevEnv {
   static func main() {
@@ -60,75 +60,80 @@ struct SetupDevEnv {
     #endif // if macos
   }
 
-  /// Copies a folder named "Templates" from the package's resource bundle
-  /// to the current working directory.
-  static func copyTemplateProjectToWorkingDirectory() throws {
-    let fileManager = FileManager.default
+  
+    /// Copies a folder named "Templates" from the package's resource bundle
+    /// to the current working directory.
+    static func copyTemplateProjectToWorkingDirectory() throws {
+#if os(macOS)
+      let fileManager = FileManager.default
 
-    let workingDirectoryURL = URL(fileURLWithPath: fileManager.currentDirectoryPath)
+      let workingDirectoryURL = URL(fileURLWithPath: fileManager.currentDirectoryPath)
 
-    guard !containsDataConnectProject(folderURL: workingDirectoryURL) else {
-      print(
-        "ℹ️ Working directory already contains a dataconnect project. Skipping copy of template project."
-      )
-      return
+      guard !containsDataConnectProject(folderURL: workingDirectoryURL) else {
+        print(
+          "ℹ️ Working directory already contains a dataconnect project. Skipping copy of template project."
+        )
+        return
+      }
+
+      let resourceFolderName = "dataconnect"
+      let destinationURL = workingDirectoryURL.appendingPathComponent(resourceFolderName)
+
+      // 3. Find the URL for the resource folder within the compiled tool's bundle
+      guard let sourceURL = Bundle.module.url(
+        forResource: resourceFolderName,
+        withExtension: nil,
+        subdirectory: "Resources/demo-iosproject"
+      ) else {
+        throw NSError(domain: "StartFDCTools", code: 1, userInfo: [
+          NSLocalizedDescriptionKey: "Could not find '\(resourceFolderName)' in the resource bundle.",
+        ])
+      }
+
+      // 4. Perform the copy operation
+      try fileManager.copyItem(at: sourceURL, to: destinationURL)
+
+      // Copy the firebase.json
+      if let sourceJsonUrl = Bundle.module.url(
+        forResource: "firebase",
+        withExtension: "json",
+        subdirectory: "Resources/demo-iosproject"
+      ) {
+        let destinationJson = workingDirectoryURL.appendingPathComponent("firebase.json")
+        try fileManager.copyItem(at: sourceJsonUrl, to: destinationJson)
+      }
+
+      // Copy the GoogleServices-Info.plist
+      if let sourcePlistUrl = Bundle.module.url(
+        forResource: "GoogleService-Info",
+        withExtension: "plist",
+        subdirectory: "Resources/demo-iosproject"
+      ) {
+        let destinationPlist = workingDirectoryURL
+          .appendingPathComponent("GoogleService-Info.plist")
+        try fileManager.copyItem(at: sourcePlistUrl, to: destinationPlist)
+      }
+      #endif
     }
 
-    let resourceFolderName = "dataconnect"
-    let destinationURL = workingDirectoryURL.appendingPathComponent(resourceFolderName)
-
-    // 3. Find the URL for the resource folder within the compiled tool's bundle
-    guard let sourceURL = Bundle.module.url(
-      forResource: resourceFolderName,
-      withExtension: nil,
-      subdirectory: "Resources/demo-iosproject"
-    ) else {
-      throw NSError(domain: "StartFDCTools", code: 1, userInfo: [
-        NSLocalizedDescriptionKey: "Could not find '\(resourceFolderName)' in the resource bundle.",
-      ])
-    }
-
-    // 4. Perform the copy operation
-    try fileManager.copyItem(at: sourceURL, to: destinationURL)
-
-    // Copy the firebase.json
-    if let sourceJsonUrl = Bundle.module.url(
-      forResource: "firebase",
-      withExtension: "json",
-      subdirectory: "Resources/demo-iosproject"
-    ) {
-      let destinationJson = workingDirectoryURL.appendingPathComponent("firebase.json")
-      try fileManager.copyItem(at: sourceJsonUrl, to: destinationJson)
-    }
-
-    // Copy the GoogleServices-Info.plist
-    if let sourcePlistUrl = Bundle.module.url(
-      forResource: "GoogleService-Info",
-      withExtension: "plist",
-      subdirectory: "Resources/demo-iosproject"
-    ) {
-      let destinationPlist = workingDirectoryURL
-        .appendingPathComponent("GoogleService-Info.plist")
-      try fileManager.copyItem(at: sourcePlistUrl, to: destinationPlist)
-    }
-  }
-
-  // Looks for dataconnect.yaml file within the specified folder recursively
-  static func containsDataConnectProject(folderURL: URL) -> Bool {
-    let fileManager = FileManager.default
-    if let enumerator = fileManager.enumerator(
-      at: folderURL,
-      includingPropertiesForKeys: nil,
-      options: [.skipsHiddenFiles, .skipsPackageDescendants]
-    ) {
-      for case let itemURL as URL in enumerator {
-        if itemURL.lastPathComponent.contains("dataconnect.yaml") {
-          print("Found existing dataconnect.yaml \(itemURL)")
-          return true
+    // Looks for dataconnect.yaml file within the specified folder recursively
+    static func containsDataConnectProject(folderURL: URL) -> Bool {
+      #if os(macOS)
+      let fileManager = FileManager.default
+      if let enumerator = fileManager.enumerator(
+        at: folderURL,
+        includingPropertiesForKeys: nil,
+        options: [.skipsHiddenFiles, .skipsPackageDescendants]
+      ) {
+        for case let itemURL as URL in enumerator {
+          if itemURL.lastPathComponent.contains("dataconnect.yaml") {
+            print("Found existing dataconnect.yaml \(itemURL)")
+            return true
+          }
         }
       }
+#endif
+      return false
     }
-
-    return false
-  }
+ 
 }
