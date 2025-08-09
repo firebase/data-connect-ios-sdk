@@ -61,8 +61,7 @@ let package = Package(
         "ShellExecutor",
         .target(name: "TemplateProject", condition: .when(platforms: [.macOS])),
       ],
-      path: "Tools/SetupDevEnv",
-
+      path: "Tools/SetupDevEnv"
     ),
     .target(
       name: "TemplateProject",
