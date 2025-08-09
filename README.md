@@ -35,7 +35,7 @@ This guide will walk you through setting up a new iOS (or other Apple platform) 
 First, clone this repository to your local machine. This contains both the core SDK and the command-line tools needed for code generation.
 
 ```bash
-git clone [https://github.com/firebase/data-connect-ios-sdk.git](https://github.com/firebase/data-connect-ios-sdk.git)
+git clone https://github.com/firebase/data-connect-ios-sdk.git
 ```
 
 ### **Step 2: Configure Your Xcode Project**
@@ -66,7 +66,7 @@ The tools will generate a custom Swift package based on your database schema.
 3. **Generate Code:** The tools will automatically detect the GraphQL schema (`.gql` files) in your project's `dataconnect` subfolder and generate a new Swift package in a `dataconnect-generated` folder.
 4. **Reference cloned SDK:** From the FDC tools, modify the `dataconnect/default/connector.yaml` file to specify the location of the cloned `data-connect-ios-sdk` by updating the `coreSdkPackageLocation` property.
 5. **Add Generated SDK to Xcode:** Back in Xcode, add another local package (**File \> Add Package Dependencies... \> Add Local...**). This time, select the new Swift package inside the `dataconnect-generated` folder. Add this new library (e.g., `ItemData`) to your app target.
-6. **Add GoogleService-Info.plist to Xcode: From Xcode. add a file to your project (**File \> Add Files to ...**). Select the file `GoogleService-Info.plist` thats in your Xcode project folder and add it as a `Reference`.
+6. **Add GoogleService-Info.plist to Xcode:** From Xcode. add a file to your project (**File \> Add Files to ...**). Select the file `GoogleService-Info.plist` thats in your Xcode project folder and add it as a `Reference`.
 
 ### **Step 5: Initialize Firebase in Your App**
 
