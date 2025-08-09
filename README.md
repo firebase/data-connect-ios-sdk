@@ -1,238 +1,198 @@
-# Firebase Data Connect iOS Open Source Development
+# Firebase Data Connect for Swift
 
-This repository contains the source code of Firebase Data Connect Swift SDKs for development on iOS and other Apple platforms.
+**Connect your Swift & SwiftUI apps directly to a managed Google CloudSQL (PostgreSQL) database.**
 
-Firebase Data Connect (https://firebase.google.com/docs/data-connect) lets you build applications with CloudSQL for PostgreSQL.
+This repository contains the official open-source Swift SDK for [Firebase Data Connect](https://firebase.google.com/docs/data-connect), a service that lets you build modern, data-driven applications on Apple platforms (iOS, macOS, etc.) with the power and scalability of a SQL database.
 
-* Native Swift SDK.
-* Observable Queries support binding to SwiftUI.
-* Async APIs.
-* Generated Swift SDKs to match your custom schemas and queries.
+This SDK is perfect for those:
+* Who need a robust SQL database for their app but want to avoid writing and managing a separate backend.
+* Looking for a type-safe, async-first library to integrate a PostgreSQL database into their applications.
 
-Firebase is an app development platform with tools to help you build, grow, and
-monetize your app. More information about Firebase can be found on the
-[official Firebase website](https://firebase.google.com).
+---
 
-## Installation
+## ✨ Why Use Firebase Data Connect?
 
-This process shows you how to setup Firebase Data Connect tools with Xcode.
+* **Use power of SQL:** Get the power of a managed PostgreSQL database without the hassle of managing servers. Focus on your app's frontend experience.
+* **Type-Safe & Modern Swift:** Interact with your database using a strongly-typed, auto-generated Swift SDK. It's built with modern `async/await` for clean, concurrent code.
+* **Built for SwiftUI:** `@Observable Queries` automatically update your SwiftUI views when data changes, making it incredibly simple to build reactive UIs.
+* **Full CRUD Operations:** Define your data models and operations using GraphQL, and Data Connect generates the Swift code to query, insert, update, and delete data.
+* **Local Emulator:** Develop and test your entire application locally with the FDC emulator for a fast and efficient development cycle.
 
-* Get the Firebase Data Connect iOS SDK.
-    ```
-    git clone https://github.com/firebase/data-connect-ios-sdk.git
-    ```
+---
 
-* Add it as a local package dependency in your Xcode project. If you are new to Firebase Data Connect, we suggest using a fresh SwiftUI app project.
+## 🚀 Getting Started
 
-    * From your Xcode project, select `File -> Add Package Dependencies -> Add Local`.
-    * Select the `data-connect-ios-sdk` folder containing the cloned SDK.
-    * Add `FirebaseDataConnect` to your app target.
+This guide will walk you through setting up a new iOS (or other Apple platform) project with Firebase Data Connect.
 
-* Add and Edit Xcode Scheme
-    * From your list of schemes, select `New Scheme`.
-    * Xcode should show you `Start FDC Tools` as a potential scheme. Select that.
+### Prerequisites
 
-* Adjust working directory
-    * Edit the `Start FDC Tools` Scheme from  `Edit Scheme... -> Start FDC Tools`.
-    * Go to `Run -> Options -> Working Directory`
-        * Select `Custom working directory` and pick your Xcode project folder
-        * This ensures that Firebase Data Connect tools start in the correct folder each time.
+* Xcode 15.0 or later
+* iOS 15.0 or later
+* A Google account for the FDC tools
 
-* Run the `Start FDC Tools` target selecting `My Mac` as the device.
+### Step 1: Get the SDK & Tools
 
-* This should start the tools in a separate browser window (or tab).
+First, clone this repository to your local machine. This contains both the core SDK and the command-line tools needed for code generation.
 
-* Follow the Quick Start below to start using FDC.
+```bash
+git clone [https://github.com/firebase/data-connect-ios-sdk.git](https://github.com/firebase/data-connect-ios-sdk.git)
 
+### **Step 2: Configure Your Xcode Project**
 
-## Quick Start
+1. **Add Local Package:** In Xcode, open your app project and navigate to **File \> Add Package Dependencies...**.  
+2. In the package prompt, click **"Add Local..."** and select the `data-connect-ios-sdk` folder you just cloned.  
+3. Add the `FirebaseDataConnect` library to your app's primary target.
 
-### Data Connect Extension
+### **Step 3: Run the Data Connect Tools**
 
-Switch to the FDC Extension view and Sign In with a Google account.
+The Data Connect tools run on your Mac to provide a local development emulator and code generation service.
+
+1. **Add New Scheme:** In Xcode's scheme menu, select **New Scheme...**. Choose the **`Start FDC Tools`** target and click OK.  
+2. **Set Working Directory:** Edit the new `Start FDC Tools` scheme. Go to **Run \> Options** and check **"Use custom working directory"**. Set this to the root folder of your Xcode project. **Run the Tools:** Select the `Start FDC Tools` scheme with **My Mac** as the destination and click Run (▶). This will open the FDC tools in your web browser.
+
+### **Step 4: Generate Your Type-Safe Swift SDK**
+
+The tools will generate a custom Swift package based on your database schema.
+
+1. **Sign In:** In the FDC tools web UI, sign in with your Google account.
 
 ![FDC Extension](docs/resources/Extension_SignIn.png)
 
-
-
-### Start the Firebase Data Connect Emulator
-
-Once signed in, start the FDC Emulator.
+2. **Start Emulator:** Click the button to start the local FDC Emulator.
 
 ![Start Emulator](docs/resources/StartEmulatorButton.png)
 
+3. **Generate Code:** The tools will automatically detect the GraphQL schema (`.gql` files) in your project's `dataconnect` subfolder and generate a new Swift package in a `dataconnect-generated` folder.
+4. **Reference cloned SDK:** From the FDC tools, modify the `dataconnect/default/connector.yaml` file to specify the location of the cloned `data-connect-ios-sdk` by updating the `coreSdkPackageLocation` property.
+5. **Add Generated SDK to Xcode:** Back in Xcode, add another local package (**File \> Add Package Dependencies... \> Add Local...**). This time, select the new Swift package inside the `dataconnect-generated` folder. Add this new library (e.g., `ItemData`) to your app target.
+6. **Add GoogleService-Info.plist to Xcode: From Xcode. add a file to your project (**File \> Add Files to ...**). Select the file `GoogleService-Info.plist` thats in your Xcode project folder and add it as a `Reference`.
 
+### **Step 5: Initialize Firebase in Your App**
 
-### Generate Typesafe Swift SDKs
+In your main app file (the one with `@main`), initialize Firebase and configure Data Connect to use the local emulator.
 
-From the FDC tools, modify the `dataconnect/default/connector.yaml` file to specify the location of the cloned  `data-connect-ios-sdk` by updating the `coreSdkPackageLocation` property.
+Swift
 
-![Connector.yaml](docs/resources/ConnectorYamlLocation.png)
+```
+// MyApp.swift
+import SwiftUI
+import Firebase
+import FirebaseDataConnect
+import ItemData // The name of your generated SDK package
 
+@main
+struct MyApp: App {
+  init() {
+    // 1. Configure Firebase
+    FirebaseApp.configure()
+    
+    // 2. Point Data Connect to the local emulator
+    DataConnect.itemsConnector.useEmulator()
+  }
 
-The `swiftSdk` configuration sets up the location where FDC tools will generate a typesafe Swift SDK layer to match your schema and queries.
-
-On saving the configuration, you should see a new folder called `dataconnect-generated` as a peer to the `dataconnect` folder. This folder contains the generated Swift SDK.
-
-
-### Add Generated SDK Package Dependency
-
-* Switch back to Xcode.
-
-* From your Xcode project *File -> Add Package Dependencies -> Add Local -> Pick the package folder within `dataconnect-generated` folder (see previous step)*
-
-
-### Add GoogleService-Info.plist to your project
-
-* Right click on your Xcode project and select *“Add Files to ...”*
-
-* Select a file called `GoogleService-Info.plist` from your Xcode project folder and add it as a Reference.
-
-*Note:* When you are ready to test on a real device, you will need to setup a Firebase project and download a project specific `GoogleService-Info.plist` file.
-
-
-### Initialize Firebase SDKs
-
-* Open your `MyXYZApp.swift` file - this is the file which contains the `@main` attribute.
-
-* Add the following imports to this file
-
-    ```swift
-        import Firebase
-        import FirebaseDataConnect
-        import ItemData
-    ```
-
-* Add an `init()` function to the main app `struct` if you don’t have one and add the two lines below. This will initialize the Firebase and Data Connect SDKs and set them up to use the emulator that you started earlier.
-
-    ```swift
-        init() {
-            FirebaseApp.configure()
-
-            DataConnect.itemsConnector.useEmulator()
-        }
-    ```
-
-
-### Execute Mutation
-
-* Open a SwiftUI view of the app and add the following imports.
-
-    ```
-        import FirebaseDataConnect
-        import ItemData
-    ```
-
-* Within the `View` definition add a SwiftUI Button
-
-    ```swift
-    struct ContentView: View {
-        VStack {
-            Button("Create Item") {
-                Task {
-                    let result = try await DataConnect.itemsConnector.createItemMutation.execute(id: UUID(), name: "Item-\(Int.random(in: 1...1000))")
-
-                        print("Created Item \(result)")
-                }
-            }
-        }
+  var body: some Scene {
+    WindowGroup {
+      ContentView()
     }
-    ```
+  }
+}
+```
 
+### **Step 6: Execute a Mutation (Create Data)**
 
-The code calls a predefined mutation called `CreateItem`. The generated SDK that was earlier added to the Xcode project added the `itemsConnector` and mutation call definitions from its original GraphQL definition. If you want to explore, see the `dataconnect/schema/schema.gql` and `dataconnect/default/mutations.gql` files.
+Now you can write data to the database from any SwiftUI view.
 
+Swift
 
-### Run app in iPhone simulator
+```
+// ContentView.swift
+import SwiftUI
+import FirebaseDataConnect
+import ItemData
 
-Run your app in an iPhone simulator and click on the `Create Item` button. You should see the print statement executed.
-
-Note: You may need to enable Network capabilities for outgoing connections.
-
-![Network Capabilities](docs/resources/NetworkCapabilities.png)
-
-
-### Execute Query
-
-Now that you have added an Item, lets run a query to fetch the item that was added
-
-* Update your SwiftUI view to get a `QueryRef`
-
-    ```swift
-        struct ContentView: View {
-            var itemsQueryRef = DataConnect.itemsConnector.listItemsQuery.ref()
-
-            // ...
+struct ContentView: View {
+  var body: some View {
+    VStack {
+      Button("Create Item") {
+        Task {
+          do {
+            let itemID = UUID()
+            let itemName = "Item-\(Int.random(in: 1...1000))"
+            let result = try await DataConnect.itemsConnector.createItemMutation.execute(id: itemID, name: itemName)
+            print("✅ Successfully created item: \(result)")
+          } catch {
+            print("❌ Error creating item: \(error)")
+          }
         }
+      }
+    }
+  }
+}
+```
 
-    ```
+*Note:* You may need to enable `App Sanbbox` -> `Outgoing Connections (Client)` for your Xcode app target to run it from iPhone simulator.  
 
-* Now add a `Button` and `List` to which the results are bound for display.
 
-    ```swift
-        struct ContentView: View {
-            var itemsQueryRef = DataConnect.itemsConnector.listItemsQuery.ref()
+### **Step 7: Execute a Query (Read & Display Data)**
 
-            var body: some View {
-                VStack {
+Use a `QueryRef` to fetch data and automatically bind it to your SwiftUI view.
 
-                // previous CreateItem button here
+Swift
 
-                Button("Execute Query") {
-                    Task {
-                        _ = try await DataConnect.itemsConnector.listItemsQuery.execute()
-                    }
-                }
+```
+// ContentView.swift
+import SwiftUI
+import FirebaseDataConnect
+import ItemData
 
-                if let items = itemsQueryRef.data?.items {
-                    List(items) { itemData in
-                        Text(itemData.name)
-                    }
-                }
-            }
+struct ContentView: View {
+  // A reference to our query
+  @State var itemsQueryRef = DataConnect.itemsConnector.listItemsQuery.ref()
 
+  var body: some View {
+    VStack {
+      // (Create Button from previous step)
+      
+      // The List will update when the query data changes
+      if let items = itemsQueryRef.data?.items {
+        List(items) { item in
+          Text(item.name)
         }
+      }
 
+      Button("Refresh List") {
+        Task {
+          // Manually refetch the data
+          _ = try? await itemsQueryRef.execute()
+        }
+      }
+    }
+    .task {
+        // Fetch initial data when the view appears
+        _ = await itemsQueryRef.execute()
+    }
+  }
+}
+```
 
-    ```
+**That's it\!** You've connected your app to a local SQL database, created a new record, and displayed a list of records in your UI.
 
+---
 
-QueryRefs support the `Observation` framework (`@Observable` macro) and their results can be bound to SwiftUI views.
+## **📚 Next Steps**
 
-`execute()` function causes the query to reload results and due to `Observation`, the UI is also updated.
+* **Stretch Goal:** Modify the `schema.gql`, `queries.gql` and `mutations.gql` to add a `price` field to the `Item` entity. The generated SDK should get automatically created. *Hint:* See comments in the files.  
+* **Codelab:** Follow our detailed [Firebase Data Connect for iOS Codelab](https://firebase.google.com/codelabs/firebase-dataconnect-ios#0).  
+* **Schema Design:** Learn more about designing schemas, queries, and mutations in the [official documentation](https://firebase.google.com/docs/data-connect/schemas-guide).  
+* **Sample App:** Explore a complete sample application, [FriendlyFlix](https://github.com/firebase/data-connect-ios-sdk/tree/main/Examples/FriendlyFlix), to see more advanced usage patterns.  
+* **Go to Production:** When you're ready to deploy, visit the [Firebase Console](https://console.firebase.google.com) to connect to a live CloudSQL (PostgreSQL) instance.
 
+---
 
-### Conclusion
+## **🤝 Contributing**
 
-Thats it! You now have a Firebase Data Connect project that inserts data and reads data for a simple  schema and queries.
+We'd love for you to contribute\! Please see the [Contributing](https://www.google.com/search?q=CONTRIBUTING.md) guide for more information.
 
-### Follow up Exercise
+## **📄 License**
 
-As a next step, try modifying the schema by adding a new field called `price` of type `Float`.
-
-*Hint:* Check comments in *schema.gql*, *mutations.gql*, *queries.gql*
-
-As you change the GraphQL schema definitions, the Generated Swift SDK that you added earlier should automatically get updated with new field that you added.
-
-## Next Steps
-
-* Learn more about designing schemas, queries and mutations - [Design Schemas](https://firebase.google.com/docs/data-connect/schemas-guide).
-
-* Try the [Codelab](https://firebase.google.com/codelabs/firebase-dataconnect-ios#0).
-
-* Comprehensive Sample app - [FriendlyFlix](https://github.com/firebase/data-connect-ios-sdk/tree/main/Examples/FriendlyFlix).
-
-* To connect to the Firebase Data Connect service and access it from a physical device visit the [Console](https://console.firebase.google.com) .
-
-## Contributing
-
-See [Contributing](CONTRIBUTING.md) for more information on contributing to the Firebase Data Connect
-iOS SDK.
-
-## License
-
-The contents of this repository are licensed under the
-[Apache License, version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
-
-Your use of Firebase is governed by the
-[Terms of Service for Firebase Services](https://firebase.google.com/terms/).
+This repository is licensed under the [Apache License, version 2.0](http://www.apache.org/licenses/LICENSE-2.0). Your use of Firebase is governed by the [Terms of Service for Firebase Services](https://firebase.google.com/terms/).
