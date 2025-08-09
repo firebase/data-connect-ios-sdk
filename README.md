@@ -36,18 +36,19 @@ First, clone this repository to your local machine. This contains both the core 
 
 ```bash
 git clone [https://github.com/firebase/data-connect-ios-sdk.git](https://github.com/firebase/data-connect-ios-sdk.git)
+```
 
 ### **Step 2: Configure Your Xcode Project**
 
-1. **Add Local Package:** In Xcode, open your app project and navigate to **File \> Add Package Dependencies...**.  
-2. In the package prompt, click **"Add Local..."** and select the `data-connect-ios-sdk` folder you just cloned.  
+1. **Add Local Package:** In Xcode, open your app project and navigate to **File \> Add Package Dependencies...**.
+2. In the package prompt, click **"Add Local..."** and select the `data-connect-ios-sdk` folder you just cloned.
 3. Add the `FirebaseDataConnect` library to your app's primary target.
 
 ### **Step 3: Run the Data Connect Tools**
 
 The Data Connect tools run on your Mac to provide a local development emulator and code generation service.
 
-1. **Add New Scheme:** In Xcode's scheme menu, select **New Scheme...**. Choose the **`Start FDC Tools`** target and click OK.  
+1. **Add New Scheme:** In Xcode's scheme menu, select **New Scheme...**. Choose the **`Start FDC Tools`** target and click OK.
 2. **Set Working Directory:** Edit the new `Start FDC Tools` scheme. Go to **Run \> Options** and check **"Use custom working directory"**. Set this to the root folder of your Xcode project. **Run the Tools:** Select the `Start FDC Tools` scheme with **My Mac** as the destination and click Run (▶). This will open the FDC tools in your web browser.
 
 ### **Step 4: Generate Your Type-Safe Swift SDK**
@@ -85,7 +86,7 @@ struct MyApp: App {
   init() {
     // 1. Configure Firebase
     FirebaseApp.configure()
-    
+
     // 2. Point Data Connect to the local emulator
     DataConnect.itemsConnector.useEmulator()
   }
@@ -130,7 +131,7 @@ struct ContentView: View {
 }
 ```
 
-*Note:* You may need to enable `App Sanbbox` -> `Outgoing Connections (Client)` for your Xcode app target to run it from iPhone simulator.  
+*Note:* You may need to enable `App Sanbbox` -> `Outgoing Connections (Client)` for your Xcode app target to run it from iPhone simulator.
 
 
 ### **Step 7: Execute a Query (Read & Display Data)**
@@ -152,7 +153,7 @@ struct ContentView: View {
   var body: some View {
     VStack {
       // (Create Button from previous step)
-      
+
       // The List will update when the query data changes
       if let items = itemsQueryRef.data?.items {
         List(items) { item in
@@ -181,10 +182,10 @@ struct ContentView: View {
 
 ## **📚 Next Steps**
 
-* **Stretch Goal:** Modify the `schema.gql`, `queries.gql` and `mutations.gql` to add a `price` field to the `Item` entity. The generated SDK should get automatically created. *Hint:* See comments in the files.  
-* **Codelab:** Follow our detailed [Firebase Data Connect for iOS Codelab](https://firebase.google.com/codelabs/firebase-dataconnect-ios#0).  
-* **Schema Design:** Learn more about designing schemas, queries, and mutations in the [official documentation](https://firebase.google.com/docs/data-connect/schemas-guide).  
-* **Sample App:** Explore a complete sample application, [FriendlyFlix](https://github.com/firebase/data-connect-ios-sdk/tree/main/Examples/FriendlyFlix), to see more advanced usage patterns.  
+* **Stretch Goal:** Modify the `schema.gql`, `queries.gql` and `mutations.gql` to add a `price` field to the `Item` entity. The generated SDK should get automatically created. *Hint:* See comments in the files.
+* **Codelab:** Follow our detailed [Firebase Data Connect for iOS Codelab](https://firebase.google.com/codelabs/firebase-dataconnect-ios#0).
+* **Schema Design:** Learn more about designing schemas, queries, and mutations in the [official documentation](https://firebase.google.com/docs/data-connect/schemas-guide).
+* **Sample App:** Explore a complete sample application, [FriendlyFlix](https://github.com/firebase/data-connect-ios-sdk/tree/main/Examples/FriendlyFlix), to see more advanced usage patterns.
 * **Go to Production:** When you're ready to deploy, visit the [Firebase Console](https://console.firebase.google.com) to connect to a live CloudSQL (PostgreSQL) instance.
 
 ---
