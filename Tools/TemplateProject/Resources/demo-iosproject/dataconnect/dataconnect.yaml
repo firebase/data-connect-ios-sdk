@@ -1,0 +1,14 @@
+
+
+
+specVersion: "v1"
+serviceId: "demo-iosproject"
+location: "us-central1"
+schema:
+  source: "./schema"
+  datasource:
+    postgresql:
+      database: "demo-iosproject"
+      cloudSql:
+        instanceId: "demo-iosproject"
+connectorDirs: ["./default"]

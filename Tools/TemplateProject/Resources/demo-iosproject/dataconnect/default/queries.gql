@@ -1,0 +1,24 @@
+
+
+
+
+#  **IMPORTANT**
+#   Before deploying to server, be sure to change the auth level to something higher than PUBLIC
+
+query GetItem($id: UUID!) @auth(level: PUBLIC) {
+    item(id: $id) {
+        id
+        name
+        desc
+        #price
+    }
+}
+
+query ListItems @auth(level: PUBLIC) {
+    items {
+        id
+        name
+        #price #Uncomment this to include price in the query
+    }
+}
+

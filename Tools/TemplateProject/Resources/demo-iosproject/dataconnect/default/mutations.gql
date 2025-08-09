@@ -1,0 +1,20 @@
+
+
+
+
+#  **IMPORTANT**
+#   Before deploying to server, be sure to change the auth level to something higher than PUBLIC
+
+
+# Mutation with price field
+# mutation CreateItem($id: UUID!, $name: String!, $desc: String, $price: Float!) @auth(level: PUBLIC) {
+
+
+mutation CreateItem($id: UUID!, $name: String!, $desc: String ) @auth(level: PUBLIC) {
+    item_upsert(data: {
+        id: $id,
+        name: $name,
+        desc: $desc,
+        # price: $price
+    })
+}

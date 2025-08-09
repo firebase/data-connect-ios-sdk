@@ -14,7 +14,10 @@
 
 import Foundation
 
-import ShellExecutor
+#if os(macOS)
+  import ShellExecutor
+  import TemplateProject
+#endif
 
 // port on which FDC tools (code-server) listen
 let FDC_TOOLS_PORT: UInt = 9394
@@ -25,7 +28,9 @@ struct SetupDevEnv {
   static func main() {
     #if os(macOS)
       let currentDirectoryPath = FileManager.default.currentDirectoryPath
-      print("Attempting to start Data Connect Tools in Directory: \(currentDirectoryPath)")
+      print(
+        "ℹ️ Attempting to start Firebase Data Connect Tools in Directory: \(currentDirectoryPath)"
+      )
 
       let executor = ShellExecutor()
 
@@ -36,6 +41,19 @@ struct SetupDevEnv {
         try executor.killProcessOnPort(FDC_TOOLS_PORT)
       } catch {
         print("❌ Error killing process \(error)")
+      }
+
+      if !CommandLine.arguments.contains("--skip-template-project") {
+        do {
+          let templateManager = TemplateProjectManager()
+          try templateManager
+            .copyTemplateProject(to: URL(fileURLWithPath: FileManager.default.currentDirectoryPath))
+
+        } catch {
+          print("❌ Error copying template project: \(error)")
+        }
+      } else {
+        print("ℹ️ Skipping copying template project because --skip-template-project was provided")
       }
 
       do {
