@@ -192,7 +192,7 @@ struct ContentView: View {
 
 ## **🤝 Contributing**
 
-We'd love for you to contribute\! Please see the [Contributing](https://www.google.com/search?q=CONTRIBUTING.md) guide for more information.
+Please see the [Contributing](https://www.google.com/search?q=CONTRIBUTING.md) guide for more information.
 
 ## **📄 License**
 
