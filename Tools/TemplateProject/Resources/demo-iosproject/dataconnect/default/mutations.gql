@@ -3,7 +3,7 @@
 
 
 #  **IMPORTANT**
-#   Before deploying, be sure to change the auth level to something higher than PUBLIC
+#   Before deploying to server, be sure to change the auth level to something higher than PUBLIC
 
 
 # Mutation with price field

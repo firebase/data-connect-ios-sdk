@@ -57,8 +57,17 @@ let package = Package(
     .target(name: "ShellExecutor", dependencies: [], path: "Tools/ShellExecutor"),
     .executableTarget(
       name: "SetupDevEnv",
-      dependencies: ["ShellExecutor"],
+      dependencies: [
+        "ShellExecutor",
+        .target(name: "TemplateProject", condition: .when(platforms: [.macOS])),
+      ],
       path: "Tools/SetupDevEnv",
+
+    ),
+    .target(
+      name: "TemplateProject",
+      dependencies: [],
+      path: "Tools/TemplateProject",
       resources: [.copy("Resources")]
     ),
     .testTarget(
@@ -74,6 +83,11 @@ let package = Package(
       resources: [
         .copy("Resources/fdc-kitchensink"),
       ]
+    ),
+    .testTarget(
+      name: "ShellExecutorTests",
+      dependencies: ["ShellExecutor"],
+      path: "Tests/ShellExecutor"
     ),
   ]
 )
