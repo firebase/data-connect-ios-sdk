@@ -1,0 +1,10 @@
+
+
+connectorId: "Items"
+authMode: "PUBLIC"
+
+generate:
+   swiftSdk:
+     outputDir: "../../dataconnect-generated/"
+     package: "ItemData" #Swift Package Name for Generated SDK
+#     coreSdkPackageLocation: "/path/to/cloned/data-connect-ios-sdk"

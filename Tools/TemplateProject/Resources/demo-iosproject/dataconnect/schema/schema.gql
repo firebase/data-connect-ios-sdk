@@ -1,0 +1,8 @@
+
+
+type Item @table {
+    id: UUID!
+    name: String!
+    desc: String
+    #price: Float!
+}
