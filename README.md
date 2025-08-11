@@ -26,7 +26,7 @@ This guide will walk you through setting up a new iOS (or other Apple platform) 
 
 ### Prerequisites
 
-* Xcode 15.0 or later
+* Xcode 16.2 or later
 * iOS 15.0 or later
 * A Google account for the FDC tools
 
