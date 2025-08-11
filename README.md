@@ -75,7 +75,7 @@ In your main app file (the one with `@main`), initialize Firebase and configure 
 
 Swift
 
-```
+```swift
 // MyApp.swift
 import SwiftUI
 import Firebase
