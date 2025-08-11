@@ -183,8 +183,8 @@ struct ContentView: View {
 ## **📚 Next Steps**
 
 * **Stretch Goal:** Modify the `schema.gql`, `queries.gql` and `mutations.gql` to add a `price` field to the `Item` entity. The generated SDK should get automatically created. *Hint:* See comments in the files.
+* **Schema Design:** Try creating your own Schema and Queries. Learn more about designing schemas, queries, and mutations in the [official documentation](https://firebase.google.com/docs/data-connect/schemas-guide).
 * **Codelab:** Follow our detailed [Firebase Data Connect for iOS Codelab](https://firebase.google.com/codelabs/firebase-dataconnect-ios#0).
-* **Schema Design:** Learn more about designing schemas, queries, and mutations in the [official documentation](https://firebase.google.com/docs/data-connect/schemas-guide).
 * **Sample App:** Explore a complete sample application, [FriendlyFlix](https://github.com/firebase/data-connect-ios-sdk/tree/main/Examples/FriendlyFlix), to see more advanced usage patterns.
 * **Go to Production:** When you're ready to deploy, visit the [Firebase Console](https://console.firebase.google.com) to connect to a live CloudSQL (PostgreSQL) instance.
 
