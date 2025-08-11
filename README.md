@@ -26,7 +26,7 @@ This guide will walk you through setting up a new iOS (or other Apple platform) 
 
 ### Prerequisites
 
-* Xcode 15.0 or later
+* Xcode 16.2 or later
 * iOS 15.0 or later
 * A Google account for the FDC tools
 
@@ -49,7 +49,8 @@ git clone https://github.com/firebase/data-connect-ios-sdk.git
 The Data Connect tools run on your Mac to provide a local development emulator and code generation service.
 
 1. **Add New Scheme:** In Xcode's scheme menu, select **New Scheme...**. Choose the **`Start FDC Tools`** target and click OK.
-2. **Set Working Directory:** Edit the new `Start FDC Tools` scheme. Go to **Run \> Options** and check **"Use custom working directory"**. Set this to the root folder of your Xcode project. **Run the Tools:** Select the `Start FDC Tools` scheme with **My Mac** as the destination and click Run (▶). This will open the FDC tools in your web browser.
+2. **Set Working Directory:** Edit the new `Start FDC Tools` scheme. Go to **Run \> Options** and check **"Use custom working directory"**. Set this to the root folder of your Xcode project.
+3. **Run the Tools:** Select the `Start FDC Tools` scheme with **My Mac** as the destination and click Run (▶). This will open the FDC tools in your web browser.
 
 ### **Step 4: Generate Your Type-Safe Swift SDK**
 
@@ -72,9 +73,8 @@ The tools will generate a custom Swift package based on your database schema.
 
 In your main app file (the one with `@main`), initialize Firebase and configure Data Connect to use the local emulator.
 
-Swift
 
-```
+```swift
 // MyApp.swift
 import SwiftUI
 import Firebase
@@ -103,9 +103,7 @@ struct MyApp: App {
 
 Now you can write data to the database from any SwiftUI view.
 
-Swift
-
-```
+```swift
 // ContentView.swift
 import SwiftUI
 import FirebaseDataConnect
@@ -131,16 +129,15 @@ struct ContentView: View {
 }
 ```
 
-*Note:* You may need to enable `App Sanbbox` -> `Outgoing Connections (Client)` for your Xcode app target to run it from iPhone simulator.
+*Note:* You may need to enable `App Sandbox` -> `Outgoing Connections (Client)` for your Xcode app target to run it from iPhone simulator.
 
 
 ### **Step 7: Execute a Query (Read & Display Data)**
 
 Use a `QueryRef` to fetch data and automatically bind it to your SwiftUI view.
 
-Swift
 
-```
+```swift
 // ContentView.swift
 import SwiftUI
 import FirebaseDataConnect
