@@ -49,7 +49,8 @@ git clone https://github.com/firebase/data-connect-ios-sdk.git
 The Data Connect tools run on your Mac to provide a local development emulator and code generation service.
 
 1. **Add New Scheme:** In Xcode's scheme menu, select **New Scheme...**. Choose the **`Start FDC Tools`** target and click OK.
-2. **Set Working Directory:** Edit the new `Start FDC Tools` scheme. Go to **Run \> Options** and check **"Use custom working directory"**. Set this to the root folder of your Xcode project. **Run the Tools:** Select the `Start FDC Tools` scheme with **My Mac** as the destination and click Run (▶). This will open the FDC tools in your web browser.
+2. **Set Working Directory:** Edit the new `Start FDC Tools` scheme. Go to **Run \> Options** and check **"Use custom working directory"**. Set this to the root folder of your Xcode project.
+3. **Run the Tools:** Select the `Start FDC Tools` scheme with **My Mac** as the destination and click Run (▶). This will open the FDC tools in your web browser.
 
 ### **Step 4: Generate Your Type-Safe Swift SDK**
 
