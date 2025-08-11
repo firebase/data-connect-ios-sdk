@@ -103,9 +103,7 @@ struct MyApp: App {
 
 Now you can write data to the database from any SwiftUI view.
 
-Swift
-
-```
+```swift
 // ContentView.swift
 import SwiftUI
 import FirebaseDataConnect
