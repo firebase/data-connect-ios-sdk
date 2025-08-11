@@ -73,7 +73,6 @@ The tools will generate a custom Swift package based on your database schema.
 
 In your main app file (the one with `@main`), initialize Firebase and configure Data Connect to use the local emulator.
 
-Swift
 
 ```swift
 // MyApp.swift
