@@ -137,7 +137,7 @@ struct ContentView: View {
 Use a `QueryRef` to fetch data and automatically bind it to your SwiftUI view.
 
 
-```
+```swift
 // ContentView.swift
 import SwiftUI
 import FirebaseDataConnect
