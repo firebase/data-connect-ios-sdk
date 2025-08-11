@@ -131,7 +131,7 @@ struct ContentView: View {
 }
 ```
 
-*Note:* You may need to enable `App Sanbbox` -> `Outgoing Connections (Client)` for your Xcode app target to run it from iPhone simulator.
+*Note:* You may need to enable `App Sandbox` -> `Outgoing Connections (Client)` for your Xcode app target to run it from iPhone simulator.
 
 
 ### **Step 7: Execute a Query (Read & Display Data)**
