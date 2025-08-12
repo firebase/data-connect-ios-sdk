@@ -65,7 +65,7 @@ public struct TemplateProjectManager {
 
       // Copy the GoogleServices-Info.plist
       if let sourcePlistUrl = Bundle.module.url(
-        forResource: "GoogleService-Info",
+        forResource: "GoogleService-Info-Template",
         withExtension: "plist",
         subdirectory: "Resources/demo-iosproject"
       ) {
