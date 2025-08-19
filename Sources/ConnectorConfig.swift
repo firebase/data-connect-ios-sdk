@@ -16,14 +16,16 @@ import Foundation
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct ConnectorConfig: Hashable, Equatable, Sendable {
-  public private(set) var serviceId: String
-  public private(set) var location: String
-  public private(set) var connector: String
+  public let serviceId: String
+  public let location: String
+  public let connector: String
+  public let cacheConfig: ConnectorCacheConfig?
 
-  public init(serviceId: String, location: String, connector: String) {
+  public init(serviceId: String, location: String, connector: String, cacheConfig: ConnectorCacheConfig? = nil) {
     self.serviceId = serviceId
     self.location = location
     self.connector = connector
+    self.cacheConfig = cacheConfig
   }
 
   public func hash(into hasher: inout Hasher) {
