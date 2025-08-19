@@ -72,10 +72,20 @@ struct QueryRequest<Variable: OperationVariable>: OperationRequest, Hashable, Eq
 public protocol QueryRef: OperationRef {
   // This call starts query execution and publishes data
   func subscribe() async throws -> AnyPublisher<Result<ResultData, AnyDataConnectError>, Never>
+  
+  // Execute override for queries to include fetch policy
+  func execute(fetchPolicy: QueryFetchPolicy?) async throws -> OperationResult<ResultData>
+}
+
+extension QueryRef {
+  public func execute() async throws -> OperationResult<ResultData> {
+    try await execute(fetchPolicy: .server)
+  }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVariable>: QueryRef {
+  
   private let resultsPublisher = PassthroughSubject<Result<ResultData, AnyDataConnectError>,
     Never>()
 
@@ -101,7 +111,7 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
 
   // one-shot execution. It will fetch latest data, update any caches
   // and updates the published data var
-  public func execute() async throws -> OperationResult<ResultData> {
+  public func execute(fetchPolicy: QueryFetchPolicy? = nil) async throws -> OperationResult<ResultData> {
     let resultData = try await reloadResults()
     return OperationResult(data: resultData)
   }
@@ -187,8 +197,8 @@ public class QueryRefObservableObject<
 
   /// Executes the query and returns `ResultData`. This will also update the published `data`
   /// variable
-  public func execute() async throws -> OperationResult<ResultData> {
-    let result = try await baseRef.execute()
+  public func execute(fetchPolicy: QueryFetchPolicy? = nil) async throws -> OperationResult<ResultData> {
+    let result = try await baseRef.execute(fetchPolicy: fetchPolicy)
     return result
   }
 
@@ -263,8 +273,8 @@ public class QueryRefObservation<
 
   /// Executes the query and returns `ResultData`. This will also update the published `data`
   /// variable
-  public func execute() async throws -> OperationResult<ResultData> {
-    let result = try await baseRef.execute()
+  public func execute(fetchPolicy: QueryFetchPolicy? = nil) async throws -> OperationResult<ResultData> {
+    let result = try await baseRef.execute(fetchPolicy: fetchPolicy)
     return result
   }
 
