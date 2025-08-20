@@ -12,10 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import Foundation
+
+import FirebaseCore
+
 protocol CacheProvider: Actor {
   
-  func resultTree(queryId: String) -> String
-  func setResultTree(queryId: String, data: String)
+  var cacheConfig: CacheConfig { get }
+  
+  var cacheIdentifier: String { get }
+  
+  func resultTree(queryId: String) -> ResultTreeEntry?
+  func setResultTree(queryId: String, serverTimestamp: Timestamp, data: String)
 
   /*
   func dataObject(entityKey: String) -> BackingDataObject

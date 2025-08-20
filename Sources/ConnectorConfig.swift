@@ -19,13 +19,11 @@ public struct ConnectorConfig: Hashable, Equatable, Sendable {
   public let serviceId: String
   public let location: String
   public let connector: String
-  public let cacheConfig: ConnectorCacheConfig?
 
-  public init(serviceId: String, location: String, connector: String, cacheConfig: ConnectorCacheConfig? = nil) {
+  public init(serviceId: String, location: String, connector: String) {
     self.serviceId = serviceId
     self.location = location
     self.connector = connector
-    self.cacheConfig = cacheConfig
   }
 
   public func hash(into hasher: inout Hasher) {

@@ -25,6 +25,9 @@ public class DataConnect {
 
   private(set) var grpcClient: GrpcClient
   private var operationsManager: OperationsManager
+  
+  private(set) var cacheConfig: CacheConfig? = nil
+  private(set) var cacheProvider: CacheProvider? = nil
 
   private var callerSDKType: CallerSDKType = .base
 
@@ -52,7 +55,8 @@ public class DataConnect {
   public class func dataConnect(app: FirebaseApp? = FirebaseApp.app(),
                                 connectorConfig: ConnectorConfig,
                                 settings: DataConnectSettings = DataConnectSettings(),
-                                callerSDKType: CallerSDKType = .base)
+                                callerSDKType: CallerSDKType = .base,
+                                cacheConfig: CacheConfig? = CacheConfig())
     -> DataConnect {
     guard let app = app else {
       fatalError("No Firebase App present")
@@ -63,7 +67,8 @@ public class DataConnect {
         for: app,
         config: connectorConfig,
         settings: settings,
-        callerSDKType: callerSDKType
+        callerSDKType: callerSDKType,
+        cacheConfig: cacheConfig
       )
   }
 
@@ -88,15 +93,27 @@ public class DataConnect {
         connectorConfig: connectorConfig,
         callerSDKType: callerSDKType
       )
-
+      
+      if let ccfg = cacheConfig {
+        switch ccfg.type {
+        case .ephemeral, .persistent :
+          cacheProvider = EphemeralCacheProvider(
+            cacheConfig: ccfg,
+            cacheIdentifier: DataConnect.contructCacheIdentifier(app: app, settings: settings)
+          )
+        }
+        DataConnectLogger.debug("Create cacheProvider \(self.cacheProvider)")
+      }
+      
       operationsManager = OperationsManager(grpcClient: grpcClient)
     }
   }
+  
 
   // MARK: Init
 
   init(app: FirebaseApp, connectorConfig: ConnectorConfig, settings: DataConnectSettings,
-       callerSDKType: CallerSDKType = .base) {
+       callerSDKType: CallerSDKType = .base, cacheConfig: CacheConfig? = CacheConfig()) {
     guard app.options.projectID != nil else {
       fatalError("Firebase DataConnect requires the projectID to be set in the app options")
     }
@@ -112,7 +129,26 @@ public class DataConnect {
       connectorConfig: connectorConfig,
       callerSDKType: self.callerSDKType
     )
-    operationsManager = OperationsManager(grpcClient: grpcClient)
+    
+    self.cacheConfig = cacheConfig
+    if let cacheConfig {
+      switch cacheConfig.type {
+      case .ephemeral:
+        self.cacheProvider = EphemeralCacheProvider(
+          cacheConfig: cacheConfig,
+          cacheIdentifier: DataConnect.contructCacheIdentifier(app: app, settings: settings)
+        )
+      case .persistent:
+        // TODO: Update to SQLiteProvider once implemented
+        self.cacheProvider = EphemeralCacheProvider(
+          cacheConfig: cacheConfig,
+          cacheIdentifier: DataConnect.contructCacheIdentifier(app: app, settings: settings)
+        )
+      }
+      DataConnectLogger.debug("Initialized cacheProvider \(self.cacheProvider)")
+    }
+    
+    operationsManager = OperationsManager(grpcClient: grpcClient, cacheProvider: cacheProvider)
   }
 
   // MARK: Operations
@@ -143,6 +179,11 @@ public class DataConnect {
       let request = MutationRequest(operationName: name, variables: variables)
       return operationsManager.mutationRef(for: request, with: resultsDataType)
     }
+  }
+  
+  // Create an identifier for the cache that the Provider will use for cache scoping
+  private static func contructCacheIdentifier(app: FirebaseApp, settings: DataConnectSettings) -> String {
+    return "\(app.name)-\(settings.host)"
   }
 }
 
@@ -184,7 +225,7 @@ private class InstanceStore {
   private var instances = [InstanceKey: DataConnect]()
 
   func instance(for app: FirebaseApp, config: ConnectorConfig,
-                settings: DataConnectSettings, callerSDKType: CallerSDKType) -> DataConnect {
+                settings: DataConnectSettings, callerSDKType: CallerSDKType, cacheConfig: CacheConfig? = nil) -> DataConnect {
     accessQ.sync {
       let key = InstanceKey(app: app, config: config)
       if let inst = instances[key] {
@@ -194,7 +235,8 @@ private class InstanceStore {
           app: app,
           connectorConfig: config,
           settings: settings,
-          callerSDKType: callerSDKType
+          callerSDKType: callerSDKType,
+          cacheConfig: cacheConfig
         )
         instances[key] = dc
         return dc

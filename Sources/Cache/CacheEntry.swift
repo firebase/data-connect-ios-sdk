@@ -12,16 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// Firebase Data Connect cache is configured per Connector.
-/// Specifies the cache configuration for Firebase Data Connect at a connector level 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public struct ConnectorCacheConfig: Sendable {
-  public private(set) var type: CacheProviderType = .persistent // default provider is persistent type
+import Foundation
 
-  #if os(watchOS)
-  public private(set) var maxSize: Int = 40_000_000 // 40 MB
-  #else
-  public private(set) var maxSize: Int = 100_000_000 // 100 MB
-  #endif
+import FirebaseCore
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct ResultTreeEntry {
+  let serverTimestamp: Timestamp // Server response timestamp
+  let cachedAt: Date // Local time when the entry was cached / updated
+  let data: String // tree data
+  
+  func isStale(_ ttl: TimeInterval) -> Bool {
+    let now = Date()
+    return now.timeIntervalSince(cachedAt) > ttl
+  }
 }
 

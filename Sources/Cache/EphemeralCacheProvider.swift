@@ -12,17 +12,39 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import Foundation
 
-actor EphemeralCacheProvider: CacheProvider {
+import FirebaseCore
+
+actor EphemeralCacheProvider: CacheProvider, @preconcurrency CustomStringConvertible {
   
-  private var resultTreeCache: [String: String] = [:]
+  let cacheConfig: CacheConfig
   
-  func resultTree(queryId: String) -> String {
-    return resultTreeCache[queryId] ?? ""
+  let cacheIdentifier: String
+  
+  init(cacheConfig: CacheConfig, cacheIdentifier: String) {
+    self.cacheConfig = cacheConfig
+    self.cacheIdentifier = cacheIdentifier
+    
+    DataConnectLogger.debug("Initialized \(Self.Type.self) with config \(cacheConfig)")
+  }
+  
+  private var resultTreeCache: [String: ResultTreeEntry] = [:]
+  
+  func setResultTree(queryId: String, serverTimestamp: Timestamp, data: String) {
+    resultTreeCache[queryId] =  .init(
+      serverTimestamp: serverTimestamp,
+      cachedAt: Date(),
+      data: data
+    )
   }
 
-  func setResultTree(queryId: String, data: String) {
-    resultTreeCache[queryId] = data
+  func resultTree(queryId: String) -> ResultTreeEntry? {
+    return resultTreeCache[queryId]
   }
   
+  var description: String {
+    return "EphemeralCacheProvider - \(cacheIdentifier)"
+  }
+
 }

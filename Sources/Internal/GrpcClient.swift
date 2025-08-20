@@ -174,7 +174,7 @@ actor GrpcClient: CustomStringConvertible {
             response: failureResponse
           )
         } else {
-          return OperationResult(data: decodedResults)
+          return OperationResult(data: decodedResults, source: .server)
         }
 
       } catch let operationErr as DataConnectOperationError {
@@ -256,7 +256,7 @@ actor GrpcClient: CustomStringConvertible {
             response: failureResponse
           )
         } else {
-          return OperationResult(data: decodedResults)
+          return OperationResult(data: decodedResults, source: .server)
         }
 
       } catch let operationErr as DataConnectOperationError {

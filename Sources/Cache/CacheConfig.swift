@@ -12,19 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-struct StubDataObject {
-  var backingData: BackingDataObject?
-  var references: [String: AnyCodableValue] = [:]
+/// Firebase Data Connect cache is configured per Connector.
+/// Specifies the cache configuration for Firebase Data Connect at a connector level 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public struct CacheConfig: Sendable {
+  
+  public let type: CacheProviderType // default provider is persistent type
+  public let maxSize: Int
+  
+  public init(type: CacheProviderType, maxSize: Int) {
+    self.type = type
+    self.maxSize = maxSize
+  }
+  
+  public init() {
+    type = .persistent
+    #if os(watchOS)
+    maxSize = 40_000_000 
+    #else
+    maxSize = 100_000_000 
+    #endif
+  }
+  
 }
 
-extension StubDataObject: Decodable {
-  init (from decoder: Decoder) throws {
-    
-  }
-}
-
-extension StubDataObject: Encodable {
-  func encode(to encoder: Encoder) throws {
-    
-  }
-}
