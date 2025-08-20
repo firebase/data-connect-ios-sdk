@@ -17,7 +17,9 @@ import Foundation
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class OperationsManager {
   private var grpcClient: GrpcClient
-
+  
+  private var cacheProvider: CacheProvider?
+ 
   private let queryRefAccessQueue = DispatchQueue(
     label: "firebase.dataconnect.queryRef.AccessQ",
     autoreleaseFrequency: .workItem
@@ -30,8 +32,9 @@ class OperationsManager {
   )
   private var mutationRefs = [AnyHashable: any OperationRef]()
 
-  init(grpcClient: GrpcClient) {
+  init(grpcClient: GrpcClient, cacheProvider: CacheProvider? = nil) {
     self.grpcClient = grpcClient
+    self.cacheProvider = cacheProvider
   }
 
   func queryRef<ResultDataType: Decodable & Sendable,

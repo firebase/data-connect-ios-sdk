@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-actor BackingDataObject: Codable {
+actor BackingDataObject {
   
   let guid: String // globally unique id received from server
   

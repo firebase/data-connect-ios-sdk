@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import Foundation
+import CryptoKit
 
 @preconcurrency import Combine
 import Observation
@@ -35,6 +36,32 @@ public enum ResultsPublisherType {
 struct QueryRequest<Variable: OperationVariable>: OperationRequest, Hashable, Equatable {
   private(set) var operationName: String
   private(set) var variables: Variable?
+  
+  
+  // Computed requestId
+  lazy var requestId: String = {
+    var keyIdData = Data()
+    if let nameData = "graphql".data(using: .utf8) {
+      keyIdData.append(nameData)
+    }
+    
+    if let variables {
+      let encoder = JSONEncoder()
+      encoder.outputFormatting = .sortedKeys
+      do {
+        let jsonData = try encoder.encode(variables)
+        keyIdData.append(jsonData)
+      } catch {
+        DataConnectLogger.logger
+          .warning("Error encoding variables to compute request identifier: \(error)")
+      }
+    }
+    
+    let hashDigest = SHA256.hash(data: keyIdData)
+    let hashString = hashDigest.compactMap{ String(format: "%02x", $0) }.joined()
+    
+    return hashString
+  }()
 
   init(operationName: String, variables: Variable? = nil) {
     self.operationName = operationName
@@ -47,6 +74,33 @@ struct QueryRequest<Variable: OperationVariable>: OperationRequest, Hashable, Eq
     if let variables {
       hasher.combine(variables)
     }
+  }
+  
+  private func computeRequestIdentifier() -> String {
+    
+    var keyIdData = Data()
+    if let nameData = "graphql".data(using: .utf8) {
+      keyIdData.append(nameData)
+    }
+    
+    if let variables {
+      let encoder = JSONEncoder()
+      encoder.outputFormatting = .sortedKeys
+      do {
+        let jsonData = try encoder.encode(variables)
+        keyIdData.append(jsonData)
+      } catch {
+        DataConnectLogger.logger
+          .warning("Error encoding variables to compute request identifier: \(error)")
+      }
+    }
+    
+    
+    let hashDigest = SHA256.hash(data: keyIdData)
+    let hashString = hashDigest.compactMap{ String(format: "%02x", $0) }.joined()
+    
+    return hashString
+    
   }
 
   static func == (lhs: QueryRequest, rhs: QueryRequest) -> Bool {
@@ -89,13 +143,18 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
   private let resultsPublisher = PassthroughSubject<Result<ResultData, AnyDataConnectError>,
     Never>()
 
-  private let request: QueryRequest<Variable>
+  private var request: QueryRequest<Variable>
 
   private let grpcClient: GrpcClient
+  
+  private let cacheProvider: CacheProvider?
+  
+  private var ttl: TimeInterval? = 10.0 // 
 
-  init(request: QueryRequest<Variable>, grpcClient: GrpcClient) {
+  init(request: QueryRequest<Variable>, grpcClient: GrpcClient, cacheProvider: CacheProvider? = nil) {
     self.request = request
     self.grpcClient = grpcClient
+    self.cacheProvider = cacheProvider
   }
 
   // This call starts query execution and publishes data to data var
@@ -103,7 +162,7 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
   public func subscribe() -> AnyPublisher<Result<ResultData, AnyDataConnectError>, Never> {
     Task {
       do {
-        _ = try await reloadResults()
+        _ = try await fetchServerResults()
       } catch {}
     }
     return resultsPublisher.eraseToAnyPublisher()
@@ -112,17 +171,45 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
   // one-shot execution. It will fetch latest data, update any caches
   // and updates the published data var
   public func execute(fetchPolicy: QueryFetchPolicy? = nil) async throws -> OperationResult<ResultData> {
-    let resultData = try await reloadResults()
-    return OperationResult(data: resultData)
+    
+    switch fetchPolicy ?? .server {
+    case .defaultPolicy:
+      let cachedResult = try await fetchCachedResults(allowStale: false)
+      if cachedResult.data != nil {
+        return cachedResult
+      } else {
+        let serverResults = try await fetchServerResults()
+        return serverResults
+      }
+    case .cache:
+      let cachedResult = try await fetchCachedResults(allowStale: true)
+      return cachedResult
+    case .server:
+      let serverResults = try await fetchServerResults()
+      return serverResults
+    }
   }
 
-  private func reloadResults() async throws -> ResultData {
+  private func fetchServerResults() async throws -> OperationResult<ResultData> {
     let results = try await grpcClient.executeQuery(
       request: request,
       resultType: ResultData.self
     )
-    await updateData(data: results.data)
-    return results.data
+    if let data = results.data {
+      await updateData(data: data)
+    }
+    
+    return results
+  }
+  
+  private func fetchCachedResults(allowStale: Bool) async throws -> OperationResult<ResultData> {
+    guard let cacheProvider else {
+      DataConnectLogger.logger.info("No cache provider configured")
+      return OperationResult(data: nil, source: .cache(stale: false))
+    }
+    
+    return OperationResult(data: nil, source: .cache(stale: false))
+   
   }
 
   func updateData(data: ResultData) async {
