@@ -33,7 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Xcode
-        run: sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
+        run: sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer
       - name: Generate Swift Package.resolved
         id: swift_package_resolve
         run: |
@@ -58,7 +58,7 @@ jobs:
         os: [macos-15]
         # GitHub actions' runners do not include visionOS. https://github.com/actions/runner-images/issues/10559
         target: [iOS, macOS, tvOS, catalyst]
-        xcode: [Xcode_16.2]
+        xcode: [Xcode_16.4]
     runs-on: ${{ matrix.os }}
     env:
       FIREBASECI_USE_LATEST_GOOGLEAPPMEASUREMENT: 1
