@@ -24,7 +24,7 @@ jobs:
         run: echo '::set-output name=WAS_CHANGED::'$(test -n "$(git log --format=%H --since='24 hours ago')" && echo 'true' || echo 'false')
 
   spm-package-resolved:
-    runs-on: macos-14
+    runs-on: macos-15
     outputs:
       cache_key: ${{ steps.generate_cache_key.outputs.cache_key }}
     env:
