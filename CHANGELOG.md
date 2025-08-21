@@ -1,3 +1,6 @@
+# 11.10.0
+- [added] Starting FDC Tools from Xcode sets up a template Firebase Data Connect project in the Xcode project folder. See the `README.md` for an updated `Getting Started` section.
+
 # 11.9.0
 - [added] Start Firebase Data Connect Schema and Query design tools from Xcode. See the `README.md` for more information.
 
