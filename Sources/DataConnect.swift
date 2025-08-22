@@ -105,7 +105,10 @@ public class DataConnect {
         DataConnectLogger.debug("Create cacheProvider \(self.cacheProvider)")
       }
       
-      operationsManager = OperationsManager(grpcClient: grpcClient)
+      operationsManager = OperationsManager(
+        grpcClient: grpcClient,
+        cacheProvider: self.cacheProvider
+      )
     }
   }
   

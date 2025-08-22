@@ -53,7 +53,8 @@ class OperationsManager {
           let obsRef = QueryRefObservation<ResultDataType, VariableType>(
             request: request,
             dataType: resultType,
-            grpcClient: self.grpcClient
+            grpcClient: self.grpcClient,
+            cacheProvider: self.cacheProvider
           ) as (any ObservableQueryRef)
           queryRefs[AnyHashable(request)] = obsRef
           return obsRef
@@ -63,7 +64,8 @@ class OperationsManager {
       let refObsObject = QueryRefObservableObject<ResultDataType, VariableType>(
         request: request,
         dataType: resultType,
-        grpcClient: grpcClient
+        grpcClient: grpcClient,
+        cacheProvider: self.cacheProvider
       ) as (any ObservableQueryRef)
       queryRefs[AnyHashable(request)] = refObsObject
       return refObsObject
