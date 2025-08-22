@@ -15,6 +15,8 @@
 import Foundation
 import CryptoKit
 
+import Firebase
+
 @preconcurrency import Combine
 import Observation
 
@@ -75,33 +77,6 @@ struct QueryRequest<Variable: OperationVariable>: OperationRequest, Hashable, Eq
       hasher.combine(variables)
     }
   }
-  
-  private func computeRequestIdentifier() -> String {
-    
-    var keyIdData = Data()
-    if let nameData = "graphql".data(using: .utf8) {
-      keyIdData.append(nameData)
-    }
-    
-    if let variables {
-      let encoder = JSONEncoder()
-      encoder.outputFormatting = .sortedKeys
-      do {
-        let jsonData = try encoder.encode(variables)
-        keyIdData.append(jsonData)
-      } catch {
-        DataConnectLogger.logger
-          .warning("Error encoding variables to compute request identifier: \(error)")
-      }
-    }
-    
-    
-    let hashDigest = SHA256.hash(data: keyIdData)
-    let hashString = hashDigest.compactMap{ String(format: "%02x", $0) }.joined()
-    
-    return hashString
-    
-  }
 
   static func == (lhs: QueryRequest, rhs: QueryRequest) -> Bool {
     guard lhs.operationName == rhs.operationName else {
@@ -128,12 +103,12 @@ public protocol QueryRef: OperationRef {
   func subscribe() async throws -> AnyPublisher<Result<ResultData, AnyDataConnectError>, Never>
   
   // Execute override for queries to include fetch policy
-  func execute(fetchPolicy: QueryFetchPolicy?) async throws -> OperationResult<ResultData>
+  func execute(fetchPolicy: QueryFetchPolicy) async throws -> OperationResult<ResultData>
 }
 
 extension QueryRef {
   public func execute() async throws -> OperationResult<ResultData> {
-    try await execute(fetchPolicy: .server)
+    try await execute(fetchPolicy: .defaultPolicy)
   }
 }
 
@@ -160,26 +135,37 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
   // This call starts query execution and publishes data to data var
   // In v0, it simply reloads query results
   public func subscribe() -> AnyPublisher<Result<ResultData, AnyDataConnectError>, Never> {
+    /*
     Task {
       do {
-        _ = try await fetchServerResults()
+        //_ = try await fetchServerResults()
       } catch {}
-    }
+    }*/
     return resultsPublisher.eraseToAnyPublisher()
   }
 
   // one-shot execution. It will fetch latest data, update any caches
   // and updates the published data var
-  public func execute(fetchPolicy: QueryFetchPolicy? = nil) async throws -> OperationResult<ResultData> {
+  public func execute(fetchPolicy: QueryFetchPolicy = .defaultPolicy) async throws -> OperationResult<ResultData> {
     
-    switch fetchPolicy ?? .server {
+    switch fetchPolicy {
     case .defaultPolicy:
       let cachedResult = try await fetchCachedResults(allowStale: false)
       if cachedResult.data != nil {
         return cachedResult
       } else {
-        let serverResults = try await fetchServerResults()
-        return serverResults
+        do {
+          let serverResults = try await fetchServerResults()
+          return serverResults
+        } catch let dcerr as DataConnectOperationError {
+          // TODO: Catch network specific error looking for deadline exceeded
+          /*
+           if dcErr is deadlineExceeded {
+            try await fetchCachedResults(allowStale: true)
+           } else rethrow
+           */
+          throw dcerr
+        }
       }
     case .cache:
       let cachedResult = try await fetchCachedResults(allowStale: true)
@@ -195,17 +181,46 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
       request: request,
       resultType: ResultData.self
     )
-    if let data = results.data {
-      await updateData(data: data)
+    
+    do {
+      if let cacheProvider {
+        // TODO: Normalize data before saving to cache
+        // TODO: Use server timestamp when available
+        await cacheProvider
+          .setResultTree(
+            queryId: self.request.requestId,
+            serverTimestamp: results.timestamp,
+            data: results.results
+          )
+      }
     }
     
-    return results
+    print("ResultData type \(ResultData.self)")
+    print("Returned JSON \(results.results)")
+    let decoder = JSONDecoder()
+    let decodedData = try decoder.decode(ResultData.self, from: results.results.data(using: .utf8)!)
+    
+    // send to subscribers
+    await updateData(data: decodedData)
+    
+    return OperationResult(data: decodedData, source: .server)
   }
   
   private func fetchCachedResults(allowStale: Bool) async throws -> OperationResult<ResultData> {
-    guard let cacheProvider else {
-      DataConnectLogger.logger.info("No cache provider configured")
+    guard let cacheProvider,
+          let ttl,
+          ttl > 0 else {
+      DataConnectLogger.info("No cache provider configured or ttl is not set \(ttl)")
       return OperationResult(data: nil, source: .cache(stale: false))
+    }
+    
+    if let cacheEntry = await cacheProvider.resultTree(queryId: self.request.requestId),
+       (cacheEntry.isStale(ttl) && allowStale) || !cacheEntry.isStale(ttl)
+    {
+      let stale = cacheEntry.isStale(ttl)
+      let decoder = JSONDecoder()
+      let decodedData = try decoder.decode(ResultData.self, from: cacheEntry.data.data(using: .utf8)!)
+      return OperationResult(data: decodedData, source: .cache(stale: stale))
     }
     
     return OperationResult(data: nil, source: .cache(stale: false))
@@ -249,9 +264,18 @@ public class QueryRefObservableObject<
 
   private var resultsCancellable: AnyCancellable?
 
-  init(request: QueryRequest<Variable>, dataType: ResultData.Type, grpcClient: GrpcClient) {
+  init(
+    request: QueryRequest<Variable>,
+    dataType: ResultData.Type,
+    grpcClient: GrpcClient,
+    cacheProvider: CacheProvider?
+  ) {
     self.request = request
-    baseRef = GenericQueryRef(request: request, grpcClient: grpcClient)
+    baseRef = GenericQueryRef(
+      request: request,
+      grpcClient: grpcClient,
+      cacheProvider: cacheProvider
+    )
     setupSubscription()
   }
 
@@ -284,7 +308,7 @@ public class QueryRefObservableObject<
 
   /// Executes the query and returns `ResultData`. This will also update the published `data`
   /// variable
-  public func execute(fetchPolicy: QueryFetchPolicy? = nil) async throws -> OperationResult<ResultData> {
+  public func execute(fetchPolicy: QueryFetchPolicy = .defaultPolicy) async throws -> OperationResult<ResultData> {
     let result = try await baseRef.execute(fetchPolicy: fetchPolicy)
     return result
   }
@@ -325,9 +349,13 @@ public class QueryRefObservation<
   @ObservationIgnored
   private var resultsCancellable: AnyCancellable?
 
-  init(request: QueryRequest<Variable>, dataType: ResultData.Type, grpcClient: GrpcClient) {
+  init(request: QueryRequest<Variable>, dataType: ResultData.Type, grpcClient: GrpcClient, cacheProvider: CacheProvider?) {
     self.request = request
-    baseRef = GenericQueryRef(request: request, grpcClient: grpcClient)
+    baseRef = GenericQueryRef(
+      request: request,
+      grpcClient: grpcClient,
+      cacheProvider: cacheProvider
+    )
     setupSubscription()
   }
 
@@ -360,7 +388,7 @@ public class QueryRefObservation<
 
   /// Executes the query and returns `ResultData`. This will also update the published `data`
   /// variable
-  public func execute(fetchPolicy: QueryFetchPolicy? = nil) async throws -> OperationResult<ResultData> {
+  public func execute(fetchPolicy: QueryFetchPolicy = .defaultPolicy) async throws -> OperationResult<ResultData> {
     let result = try await baseRef.execute(fetchPolicy: fetchPolicy)
     return result
   }

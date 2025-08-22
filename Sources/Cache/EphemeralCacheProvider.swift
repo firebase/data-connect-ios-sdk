@@ -37,6 +37,7 @@ actor EphemeralCacheProvider: CacheProvider, @preconcurrency CustomStringConvert
       cachedAt: Date(),
       data: data
     )
+    DataConnectLogger.debug("Update resultTreeEntry for \(queryId)")
   }
 
   func resultTree(queryId: String) -> ResultTreeEntry? {
