@@ -136,7 +136,7 @@ actor GrpcClient: CustomStringConvertible {
       throw DataConnectInitError.grpcNotConfigured()
     }
 
-    let codec = Codec()
+    let codec = ProtoCodec()
     let grpcRequest = try codec.createQueryRequestProto(
       connectorName: connectorName,
       request: request
@@ -224,7 +224,7 @@ actor GrpcClient: CustomStringConvertible {
       throw DataConnectInitError.grpcNotConfigured()
     }
 
-    let codec = Codec()
+    let codec = ProtoCodec()
     let grpcRequest = try codec.createMutationRequestProto(
       connectorName: connectorName,
       request: request

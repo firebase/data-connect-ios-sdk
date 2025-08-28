@@ -12,7 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-actor BackingDataObject {
+struct ScalarField {
+  let name: String
+  let value: AnyCodableValue
+}
+
+class BackingDataObject:  CustomStringConvertible {
   
   let guid: String // globally unique id received from server
   
@@ -20,18 +25,54 @@ actor BackingDataObject {
     self.guid = guid
   }
   
-  private var serverValues: [String: AnyCodableValue] = [:]
-  
-  func updateServerValues(_ newValues: [String: AnyCodableValue]) {
-    self.serverValues = newValues
-  }
+  private var serverValues = SynchronizedDictionary<String, AnyCodableValue>()
   
   func updateServerValue(_ key: String, _ newValue: AnyCodableValue) {
     self.serverValues[key] = newValue
+    DataConnectLogger.debug("BDO updateServerValue: \(key) \(newValue) for \(guid)")
   }
   
   func value(forKey key: String) -> AnyCodableValue? {
     return self.serverValues[key]
   }
   
+  var description: String {
+    return """
+      BackingDataObject:
+        globalID: \(guid)
+        serverValues:
+          \(serverValues.rawCopy())
+      """
+  }
+  
 }
+
+extension BackingDataObject: Encodable {
+  
+  func encodableData() throws -> [String: AnyCodableValue] {
+    var encodingValues = [String: AnyCodableValue]()
+    encodingValues[GlobalIDKey] = .string(guid)
+    encodingValues.merge(serverValues.rawCopy()) { (_, new) in new }
+    return encodingValues
+  }
+  
+  public func encode(to encoder: Encoder) throws {
+    var container = encoder.singleValueContainer()
+    try container.encode(encodableData())
+    // once we have localValues, we will need to merge between the two dicts and encode
+  }
+}
+
+extension BackingDataObject: Equatable {
+  static func == (lhs: BackingDataObject, rhs: BackingDataObject) -> Bool {
+    return lhs.guid == rhs.guid && lhs.serverValues.rawCopy() == rhs.serverValues.rawCopy()
+  }
+}
+
+extension BackingDataObject: CustomDebugStringConvertible {
+  var debugDescription: String {
+    return description
+  }
+}
+
+

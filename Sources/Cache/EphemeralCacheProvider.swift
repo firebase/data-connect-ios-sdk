@@ -16,10 +16,9 @@ import Foundation
 
 import FirebaseCore
 
-actor EphemeralCacheProvider: CacheProvider, @preconcurrency CustomStringConvertible {
+class EphemeralCacheProvider: CacheProvider, CustomStringConvertible {
   
   let cacheConfig: CacheConfig
-  
   let cacheIdentifier: String
   
   init(cacheConfig: CacheConfig, cacheIdentifier: String) {
@@ -29,20 +28,40 @@ actor EphemeralCacheProvider: CacheProvider, @preconcurrency CustomStringConvert
     DataConnectLogger.debug("Initialized \(Self.Type.self) with config \(cacheConfig)")
   }
   
-  private var resultTreeCache: [String: ResultTreeEntry] = [:]
+  // MARK: ResultTree
+  private var resultTreeCache = SynchronizedDictionary<String, ResultTreeEntry>()
   
-  func setResultTree(queryId: String, serverTimestamp: Timestamp, data: String) {
-    resultTreeCache[queryId] =  .init(
-      serverTimestamp: serverTimestamp,
-      cachedAt: Date(),
-      data: data
-    )
+  func setResultTree(
+    queryId: String,
+    tree: ResultTreeEntry
+  ) {
+    resultTreeCache[queryId] =  tree
     DataConnectLogger.debug("Update resultTreeEntry for \(queryId)")
   }
 
   func resultTree(queryId: String) -> ResultTreeEntry? {
     return resultTreeCache[queryId]
   }
+  
+  // MARK: BackingDataObjects
+  private var backingDataObjects = SynchronizedDictionary<String, BackingDataObject>()
+  
+  func dataObject(entityGuid: String) -> BackingDataObject {
+    guard let dataObject = backingDataObjects[entityGuid] else {
+      let bdo = BackingDataObject(guid: entityGuid)
+      backingDataObjects[entityGuid] = bdo
+      DataConnectLogger.debug("Created BDO for \(entityGuid)")
+      return bdo
+    }
+    
+    DataConnectLogger.debug("Returning existing BDO for \(entityGuid)")
+    return dataObject
+  }
+
+  func setObject(entityGuid: String, object: BackingDataObject) {
+    backingDataObjects[entityGuid] = object
+  }
+
   
   var description: String {
     return "EphemeralCacheProvider - \(cacheIdentifier)"
