@@ -43,7 +43,7 @@ struct QueryRequest<Variable: OperationVariable>: OperationRequest, Hashable, Eq
   // Computed requestId
   lazy var requestId: String = {
     var keyIdData = Data()
-    if let nameData = "graphql".data(using: .utf8) {
+    if let nameData = operationName.data(using: .utf8) {
       keyIdData.append(nameData)
     }
     
@@ -185,12 +185,24 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
     do {
       if let cacheProvider {
         // TODO: Normalize data before saving to cache
+        let processor = ResultTreeProcessor()
+        let (dehydratedTree, sdo) = try processor.dehydrateResults(
+          results.results,
+          cacheProvider: cacheProvider
+        )
+        //print("Got SDO \(sdo)")
+        
         // TODO: Use server timestamp when available
-        await cacheProvider
+        cacheProvider
           .setResultTree(
             queryId: self.request.requestId,
-            serverTimestamp: results.timestamp,
-            data: results.results
+            tree: .init(
+              serverTimestamp: results.timestamp,
+              cachedAt: Date(),
+              ttl: results.ttl,
+              data: dehydratedTree,
+              rootObject: sdo
+            )
           )
       }
     }
@@ -214,17 +226,27 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
       return OperationResult(data: nil, source: .cache(stale: false))
     }
     
-    if let cacheEntry = await cacheProvider.resultTree(queryId: self.request.requestId),
+    if let cacheEntry = cacheProvider.resultTree(queryId: self.request.requestId),
        (cacheEntry.isStale(ttl) && allowStale) || !cacheEntry.isStale(ttl)
     {
       let stale = cacheEntry.isStale(ttl)
+      
+      let resultTreeProcessor = ResultTreeProcessor()
+      let (hydratedTree, _) = try resultTreeProcessor.hydrateResults(
+        cacheEntry.data,
+        cacheProvider: cacheProvider
+      )
+      
       let decoder = JSONDecoder()
-      let decodedData = try decoder.decode(ResultData.self, from: cacheEntry.data.data(using: .utf8)!)
+      let decodedData = try decoder.decode(ResultData.self, from: hydratedTree.data(using: .utf8)!)
+      
+      // send to subscribers
+      await updateData(data: decodedData)
+      
       return OperationResult(data: decodedData, source: .cache(stale: stale))
     }
     
     return OperationResult(data: nil, source: .cache(stale: false))
-   
   }
 
   func updateData(data: ResultData) async {

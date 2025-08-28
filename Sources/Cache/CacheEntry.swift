@@ -20,7 +20,9 @@ import FirebaseCore
 struct ResultTreeEntry {
   let serverTimestamp: Timestamp // Server response timestamp
   let cachedAt: Date // Local time when the entry was cached / updated
+  let ttl: TimeInterval // interval during which query results are considered fresh
   let data: String // tree data
+  var rootObject: StubDataObject?
   
   func isStale(_ ttl: TimeInterval) -> Bool {
     let now = Date()

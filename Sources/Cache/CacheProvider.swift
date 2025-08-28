@@ -16,19 +16,25 @@ import Foundation
 
 import FirebaseCore
 
-protocol CacheProvider: Actor {
+// FDC field name that identifies a GlobalID
+let GlobalIDKey: String = "cacheId"
+
+let CacheProviderUserInfoKey = CodingUserInfoKey(rawValue: "fdc_cache_provider")!
+
+protocol CacheProvider {
   
   var cacheConfig: CacheConfig { get }
   
   var cacheIdentifier: String { get }
   
   func resultTree(queryId: String) -> ResultTreeEntry?
-  func setResultTree(queryId: String, serverTimestamp: Timestamp, data: String)
+  func setResultTree(queryId: String, tree: ResultTreeEntry)
+
+  
+  func dataObject(entityGuid: String) -> BackingDataObject
+  func setObject(entityGuid: String, object: BackingDataObject)
 
   /*
-  func dataObject(entityKey: String) -> BackingDataObject
-  func setObject(entityKey: String, object: BackingDataObject)
-
   func size() -> Int
    */
 }
