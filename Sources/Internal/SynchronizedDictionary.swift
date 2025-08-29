@@ -34,14 +34,10 @@ class SynchronizedDictionary<Key: Hashable, Value> {
     return queue.sync { self.dictionary }
   }
   
-  
-}
-
-extension SynchronizedDictionary: Encodable where Value: Encodable, Key: Encodable {
-  func encode(to encoder: any Encoder) throws {
-    var container = encoder.singleValueContainer()
-    try queue.sync {
-      try container.encode(dictionary)
+  func updateValues(_ values: [Key: Value]) {
+    queue.async(flags: .barrier) {
+      self.dictionary.merge(values) { (_, new) in new }
     }
   }
+  
 }

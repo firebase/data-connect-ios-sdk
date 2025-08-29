@@ -29,24 +29,24 @@ class EphemeralCacheProvider: CacheProvider, CustomStringConvertible {
   }
   
   // MARK: ResultTree
-  private var resultTreeCache = SynchronizedDictionary<String, ResultTreeEntry>()
+  private var resultTreeCache = SynchronizedDictionary<String, ResultTree>()
   
   func setResultTree(
     queryId: String,
-    tree: ResultTreeEntry
+    tree: ResultTree
   ) {
     resultTreeCache[queryId] =  tree
     DataConnectLogger.debug("Update resultTreeEntry for \(queryId)")
   }
 
-  func resultTree(queryId: String) -> ResultTreeEntry? {
+  func resultTree(queryId: String) -> ResultTree? {
     return resultTreeCache[queryId]
   }
   
   // MARK: BackingDataObjects
   private var backingDataObjects = SynchronizedDictionary<String, BackingDataObject>()
   
-  func dataObject(entityGuid: String) -> BackingDataObject {
+  func backingData(_ entityGuid: String) -> BackingDataObject {
     guard let dataObject = backingDataObjects[entityGuid] else {
       let bdo = BackingDataObject(guid: entityGuid)
       backingDataObjects[entityGuid] = bdo
@@ -58,8 +58,8 @@ class EphemeralCacheProvider: CacheProvider, CustomStringConvertible {
     return dataObject
   }
 
-  func setObject(entityGuid: String, object: BackingDataObject) {
-    backingDataObjects[entityGuid] = object
+  func updateBackingData(_ object: BackingDataObject) {
+    backingDataObjects[object.guid] = object
   }
 
   

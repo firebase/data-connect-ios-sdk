@@ -1,16 +1,3 @@
-// Copyright 2025 Google LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
 
 import Foundation
 import CryptoKit
@@ -34,73 +21,11 @@ public enum ResultsPublisherType {
   case observableMacro
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct QueryRequest<Variable: OperationVariable>: OperationRequest, Hashable, Equatable {
-  private(set) var operationName: String
-  private(set) var variables: Variable?
-  
-  
-  // Computed requestId
-  lazy var requestId: String = {
-    var keyIdData = Data()
-    if let nameData = operationName.data(using: .utf8) {
-      keyIdData.append(nameData)
-    }
-    
-    if let variables {
-      let encoder = JSONEncoder()
-      encoder.outputFormatting = .sortedKeys
-      do {
-        let jsonData = try encoder.encode(variables)
-        keyIdData.append(jsonData)
-      } catch {
-        DataConnectLogger.logger
-          .warning("Error encoding variables to compute request identifier: \(error)")
-      }
-    }
-    
-    let hashDigest = SHA256.hash(data: keyIdData)
-    let hashString = hashDigest.compactMap{ String(format: "%02x", $0) }.joined()
-    
-    return hashString
-  }()
-
-  init(operationName: String, variables: Variable? = nil) {
-    self.operationName = operationName
-    self.variables = variables
-  }
-
-  // Hashable and Equatable implementation
-  func hash(into hasher: inout Hasher) {
-    hasher.combine(operationName)
-    if let variables {
-      hasher.combine(variables)
-    }
-  }
-
-  static func == (lhs: QueryRequest, rhs: QueryRequest) -> Bool {
-    guard lhs.operationName == rhs.operationName else {
-      return false
-    }
-
-    if lhs.variables == nil && rhs.variables == nil {
-      return true
-    }
-
-    guard let lhsVar = lhs.variables,
-          let rhsVar = rhs.variables,
-          lhsVar == rhsVar else {
-      return false
-    }
-
-    return true
-  }
-}
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public protocol QueryRef: OperationRef {
   // This call starts query execution and publishes data
-  func subscribe() async throws -> AnyPublisher<Result<ResultData, AnyDataConnectError>, Never>
+  func subscribe() async throws -> AnyPublisher<Result<OperationResult<ResultData>, AnyDataConnectError>, Never>
   
   // Execute override for queries to include fetch policy
   func execute(fetchPolicy: QueryFetchPolicy) async throws -> OperationResult<ResultData>
@@ -115,7 +40,7 @@ extension QueryRef {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVariable>: QueryRef {
   
-  private let resultsPublisher = PassthroughSubject<Result<ResultData, AnyDataConnectError>,
+  private let resultsPublisher = PassthroughSubject<Result<OperationResult<ResultData>, AnyDataConnectError>,
     Never>()
 
   private var request: QueryRequest<Variable>
@@ -134,13 +59,14 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
 
   // This call starts query execution and publishes data to data var
   // In v0, it simply reloads query results
-  public func subscribe() -> AnyPublisher<Result<ResultData, AnyDataConnectError>, Never> {
-    /*
+  public func subscribe() -> AnyPublisher<Result<OperationResult<ResultData>, AnyDataConnectError>, Never> {
     Task {
       do {
-        //_ = try await fetchServerResults()
+        _ = try await fetchCachedResults(allowStale: true)
+        try await Task.sleep(nanoseconds: 3000_000_000) //3secs
+        _ = try await fetchServerResults()
       } catch {}
-    }*/
+    }
     return resultsPublisher.eraseToAnyPublisher()
   }
 
@@ -190,7 +116,6 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
           results.results,
           cacheProvider: cacheProvider
         )
-        //print("Got SDO \(sdo)")
         
         // TODO: Use server timestamp when available
         cacheProvider
@@ -212,10 +137,11 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
     let decoder = JSONDecoder()
     let decodedData = try decoder.decode(ResultData.self, from: results.results.data(using: .utf8)!)
     
+    let result = OperationResult(data: decodedData, source: .server)
     // send to subscribers
-    await updateData(data: decodedData)
+    await updateData(data: result)
     
-    return OperationResult(data: decodedData, source: .server)
+    return result
   }
   
   private func fetchCachedResults(allowStale: Bool) async throws -> OperationResult<ResultData> {
@@ -240,16 +166,17 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
       let decoder = JSONDecoder()
       let decodedData = try decoder.decode(ResultData.self, from: hydratedTree.data(using: .utf8)!)
       
+      let result = OperationResult(data: decodedData, source: .cache(stale: stale))
       // send to subscribers
-      await updateData(data: decodedData)
+      await updateData(data: result)
       
-      return OperationResult(data: decodedData, source: .cache(stale: stale))
+      return result
     }
     
     return OperationResult(data: nil, source: .cache(stale: false))
   }
 
-  func updateData(data: ResultData) async {
+  func updateData(data: OperationResult<ResultData>) async {
     resultsPublisher.send(.success(data))
   }
 }
@@ -258,6 +185,9 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
 public protocol ObservableQueryRef: QueryRef {
   // results of fetch.
   var data: ResultData? { get }
+  
+  // source of the query results (server, cache, )
+  var source: QueryResultSource { get }
 
   // last error received. if last fetch was successful this is cleared
   var lastError: DataConnectError? { get }
@@ -307,8 +237,9 @@ public class QueryRefObservableObject<
         .receive(on: DispatchQueue.main)
         .sink(receiveValue: { result in
           switch result {
-          case let .success(resultData):
-            self.data = resultData
+          case let .success(operationResult):
+            self.data = operationResult.data
+            self.source = operationResult.source
             self.lastError = nil
           case let .failure(dcerror):
             self.lastError = dcerror.dataConnectError
@@ -325,6 +256,9 @@ public class QueryRefObservableObject<
   /// Error thrown if error occurs during execution of query. If the last fetch was successful the
   /// error is cleared
   @Published public private(set) var lastError: DataConnectError?
+  
+  /// Source of the query results (server, local cache, ...)
+  @Published public private(set) var source: QueryResultSource = .unknown
 
   // QueryRef implementation
 
@@ -339,7 +273,7 @@ public class QueryRefObservableObject<
   /// Use this function ONLY if you plan to use the Query Ref outside of SwiftUI context - (UIKit,
   /// background updates,...)
   public func subscribe() async throws
-    -> AnyPublisher<Result<ResultData, AnyDataConnectError>, Never> {
+    -> AnyPublisher<Result<OperationResult<ResultData>, AnyDataConnectError>, Never> {
     return await baseRef.subscribe()
   }
 }
@@ -388,7 +322,8 @@ public class QueryRefObservation<
         .sink(receiveValue: { result in
           switch result {
           case let .success(resultData):
-            self.data = resultData
+            self.data = resultData.data
+            self.source = resultData.source
             self.lastError = nil
           case let .failure(dcerror):
             self.lastError = dcerror.dataConnectError
@@ -405,6 +340,9 @@ public class QueryRefObservation<
   /// Error thrown if error occurs during execution of query. If the last fetch was successful the
   /// error is cleared
   public private(set) var lastError: DataConnectError?
+  
+  /// Source of the query results (server, local cache, ...)
+  public private(set) var source: QueryResultSource = .unknown
 
   // QueryRef implementation
 
@@ -419,7 +357,7 @@ public class QueryRefObservation<
   /// Use this function ONLY if you plan to use the Query Ref outside of SwiftUI context - (UIKit,
   /// background updates,...)
   public func subscribe() async throws
-    -> AnyPublisher<Result<ResultData, AnyDataConnectError>, Never> {
+  -> AnyPublisher<Result<OperationResult<ResultData>, AnyDataConnectError>, Never> {
     return await baseRef.subscribe()
   }
 }

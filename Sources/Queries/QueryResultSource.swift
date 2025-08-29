@@ -17,6 +17,9 @@
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public enum QueryResultSource: Sendable {
   
+  /// source not known or cannot be determined
+  case unknown
+  
   /// The query results are from server
   case server
   
