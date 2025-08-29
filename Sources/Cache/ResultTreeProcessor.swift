@@ -15,7 +15,6 @@
 import Foundation
 
 
-
 // Normalization and recontruction of ResultTree
 struct ResultTreeProcessor {
   

@@ -12,21 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Foundation
 
-import FirebaseCore
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct ResultTreeEntry {
-  let serverTimestamp: Timestamp // Server response timestamp
-  let cachedAt: Date // Local time when the entry was cached / updated
-  let ttl: TimeInterval // interval during which query results are considered fresh
-  let data: String // tree data
-  var rootObject: StubDataObject?
-  
-  func isStale(_ ttl: TimeInterval) -> Bool {
-    let now = Date()
-    return now.timeIntervalSince(cachedAt) > ttl
-  }
+struct DynamicCodingKey: CodingKey {
+  var intValue: Int?
+  let stringValue: String
+  init?(intValue: Int) { return nil }
+  init?(stringValue: String) { self.stringValue = stringValue }
 }
-

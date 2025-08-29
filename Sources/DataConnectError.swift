@@ -68,7 +68,7 @@ public extension DataConnectDomainError {
 
 /// A type that represents an error code within an error domain.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public protocol DataConnectErrorCode: CustomStringConvertible, Equatable, Sendable, CaseIterable {}
+public protocol DataConnectErrorCode: CustomStringConvertible, Equatable, Sendable, CaseIterable {} 
 
 // MARK: - Data Connect Initialization Errors
 
@@ -269,5 +269,43 @@ public struct OperationFailureResponse: Sendable {
     public let message: String
     /// The path to the field to which this error applies.
     public let path: [DataConnectPathSegment]
+  }
+}
+
+// MARK: - Internal Errors
+
+public struct DataConnectInternalError: DataConnectDomainError {
+  public struct Code: DataConnectErrorCode {
+    private let code: String
+    private init(_ code: String) { self.code = code }
+
+    public static let internalError = Code("internalError")
+    public static let sqliteError = Code("sqliteError")
+
+    public static var allCases: [DataConnectInternalError.Code] {
+      return [internalError, sqliteError]
+    }
+
+    public var description: String { return code }
+  }
+
+  public let code: Code
+  public let message: String?
+  public let underlyingError: Error?
+
+  private init(code: Code, message: String? = nil, cause: Error? = nil) {
+    self.code = code
+    self.message = message
+    underlyingError = cause
+  }
+
+  static func internalError(message: String? = nil,
+                               cause: Error? = nil) -> DataConnectInternalError {
+    return DataConnectInternalError(code: .internalError, message: message, cause: cause)
+  }
+
+  static func sqliteError(message: String? = nil,
+                               cause: Error? = nil) -> DataConnectInternalError {
+    return DataConnectInternalError(code: .sqliteError, message: message, cause: cause)
   }
 }

@@ -58,13 +58,6 @@ struct StubDataObject {
     case references
     case scalars
   }
-  
-  struct DynamicKey: CodingKey {
-    var intValue: Int?
-    let stringValue: String
-    init?(intValue: Int) { return nil }
-    init?(stringValue: String) { self.stringValue = stringValue }
-  }
    
   init?(value: AnyCodableValue, cacheProvider: CacheProvider) {
     guard case let .dictionary(objectValues) = value else {
@@ -73,11 +66,11 @@ struct StubDataObject {
     }
     
     if case let .string(guid) = objectValues[GlobalIDKey] {
-      backingData = cacheProvider.dataObject(entityGuid: guid)
+      backingData = cacheProvider.backingData(guid)
     } else if case let .uuid(guid) = objectValues[GlobalIDKey] {
       // underlying deserializer is detecting a uuid and converting it.
       // TODO: Remove once server starts to send the real GlobalID
-      backingData = cacheProvider.dataObject(entityGuid: guid.uuidString)
+      backingData = cacheProvider.backingData(guid.uuidString)
     }
     
     for (key, value) in objectValues {
@@ -114,8 +107,11 @@ struct StubDataObject {
         } else {
           scalars[key] = value
         }
-        
       }
+    } //for (key,value)
+    
+    if let backingData {
+      cacheProvider.updateBackingData(backingData)
     }
   }
 }
@@ -152,7 +148,7 @@ extension StubDataObject: Decodable {
       let container = try decoder.container(keyedBy: CodingKeys.self)
       
       if let globalID = try container.decodeIfPresent(String.self, forKey: .globalID) {
-        self.backingData = cacheProvider.dataObject(entityGuid: globalID)
+        self.backingData = cacheProvider.backingData(globalID)
       }
       
       if let refs = try container.decodeIfPresent([String: StubDataObject].self, forKey: .references) {
@@ -179,30 +175,30 @@ extension StubDataObject: Encodable {
     
     if resultTreeKind == .hydrated {
       //var container = encoder.singleValueContainer()
-      var container = encoder.container(keyedBy: DynamicKey.self)
+      var container = encoder.container(keyedBy: DynamicCodingKey.self)
       
       if let backingData {
         let encodableData = try backingData.encodableData()
         for (key, value) in encodableData {
-          try container.encode(value, forKey: DynamicKey(stringValue: key)!)
+          try container.encode(value, forKey: DynamicCodingKey(stringValue: key)!)
         }
       }
       
       if references.count > 0 {
         for (key, value) in references {
-          try container.encode(value, forKey: DynamicKey(stringValue: key)!)
+          try container.encode(value, forKey: DynamicCodingKey(stringValue: key)!)
         }
       }
       
       if objectLists.count > 0 {
         for (key, value) in objectLists {
-          try container.encode(value, forKey: DynamicKey(stringValue: key)!)
+          try container.encode(value, forKey: DynamicCodingKey(stringValue: key)!)
         }
       }
       
       if scalars.count > 0 {
         for (key, value) in scalars {
-          try container.encode(value, forKey: DynamicKey(stringValue: key)!)
+          try container.encode(value, forKey: DynamicCodingKey(stringValue: key)!)
         }
       }
     } else {

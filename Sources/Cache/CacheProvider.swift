@@ -27,12 +27,12 @@ protocol CacheProvider {
   
   var cacheIdentifier: String { get }
   
-  func resultTree(queryId: String) -> ResultTreeEntry?
-  func setResultTree(queryId: String, tree: ResultTreeEntry)
+  func resultTree(queryId: String) -> ResultTree?
+  func setResultTree(queryId: String, tree: ResultTree)
 
   
-  func dataObject(entityGuid: String) -> BackingDataObject
-  func setObject(entityGuid: String, object: BackingDataObject)
+  func backingData(_ entityGuid: String) -> BackingDataObject
+  func updateBackingData(_ object: BackingDataObject)
 
   /*
   func size() -> Int

@@ -96,13 +96,22 @@ public class DataConnect {
       
       if let ccfg = cacheConfig {
         switch ccfg.type {
-        case .ephemeral, .persistent :
+        case .ephemeral :
           cacheProvider = EphemeralCacheProvider(
             cacheConfig: ccfg,
             cacheIdentifier: DataConnect.contructCacheIdentifier(app: app, settings: settings)
           )
+        case .persistent:
+          do {
+            self.cacheProvider = try SQLiteCacheProvider(
+              cacheConfig: ccfg,
+              cacheIdentifier: DataConnect.contructCacheIdentifier(app: app, settings: settings)
+            )
+          } catch {
+            DataConnectLogger.error("Unable to initialize Persistent provider \(error)")
+          }
         }
-        DataConnectLogger.debug("Create cacheProvider \(self.cacheProvider)")
+        DataConnectLogger.debug("Created cacheProvider for emulator \(self.cacheProvider)")
       }
       
       operationsManager = OperationsManager(
@@ -141,12 +150,18 @@ public class DataConnect {
           cacheConfig: cacheConfig,
           cacheIdentifier: DataConnect.contructCacheIdentifier(app: app, settings: settings)
         )
+        DataConnectLogger.debug("Created Ephemeral Provider")
       case .persistent:
         // TODO: Update to SQLiteProvider once implemented
-        self.cacheProvider = EphemeralCacheProvider(
-          cacheConfig: cacheConfig,
-          cacheIdentifier: DataConnect.contructCacheIdentifier(app: app, settings: settings)
-        )
+        do {
+          self.cacheProvider = try SQLiteCacheProvider(
+            cacheConfig: cacheConfig,
+            cacheIdentifier: DataConnect.contructCacheIdentifier(app: app, settings: settings)
+          )
+          DataConnectLogger.debug("Created Persistent provider")
+        } catch {
+          DataConnectLogger.error("Unable to initialize Persistent provider \(error)")
+        }
       }
       DataConnectLogger.debug("Initialized cacheProvider \(self.cacheProvider)")
     }

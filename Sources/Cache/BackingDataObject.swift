@@ -17,15 +17,20 @@ struct ScalarField {
   let value: AnyCodableValue
 }
 
-class BackingDataObject:  CustomStringConvertible {
+class BackingDataObject: CustomStringConvertible, Codable {
   
-  let guid: String // globally unique id received from server
+  var guid: String // globally unique id received from server
   
-  init(guid: String) {
+  required init(guid: String) {
     self.guid = guid
   }
   
   private var serverValues = SynchronizedDictionary<String, AnyCodableValue>()
+  
+  enum CodingKeys: String, CodingKey {
+    case globalID = "globalID"
+    case serverValues = "serverValues"
+  }
   
   func updateServerValue(_ key: String, _ newValue: AnyCodableValue) {
     self.serverValues[key] = newValue
@@ -45,10 +50,6 @@ class BackingDataObject:  CustomStringConvertible {
       """
   }
   
-}
-
-extension BackingDataObject: Encodable {
-  
   func encodableData() throws -> [String: AnyCodableValue] {
     var encodingValues = [String: AnyCodableValue]()
     encodingValues[GlobalIDKey] = .string(guid)
@@ -57,11 +58,24 @@ extension BackingDataObject: Encodable {
   }
   
   public func encode(to encoder: Encoder) throws {
-    var container = encoder.singleValueContainer()
-    try container.encode(encodableData())
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(guid, forKey: .globalID)
+    try container.encode(serverValues.rawCopy(), forKey: .serverValues)
     // once we have localValues, we will need to merge between the two dicts and encode
   }
+  
+  required init(from decoder: Decoder) throws {
+    var container = try decoder.container(keyedBy: CodingKeys.self)
+    
+    let globalId = try container.decode(String.self, forKey: .globalID)
+    self.guid = globalId
+    
+    let rawValues = try container.decode([String: AnyCodableValue].self, forKey: .serverValues)
+    serverValues.updateValues(rawValues)
+  }
+  
 }
+
 
 extension BackingDataObject: Equatable {
   static func == (lhs: BackingDataObject, rhs: BackingDataObject) -> Bool {
