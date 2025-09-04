@@ -124,6 +124,7 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
             tree: .init(
               serverTimestamp: results.timestamp,
               cachedAt: Date(),
+              lastAccessed: Date(),
               ttl: results.ttl,
               data: dehydratedTree,
               rootObject: sdo

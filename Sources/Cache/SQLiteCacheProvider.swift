@@ -35,7 +35,8 @@ class SQLiteCacheProvider: CacheProvider {
         let dbURL = URL(fileURLWithPath: path).appendingPathComponent("\(cacheIdentifier).sqlite3")
         
         if sqlite3_open(dbURL.path, &db) != SQLITE_OK {
-          throw DataConnectInternalError.sqliteError(message: "Could not open database")
+          throw DataConnectInternalError
+            .sqliteError(message: "Could not open database for identifier \(cacheIdentifier) at \(dbURL.path)")
         }
         
         try createTables()
@@ -52,6 +53,7 @@ class SQLiteCacheProvider: CacheProvider {
         let createResultTreeTable = """
         CREATE TABLE IF NOT EXISTS result_tree (
             query_id TEXT PRIMARY KEY NOT NULL,
+            last_accessed REAL NOT NULL,
             tree BLOB NOT NULL
         );
         """
@@ -62,6 +64,7 @@ class SQLiteCacheProvider: CacheProvider {
         let createBackingDataTable = """
         CREATE TABLE IF NOT EXISTS backing_data (
             entity_guid TEXT PRIMARY KEY NOT NULL,
+            object_state INTEGER DEFAULT 10,
             object BLOB NOT NULL
         );
         """
@@ -69,6 +72,27 @@ class SQLiteCacheProvider: CacheProvider {
             throw DataConnectInternalError.sqliteError(message: "Could not create backing_data table")
         }
     }
+  
+  private func updateLastAccessedTime(forQueryId queryId: String) {
+    
+    dispatchPrecondition(condition: .onQueue(queue))
+      let updateQuery = "UPDATE result_tree SET last_accessed = ? WHERE query_id = ?;"
+      var statement: OpaquePointer?
+      
+      if sqlite3_prepare_v2(self.db, updateQuery, -1, &statement, nil) != SQLITE_OK {
+        DataConnectLogger.error("Error preparing update statement for result_tree")
+        return
+      }
+      
+      sqlite3_bind_double(statement, 1, Date().timeIntervalSince1970)
+      sqlite3_bind_text(statement, 2, (queryId as NSString).utf8String, -1, nil)
+      
+      if sqlite3_step(statement) != SQLITE_DONE {
+        DataConnectLogger.error("Error updating last_accessed for query \(queryId)")
+      }
+      sqlite3_finalize(statement)
+   
+  }
 
     func resultTree(queryId: String) -> ResultTree? {
         return queue.sync {
@@ -88,7 +112,9 @@ class SQLiteCacheProvider: CacheProvider {
                     let data = Data(bytes: dataBlob, count: Int(dataBlobLength))
                     sqlite3_finalize(statement)
                     do {
-                        return try JSONDecoder().decode(ResultTree.self, from: data)
+                      let tree = try JSONDecoder().decode(ResultTree.self, from: data)
+                      self.updateLastAccessedTime(forQueryId: queryId)
+                      return tree
                     } catch {
                         DataConnectLogger.error("Error decoding result tree for queryId \(queryId): \(error)")
                         return nil
@@ -105,8 +131,9 @@ class SQLiteCacheProvider: CacheProvider {
     func setResultTree(queryId: String, tree: ResultTree) {
         queue.sync {
             do {
+              var tree = tree
                 let data = try JSONEncoder().encode(tree)
-                let insert = "INSERT OR REPLACE INTO result_tree (query_id, tree) VALUES (?, ?);"
+                let insert = "INSERT OR REPLACE INTO result_tree (query_id, last_accessed, tree) VALUES (?, ?, ?);"
                 var statement: OpaquePointer?
 
                 if sqlite3_prepare_v2(db, insert, -1, &statement, nil) != SQLITE_OK {
@@ -114,11 +141,14 @@ class SQLiteCacheProvider: CacheProvider {
                     return
                 }
 
+              tree.lastAccessed = Date()
+              
                 sqlite3_bind_text(statement, 1, (queryId as NSString).utf8String, -1, nil)
-                _ = data.withUnsafeBytes { (bytes: UnsafeRawBufferPointer) in
-                    sqlite3_bind_blob(statement, 2, bytes.baseAddress, Int32(bytes.count), nil)
-                }
-
+              sqlite3_bind_double(statement, 2, tree.lastAccessed.timeIntervalSince1970)
+              _ = data.withUnsafeBytes { (bytes: UnsafeRawBufferPointer) in
+                  sqlite3_bind_blob(statement, 3, bytes.baseAddress, Int32(bytes.count), nil)
+              }
+              
                 if sqlite3_step(statement) != SQLITE_DONE {
                     DataConnectLogger.error("Error inserting result tree for queryId \(queryId)")
                 }
@@ -179,7 +209,7 @@ class SQLiteCacheProvider: CacheProvider {
             }
 
             sqlite3_bind_text(statement, 1, (entityGuid as NSString).utf8String, -1, nil)
-            data.withUnsafeBytes { (bytes: UnsafeRawBufferPointer) in
+            _ = data.withUnsafeBytes { (bytes: UnsafeRawBufferPointer) in
                 sqlite3_bind_blob(statement, 2, bytes.baseAddress, Int32(bytes.count), nil)
             }
 
