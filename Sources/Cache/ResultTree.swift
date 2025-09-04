@@ -20,6 +20,7 @@ import FirebaseCore
 struct ResultTree {
   let serverTimestamp: Timestamp // Server response timestamp
   let cachedAt: Date // Local time when the entry was cached / updated
+  var lastAccessed: Date // Local time when the entry was read or updated
   let ttl: TimeInterval // interval during which query results are considered fresh
   let data: String // tree data
   var rootObject: StubDataObject?
@@ -32,12 +33,11 @@ struct ResultTree {
   enum CodingKeys: String, CodingKey {
     case serverTimestamp = "st"
     case cachedAt = "ca"
+    case lastAccessed = "la"
     case ttl = "ttl"
     case data = "d"
   }
-  
-  
-  
+
 }
 
 
@@ -46,6 +46,7 @@ extension ResultTree: Codable {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     self.serverTimestamp = try container.decode(Timestamp.self, forKey: .serverTimestamp)
     self.cachedAt = try container.decode(Date.self, forKey: .cachedAt)
+    self.lastAccessed = try container.decode(Date.self, forKey: .lastAccessed)
     self.ttl = try container.decode(TimeInterval.self, forKey: .ttl)
     self.data = try container.decode(String.self, forKey: .data)
   }
@@ -54,6 +55,7 @@ extension ResultTree: Codable {
     var container = encoder.container(keyedBy: CodingKeys.self)
     try container.encode(serverTimestamp, forKey: .serverTimestamp)
     try container.encode(cachedAt, forKey: .cachedAt)
+    try container.encode(lastAccessed, forKey: .lastAccessed)
     try container.encode(ttl, forKey: .ttl)
     try container.encode(data, forKey: .data)
   }
