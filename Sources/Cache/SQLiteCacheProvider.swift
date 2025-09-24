@@ -18,14 +18,13 @@ import SQLite3
 import FirebaseCore
 
 class SQLiteCacheProvider: CacheProvider {
-    let cacheConfig: CacheConfig
+    
     let cacheIdentifier: String
 
     private var db: OpaquePointer?
     private let queue = DispatchQueue(label: "com.google.firebase.dataconnect.sqlitecacheprovider")
 
-    init(cacheConfig: CacheConfig, cacheIdentifier: String) throws {
-        self.cacheConfig = cacheConfig
+    init(_ cacheIdentifier: String) throws {
         self.cacheIdentifier = cacheIdentifier
 
       try queue.sync {

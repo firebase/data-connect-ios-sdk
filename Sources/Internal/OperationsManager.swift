@@ -18,7 +18,7 @@ import Foundation
 class OperationsManager {
   private var grpcClient: GrpcClient
   
-  private var cacheProvider: CacheProvider?
+  private var cache: Cache?
  
   private let queryRefAccessQueue = DispatchQueue(
     label: "firebase.dataconnect.queryRef.AccessQ",
@@ -32,9 +32,9 @@ class OperationsManager {
   )
   private var mutationRefs = [AnyHashable: any OperationRef]()
 
-  init(grpcClient: GrpcClient, cacheProvider: CacheProvider? = nil) {
+  init(grpcClient: GrpcClient, cache: Cache? = nil) {
     self.grpcClient = grpcClient
-    self.cacheProvider = cacheProvider
+    self.cache = cache
   }
 
   func queryRef<ResultDataType: Decodable & Sendable,
@@ -54,7 +54,7 @@ class OperationsManager {
             request: request,
             dataType: resultType,
             grpcClient: self.grpcClient,
-            cacheProvider: self.cacheProvider
+            cache: self.cache
           ) as (any ObservableQueryRef)
           queryRefs[AnyHashable(request)] = obsRef
           return obsRef
@@ -65,7 +65,7 @@ class OperationsManager {
         request: request,
         dataType: resultType,
         grpcClient: grpcClient,
-        cacheProvider: self.cacheProvider
+        cache: self.cache
       ) as (any ObservableQueryRef)
       queryRefs[AnyHashable(request)] = refObsObject
       return refObsObject

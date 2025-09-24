@@ -18,11 +18,11 @@ import FirebaseCore
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ResultTree {
-  let serverTimestamp: Timestamp // Server response timestamp
+  let data: String // tree data - could be hydrated or dehydrated.
+  let ttl: TimeInterval // interval during which query results are considered fresh
   let cachedAt: Date // Local time when the entry was cached / updated
   var lastAccessed: Date // Local time when the entry was read or updated
-  let ttl: TimeInterval // interval during which query results are considered fresh
-  let data: String // tree data
+  
   var rootObject: StubDataObject?
   
   func isStale(_ ttl: TimeInterval) -> Bool {
@@ -31,7 +31,6 @@ struct ResultTree {
   }
   
   enum CodingKeys: String, CodingKey {
-    case serverTimestamp = "st"
     case cachedAt = "ca"
     case lastAccessed = "la"
     case ttl = "ttl"
@@ -44,7 +43,6 @@ struct ResultTree {
 extension ResultTree: Codable {
   init(from decoder: any Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
-    self.serverTimestamp = try container.decode(Timestamp.self, forKey: .serverTimestamp)
     self.cachedAt = try container.decode(Date.self, forKey: .cachedAt)
     self.lastAccessed = try container.decode(Date.self, forKey: .lastAccessed)
     self.ttl = try container.decode(TimeInterval.self, forKey: .ttl)
@@ -53,7 +51,6 @@ extension ResultTree: Codable {
   
   func encode(to encoder: any Encoder) throws {
     var container = encoder.container(keyedBy: CodingKeys.self)
-    try container.encode(serverTimestamp, forKey: .serverTimestamp)
     try container.encode(cachedAt, forKey: .cachedAt)
     try container.encode(lastAccessed, forKey: .lastAccessed)
     try container.encode(ttl, forKey: .ttl)
