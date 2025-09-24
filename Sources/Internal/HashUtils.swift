@@ -13,27 +13,20 @@
 // limitations under the License.
 
 import Foundation
+import CryptoKit
 
-import FirebaseCore
+extension Data {
+  var sha256String: String {
+    let hashDigest = SHA256.hash(data: self)
+    let hashString = hashDigest.compactMap{ String(format: "%02x", $0) }.joined()
+    return hashString
+  }
+}
 
-// FDC field name in server response that identifies a GlobalID
-let GlobalIDKey: String = "cacheId"
-
-let CacheProviderUserInfoKey = CodingUserInfoKey(rawValue: "fdc_cache_provider")!
-
-protocol CacheProvider {
-  
-  var cacheIdentifier: String { get }
-  
-  func resultTree(queryId: String) -> ResultTree?
-  func setResultTree(queryId: String, tree: ResultTree)
-
-  
-  func backingData(_ entityGuid: String) -> BackingDataObject
-  func updateBackingData(_ object: BackingDataObject)
-  
-  /*
-   
-  func size() -> Int
-   */
+extension String {
+  var sha256: String {
+    let digest = SHA256.hash(data: self.data(using: .utf8)!)
+    let hashString = digest.compactMap { String(format: "%20x", $0)}.joined()
+    return hashString
+  }
 }

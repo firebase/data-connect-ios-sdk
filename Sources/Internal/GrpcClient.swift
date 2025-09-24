@@ -130,7 +130,7 @@ actor GrpcClient: CustomStringConvertible {
     VariableType: OperationVariable>(request: QueryRequest<VariableType>,
                                      resultType: ResultType
                                        .Type)
-  async throws -> (results: String, ttl: TimeInterval, timestamp: Timestamp) {
+  async throws -> ServerResponse {
     guard let client else {
       DataConnectLogger.error("When calling executeQuery(), grpc client has not been configured.")
       throw DataConnectInitError.grpcNotConfigured()
@@ -160,7 +160,7 @@ actor GrpcClient: CustomStringConvertible {
        */
       guard !errorInfoList.isEmpty else {
         // TODO: Extract ttl, server timestamp 
-        return (results: resultsString, ttl: 10.0, timestamp: Timestamp(date: Date()))
+        return ServerResponse(jsonResults: resultsString, ttl: 10.0)
       }
       
       // We have partial errors returned

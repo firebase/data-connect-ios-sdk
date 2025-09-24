@@ -19,15 +19,14 @@ import Foundation
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class DataConnect {
-  private var connectorConfig: ConnectorConfig
-  private var app: FirebaseApp
-  private var settings: DataConnectSettings
+  private(set) var connectorConfig: ConnectorConfig
+  private(set) var app: FirebaseApp
+  private(set) var settings: DataConnectSettings
 
   private(set) var grpcClient: GrpcClient
   private var operationsManager: OperationsManager
   
-  private(set) var cacheConfig: CacheConfig? = nil
-  private(set) var cacheProvider: CacheProvider? = nil
+  private(set) var cache: Cache? = nil
 
   private var callerSDKType: CallerSDKType = .base
 
@@ -94,29 +93,14 @@ public class DataConnect {
         callerSDKType: callerSDKType
       )
       
-      if let ccfg = cacheConfig {
-        switch ccfg.type {
-        case .ephemeral :
-          cacheProvider = EphemeralCacheProvider(
-            cacheConfig: ccfg,
-            cacheIdentifier: DataConnect.contructCacheIdentifier(app: app, settings: settings)
-          )
-        case .persistent:
-          do {
-            self.cacheProvider = try SQLiteCacheProvider(
-              cacheConfig: ccfg,
-              cacheIdentifier: DataConnect.contructCacheIdentifier(app: app, settings: settings)
-            )
-          } catch {
-            DataConnectLogger.error("Unable to initialize Persistent provider \(error)")
-          }
-        }
-        DataConnectLogger.debug("Created cacheProvider for emulator \(self.cacheProvider)")
+      // TODO: Change this
+      if let cache {
+        self.cache = Cache(config: cache.config, dataConnect: self)
       }
       
       operationsManager = OperationsManager(
         grpcClient: grpcClient,
-        cacheProvider: self.cacheProvider
+        cache: self.cache
       )
     }
   }
@@ -142,31 +126,12 @@ public class DataConnect {
       callerSDKType: self.callerSDKType
     )
     
-    self.cacheConfig = cacheConfig
+    operationsManager = OperationsManager(grpcClient: grpcClient, cache: cache)
+    
     if let cacheConfig {
-      switch cacheConfig.type {
-      case .ephemeral:
-        self.cacheProvider = EphemeralCacheProvider(
-          cacheConfig: cacheConfig,
-          cacheIdentifier: DataConnect.contructCacheIdentifier(app: app, settings: settings)
-        )
-        DataConnectLogger.debug("Created Ephemeral Provider")
-      case .persistent:
-        // TODO: Update to SQLiteProvider once implemented
-        do {
-          self.cacheProvider = try SQLiteCacheProvider(
-            cacheConfig: cacheConfig,
-            cacheIdentifier: DataConnect.contructCacheIdentifier(app: app, settings: settings)
-          )
-          DataConnectLogger.debug("Created Persistent provider")
-        } catch {
-          DataConnectLogger.error("Unable to initialize Persistent provider \(error)")
-        }
-      }
-      DataConnectLogger.debug("Initialized cacheProvider \(self.cacheProvider)")
+      self.cache = Cache(config: cacheConfig, dataConnect: self)
     }
     
-    operationsManager = OperationsManager(grpcClient: grpcClient, cacheProvider: cacheProvider)
   }
 
   // MARK: Operations
@@ -199,10 +164,6 @@ public class DataConnect {
     }
   }
   
-  // Create an identifier for the cache that the Provider will use for cache scoping
-  private static func contructCacheIdentifier(app: FirebaseApp, settings: DataConnectSettings) -> String {
-    return "\(app.name)-\(settings.host)"
-  }
 }
 
 // This enum is public so the gen sdk can access it

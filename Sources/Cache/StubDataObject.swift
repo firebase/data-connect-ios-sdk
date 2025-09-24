@@ -27,13 +27,6 @@
  
  */
 
-// Kind of result data we are encoding from or decoding to
-enum ResultTreeKind {
-  case hydrated // JSON data is full hydrated and contains full data in the tree
-  case dehydrated // JSON data is dehydrated and only contains refs to actual data objects
-}
-
-let ResultTreeKindCodingKey = CodingUserInfoKey(rawValue: "com.google.firebase.dataconnect.encodingMode")!
 
 struct StubDataObject {
   

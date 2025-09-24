@@ -43,10 +43,7 @@ struct QueryRequest<Variable: OperationVariable>: OperationRequest, Hashable, Eq
       }
     }
     
-    let hashDigest = SHA256.hash(data: keyIdData)
-    let hashString = hashDigest.compactMap{ String(format: "%02x", $0) }.joined()
-    
-    return hashString
+    return keyIdData.sha256String
   }()
 
   init(operationName: String, variables: Variable? = nil) {

@@ -18,14 +18,12 @@ import FirebaseCore
 
 class EphemeralCacheProvider: CacheProvider, CustomStringConvertible {
   
-  let cacheConfig: CacheConfig
   let cacheIdentifier: String
   
-  init(cacheConfig: CacheConfig, cacheIdentifier: String) {
-    self.cacheConfig = cacheConfig
+  init(_ cacheIdentifier: String) {
     self.cacheIdentifier = cacheIdentifier
     
-    DataConnectLogger.debug("Initialized \(Self.Type.self) with config \(cacheConfig)")
+    DataConnectLogger.debug("Initialized \(Self.Type.self) with identifier:\(cacheIdentifier)")
   }
   
   // MARK: ResultTree
@@ -62,7 +60,6 @@ class EphemeralCacheProvider: CacheProvider, CustomStringConvertible {
     backingDataObjects[object.guid] = object
   }
 
-  
   var description: String {
     return "EphemeralCacheProvider - \(cacheIdentifier)"
   }
