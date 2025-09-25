@@ -26,7 +26,7 @@ extension Data {
 extension String {
   var sha256: String {
     let digest = SHA256.hash(data: self.data(using: .utf8)!)
-    let hashString = digest.compactMap { String(format: "%20x", $0)}.joined()
+    let hashString = digest.compactMap { String(format: "%02x", $0)}.joined()
     return hashString
   }
 }

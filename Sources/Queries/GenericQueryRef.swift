@@ -99,7 +99,7 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
     
     do {
       if let cache {
-        cache.update(queryId: self.operationId, response: response, requestor: self)
+        cache.update(queryId: self.operationId, response: response)
         
       }
     }
