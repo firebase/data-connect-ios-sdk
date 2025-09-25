@@ -50,6 +50,11 @@ public class QueryRefObservableObject<
   ResultData: Decodable & Sendable,
   Variable: OperationVariable
 >: ObservableObject, ObservableQueryRef {
+  
+  public var operationId: String {
+    return baseRef.operationId
+  }
+
   private var request: QueryRequest<Variable>
 
   private var baseRef: GenericQueryRef<ResultData, Variable>
@@ -118,6 +123,16 @@ public class QueryRefObservableObject<
   }
 }
 
+extension QueryRefObservableObject {
+  nonisolated public func hash(into hasher: inout Hasher) {
+      hasher.combine(baseRef)
+    }
+    
+  public static func == (lhs: QueryRefObservableObject, rhs: QueryRefObservableObject) -> Bool {
+    lhs.baseRef == rhs.baseRef
+    }
+}
+
 /// QueryRef class compatible with the Observation framework introduced in iOS 17
 ///
 /// When the  requested publisher is an ObservableMacri, the returned query refs will be instances
@@ -136,6 +151,11 @@ public class QueryRefObservation<
   ResultData: Decodable & Sendable,
   Variable: OperationVariable
 >: ObservableQueryRef {
+  
+  public var operationId: String {
+    return baseRef.operationId
+  }
+
   @ObservationIgnored
   private var request: QueryRequest<Variable>
 
@@ -200,4 +220,15 @@ public class QueryRefObservation<
   -> AnyPublisher<Result<OperationResult<ResultData>, AnyDataConnectError>, Never> {
     return await baseRef.subscribe()
   }
+}
+
+@available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
+extension QueryRefObservation {
+  nonisolated public func hash(into hasher: inout Hasher) {
+      hasher.combine(baseRef)
+    }
+    
+  public static func == (lhs: QueryRefObservation, rhs: QueryRefObservation) -> Bool {
+    lhs.baseRef == rhs.baseRef
+    }
 }

@@ -33,11 +33,17 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
   private let cache: Cache?
   
   private var ttl: TimeInterval? = 10.0 //
+  
+  // Ideally we would like this to be part of the QueryRef protocol
+  // Not adding for now since the protocol is Public
+  // This property is for now an internal property.
+  let operationId: String
 
   init(request: QueryRequest<Variable>, grpcClient: GrpcClient, cache: Cache? = nil) {
     self.request = request
     self.grpcClient = grpcClient
     self.cache = cache
+    self.operationId = self.request.requestId
   }
 
   // This call starts query execution and publishes data to data var
@@ -93,11 +99,7 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
     
     do {
       if let cache {
-        // TODO: Normalize data before saving to cache
-        
-        
-        // TODO: Use server timestamp when available
-        try cache.update(queryId: self.request.requestId, response: response)
+        cache.update(queryId: self.operationId, response: response, requestor: self)
         
       }
     }
@@ -146,5 +148,15 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
 
   func updateData(data: OperationResult<ResultData>) async {
     resultsPublisher.send(.success(data))
+  }
+}
+
+extension GenericQueryRef {
+  nonisolated func hash(into hasher: inout Hasher) {
+    hasher.combine(operationId)
+  }
+  
+  static func == (lhs: GenericQueryRef, rhs: GenericQueryRef) -> Bool {
+    lhs.operationId == rhs.operationId
   }
 }
