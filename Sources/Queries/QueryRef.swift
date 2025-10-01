@@ -36,20 +36,19 @@ public enum ResultsPublisherType {
 
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public protocol QueryRef: OperationRef {
+public protocol QueryRef: OperationRef, Equatable, Hashable {
   // This call starts query execution and publishes data
   func subscribe() async throws -> AnyPublisher<Result<OperationResult<ResultData>, AnyDataConnectError>, Never>
   
   // Execute override for queries to include fetch policy
   func execute(fetchPolicy: QueryFetchPolicy) async throws -> OperationResult<ResultData>
+  
+  //func execute(fetchPolicy: QueryFetchPolicy) async throws
 }
 
 extension QueryRef {
-  
   // default implementation for execute()
   public func execute() async throws -> OperationResult<ResultData> {
     try await execute(fetchPolicy: .defaultPolicy)
   }
 }
-
-

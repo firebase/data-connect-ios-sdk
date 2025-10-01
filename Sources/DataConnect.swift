@@ -163,7 +163,15 @@ public class DataConnect {
       return operationsManager.mutationRef(for: request, with: resultsDataType)
     }
   }
-  
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension DataConnect {
+  internal func queryRef(for operationId: String) -> (any QueryRef)? {
+    accessQueue.sync {
+      return operationsManager.queryRef(for: operationId)
+    }
+  }
 }
 
 // This enum is public so the gen sdk can access it
