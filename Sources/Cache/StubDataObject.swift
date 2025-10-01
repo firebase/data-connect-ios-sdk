@@ -52,11 +52,16 @@ struct StubDataObject {
     case scalars
   }
    
-  init?(value: AnyCodableValue, cacheProvider: CacheProvider) {
+  init?(
+    value: AnyCodableValue,
+    cacheProvider: CacheProvider,
+    impactedRefsAccumulator: ImpactedQueryRefsAccumulator? = nil
+  ) {
     guard case let .dictionary(objectValues) = value else {
       DataConnectLogger.error("StubDataObject inited with a non-dictionary type")
       return nil
     }
+    
     
     if case let .string(guid) = objectValues[GlobalIDKey] {
       backingData = cacheProvider.backingData(guid)
@@ -71,7 +76,11 @@ struct StubDataObject {
       case .dictionary(_):
         // a dictionary is treated as a composite object
         // and converted to another Stub
-        if let st = StubDataObject(value: value, cacheProvider: cacheProvider) {
+        if let st = StubDataObject(
+          value: value,
+          cacheProvider: cacheProvider,
+          impactedRefsAccumulator: impactedRefsAccumulator
+        ) {
           references[key] = st
         } else {
           DataConnectLogger.warning("Failed to convert dictionary to a reference")
@@ -80,7 +89,11 @@ struct StubDataObject {
         var refArray = [StubDataObject]()
         var scalarArray = [AnyCodableValue]()
         for obj in objs {
-          if let st = StubDataObject(value: obj, cacheProvider: cacheProvider) {
+          if let st = StubDataObject(
+            value: obj,
+            cacheProvider: cacheProvider,
+            impactedRefsAccumulator: impactedRefsAccumulator
+          ) {
             refArray.append(st)
           } else {
             if obj.isScalar {
@@ -92,11 +105,27 @@ struct StubDataObject {
         if refArray.count > 0 {
           objectLists[key] = refArray
         } else if scalarArray.count > 0 {
-          if let backingData { backingData.updateServerValue(key, value)}
+          if let backingData {
+            let impactedRefs = backingData.updateServerValue(
+              key,
+              value,
+              impactedRefsAccumulator?.requestor
+            )
+            
+            // accumulate any impacted QueryRefs due to this change
+            for r in impactedRefs { impactedRefsAccumulator?.append(r) }
+          }
         }
       default:
         if let backingData {
-          backingData.updateServerValue(key, value)
+          let impactedRefs = backingData.updateServerValue(
+            key,
+            value,
+            impactedRefsAccumulator?.requestor
+          )
+          
+          // accumulate any QueryRefs impacted by this change
+          for r in impactedRefs { impactedRefsAccumulator?.append(r) }
         } else {
           scalars[key] = value
         }
@@ -104,6 +133,7 @@ struct StubDataObject {
     } //for (key,value)
     
     if let backingData {
+      for refId in backingData.referencedFrom { impactedRefsAccumulator?.append(refId) }
       cacheProvider.updateBackingData(backingData)
     }
   }
@@ -127,8 +157,23 @@ extension StubDataObject: Decodable {
       
       let value = try container.decode(AnyCodableValue.self)
       
-      let sdo = StubDataObject(value: value, cacheProvider: cacheProvider)
+      let impactedRefsAcc = decoder.userInfo[ImpactedRefsAccumulatorCodingKey] as? ImpactedQueryRefsAccumulator
+      
+      if impactedRefsAcc != nil {
+        DataConnectLogger
+          .debug("Got impactedRefs before dehydration \(String(describing: impactedRefsAcc))")
+      }
+      
+      let sdo = StubDataObject(
+        value: value,
+        cacheProvider: cacheProvider,
+        impactedRefsAccumulator: impactedRefsAcc
+      )
       //DataConnectLogger.debug("Create SDO from JSON \(sdo?.debugDescription)")
+      
+      if impactedRefsAcc != nil {
+        DataConnectLogger.debug("impactedRefs after dehydration \(String(describing: impactedRefsAcc))")
+      }
       
       if let sdo {
         self = sdo

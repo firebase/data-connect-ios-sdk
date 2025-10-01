@@ -105,7 +105,7 @@ class Cache {
           lastAccessed: dehydratedTree.lastAccessed,
           rootObject: rootObj
         )
-        
+
         return hydratedTree
       } catch {
         DataConnectLogger.warning("Error getting result tree \(error)")
@@ -113,22 +113,21 @@ class Cache {
       }
     }
   }
-  
-  func update(queryId: String, response: ServerResponse) {
-    queue.async(flags: .barrier) {
-      
 
+  func update(queryId: String, response: ServerResponse, requestor: (any QueryRefInternal)? = nil) {
+    queue.async(flags: .barrier) {
       guard let cacheProvider = self.cacheProvider else {
       DataConnectLogger.debug("Cache provider not initialized yet. Skipping update for \(queryId)")
       return
-    }
+      }
       do {
         let processor = ResultTreeProcessor()
-        let (dehydratedResults, rootObj) = try processor.dehydrateResults(
+        let (dehydratedResults, rootObj, impactedRefs) = try processor.dehydrateResults(
           response.jsonResults,
-          cacheProvider: cacheProvider
+          cacheProvider: cacheProvider,
+          requestor: requestor
         )
-        
+
         cacheProvider
           .setResultTree(
             queryId: queryId,
@@ -140,6 +139,19 @@ class Cache {
               rootObject: rootObj
             )
           )
+        
+        impactedRefs.forEach { refId in
+          guard let q = self.dataConnect.queryRef(for: refId) as? (any QueryRefInternal) else {
+            return
+          }
+          Task {
+            do {
+              try await q.publishCacheResultsToSubscribers(allowStale: true)
+            } catch {
+              DataConnectLogger.warning("Error republishing cached results for impacted queryrefs \(error))")
+            }
+          }
+        }
       } catch {
         DataConnectLogger.warning("Error updating cache for \(queryId): \(error)")
       }

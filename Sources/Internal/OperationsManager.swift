@@ -24,7 +24,7 @@ class OperationsManager {
     label: "firebase.dataconnect.queryRef.AccessQ",
     autoreleaseFrequency: .workItem
   )
-  private var queryRefs = [AnyHashable: any ObservableQueryRef]()
+  private var queryRefs = [String: any ObservableQueryRef]()
 
   private let mutationRefAccessQueue = DispatchQueue(
     label: "firebase.dataconnect.mutRef.AccessQ",
@@ -44,7 +44,10 @@ class OperationsManager {
                                      publisher: ResultsPublisherType = .auto)
     -> any ObservableQueryRef {
     queryRefAccessQueue.sync {
-      if let ref = queryRefs[AnyHashable(request)] {
+      var req = request // requestId is a mutating call.
+      let requestId = req.requestId
+      
+      if let ref = queryRefs[requestId] {
         return ref
       }
 
@@ -56,7 +59,7 @@ class OperationsManager {
             grpcClient: self.grpcClient,
             cache: self.cache
           ) as (any ObservableQueryRef)
-          queryRefs[AnyHashable(request)] = obsRef
+          queryRefs[requestId] = obsRef
           return obsRef
         }
       }
@@ -67,9 +70,15 @@ class OperationsManager {
         grpcClient: grpcClient,
         cache: self.cache
       ) as (any ObservableQueryRef)
-      queryRefs[AnyHashable(request)] = refObsObject
+      queryRefs[requestId] = refObsObject
       return refObsObject
     } // accessQueue.sync
+  }
+  
+  func queryRef(for operationId: String) -> (any ObservableQueryRef)? {
+    queryRefAccessQueue.sync {
+      return queryRefs[operationId]
+    }
   }
 
   func mutationRef<ResultDataType: Decodable,

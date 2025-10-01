@@ -123,6 +123,7 @@ public class QueryRefObservableObject<
   }
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension QueryRefObservableObject {
   nonisolated public func hash(into hasher: inout Hasher) {
       hasher.combine(baseRef)
@@ -131,6 +132,17 @@ extension QueryRefObservableObject {
   public static func == (lhs: QueryRefObservableObject, rhs: QueryRefObservableObject) -> Bool {
     lhs.baseRef == rhs.baseRef
     }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension QueryRefObservableObject: QueryRefInternal {
+  func publishServerResultsToSubscribers() async throws {
+    try await baseRef.publishServerResultsToSubscribers()
+  }
+
+  func publishCacheResultsToSubscribers(allowStale: Bool) async throws {
+    try await baseRef.publishCacheResultsToSubscribers(allowStale: allowStale)
+  }
 }
 
 /// QueryRef class compatible with the Observation framework introduced in iOS 17
@@ -231,4 +243,22 @@ extension QueryRefObservation {
   public static func == (lhs: QueryRefObservation, rhs: QueryRefObservation) -> Bool {
     lhs.baseRef == rhs.baseRef
     }
+}
+
+@available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
+extension QueryRefObservation: CustomStringConvertible {
+  nonisolated public var description: String {
+    "QueryRefObservation(\(String(describing: baseRef)))"
+  }
+}
+
+@available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
+extension QueryRefObservation: QueryRefInternal {
+  func publishServerResultsToSubscribers() async throws {
+    try await baseRef.publishServerResultsToSubscribers()
+  }
+
+  func publishCacheResultsToSubscribers(allowStale: Bool) async throws {
+    try await baseRef.publishCacheResultsToSubscribers(allowStale: allowStale)
+  }
 }

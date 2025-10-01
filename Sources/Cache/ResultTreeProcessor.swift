@@ -17,10 +17,45 @@ import Foundation
 // Key that indicates the kind of tree being coded - hydrated or dehydrated
 let ResultTreeKindCodingKey = CodingUserInfoKey(rawValue: "com.google.firebase.dataconnect.encodingMode")!
 
+// Key that points to the QueryRef being updated in cache
+let UpdatingQueryRefsCodingKey = CodingUserInfoKey(rawValue: "com.google.firebase.dataconnect.updatingQueryRef")!
+
+// Key pointing to container for QueryRefs. BackingDataObjects fill this
+let ImpactedRefsAccumulatorCodingKey = CodingUserInfoKey(rawValue: "com.google.firebase.dataconnect.impactedQueryRefs")!
+
 // Kind of result data we are encoding from or decoding to
 enum ResultTreeKind {
   case hydrated // JSON data is full hydrated and contains full data in the tree
   case dehydrated // JSON data is dehydrated and only contains refs to actual data objects
+}
+
+// Class used to accumulate query refs as we dehydrate the tree and find BDOs
+// BDOs contain references to other QueryRefs that reference the BDO
+// We collect those QueryRefs here
+class ImpactedQueryRefsAccumulator {
+  // operationIds of impacted QueryRefs
+  private(set) var queryRefIds: Set<String> = []
+  
+  // QueryRef requesting impacted
+  let requestor: (any QueryRefInternal)?
+  
+  init(requestor: (any QueryRefInternal)? = nil) {
+    self.requestor = requestor
+  }
+  
+  // appends the impacted operationId not matching requestor
+  func append(_ queryRefId: String) {
+    guard requestor != nil else {
+      queryRefIds.insert(queryRefId)
+      return
+    }
+    
+    if let requestor = requestor,
+       queryRefId != requestor.operationId {
+      queryRefIds.insert(queryRefId)
+    }
+    
+  }
 }
 
 // Normalization and recontruction of ResultTree
@@ -39,11 +74,21 @@ struct ResultTreeProcessor {
    
    */
   
-  func dehydrateResults(_ hydratedTree: String, cacheProvider: CacheProvider) throws -> (dehydratedResults: String, rootObject: StubDataObject) {
+  func dehydrateResults(_ hydratedTree: String, cacheProvider: CacheProvider, requestor: (any QueryRefInternal)? = nil) throws -> (
+    dehydratedResults: String,
+    rootObject: StubDataObject,
+    impactedRefIds: [String]
+  ) {
     let jsonDecoder = JSONDecoder()
+    let impactedRefsAccumulator = ImpactedQueryRefsAccumulator(requestor: requestor)
+    
     jsonDecoder.userInfo[CacheProviderUserInfoKey] = cacheProvider
     jsonDecoder.userInfo[ResultTreeKindCodingKey] = ResultTreeKind.hydrated
+    jsonDecoder.userInfo[ImpactedRefsAccumulatorCodingKey] = impactedRefsAccumulator
     let sdo = try jsonDecoder.decode(StubDataObject.self, from: hydratedTree.data(using: .utf8)!)
+    
+    DataConnectLogger.debug("Impacted QueryRefs count: \(impactedRefsAccumulator.queryRefIds.count)")
+    let impactedRefs = Array(impactedRefsAccumulator.queryRefIds)
      
     let jsonEncoder = JSONEncoder()
     jsonEncoder.userInfo[CacheProviderUserInfoKey] = cacheProvider
@@ -56,7 +101,7 @@ struct ResultTreeProcessor {
         "\(#function): \nHydrated \n \(hydratedTree) \n\nDehydrated \n \(dehydratedResultsString)"
       )
     
-    return (dehydratedResultsString, sdo)
+    return (dehydratedResultsString, sdo, impactedRefs)
   }
   
   

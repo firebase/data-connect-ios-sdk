@@ -99,7 +99,7 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
     
     do {
       if let cache {
-        cache.update(queryId: self.operationId, response: response)
+        cache.update(queryId: self.operationId, response: response, requestor: self)
         
       }
     }
@@ -151,6 +151,7 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
   }
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension GenericQueryRef {
   nonisolated func hash(into hasher: inout Hasher) {
     hasher.combine(operationId)
@@ -158,5 +159,23 @@ extension GenericQueryRef {
   
   static func == (lhs: GenericQueryRef, rhs: GenericQueryRef) -> Bool {
     lhs.operationId == rhs.operationId
+  }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension GenericQueryRef: CustomStringConvertible {
+  nonisolated var description: String {
+    "GenericQueryRef(\(operationId))"
+  }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension GenericQueryRef: QueryRefInternal {
+  func publishServerResultsToSubscribers() async throws {
+    _ = try await self.fetchServerResults()
+  }
+
+  func publishCacheResultsToSubscribers(allowStale: Bool) async throws {
+    _ = try await self.fetchCachedResults(allowStale: allowStale)
   }
 }

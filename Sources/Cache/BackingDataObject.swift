@@ -19,6 +19,9 @@ struct ScalarField {
 
 class BackingDataObject: CustomStringConvertible, Codable {
   
+  // Set of QueryRefs that reference this BDO
+  var referencedFrom = Set<String>()
+  
   var guid: String // globally unique id received from server
   
   required init(guid: String) {
@@ -28,13 +31,29 @@ class BackingDataObject: CustomStringConvertible, Codable {
   private var serverValues = SynchronizedDictionary<String, AnyCodableValue>()
   
   enum CodingKeys: String, CodingKey {
-    case globalID = "globalID"
-    case serverValues = "serverValues"
+    case globalID = "guid"
+    case serverValues = "serVal"
   }
   
-  func updateServerValue(_ key: String, _ newValue: AnyCodableValue) {
+  // Updates value received from server and returns a list of QueryRef operation ids
+  // referenced from this BackingDataObject
+  @discardableResult func updateServerValue(
+    _ key: String,
+    _ newValue: AnyCodableValue,
+    _ requestor: (any QueryRefInternal)? = nil
+  ) -> [String] {
+
     self.serverValues[key] = newValue
     DataConnectLogger.debug("BDO updateServerValue: \(key) \(newValue) for \(guid)")
+    
+    if let requestor {
+      referencedFrom.insert(requestor.operationId)
+      DataConnectLogger
+        .debug("Inserted referencedFrom \(requestor). New count \(referencedFrom.count)")
+      
+    }
+    let refs: [String] = Array<String>(referencedFrom)
+    return refs
   }
   
   func value(forKey key: String) -> AnyCodableValue? {
