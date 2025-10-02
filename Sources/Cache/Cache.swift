@@ -51,15 +51,15 @@ class Cache {
       return
     }
     
-    switch config.type {
-    case .ephemeral:
-      self.cacheProvider = EphemeralCacheProvider(identifier)
-    case .persistent:
-      do {
-        self.cacheProvider = try SQLiteCacheProvider(identifier)
-      } catch {
-        DataConnectLogger.error("Unable to initialize Persistent provider \(error)")
+    do {
+      switch config.type {
+      case .ephemeral:
+        self.cacheProvider = try SQLiteCacheProvider(identifier, ephemeral: true)
+      case .persistent:
+        self.cacheProvider = try SQLiteCacheProvider(identifier, ephemeral: false)
       }
+    } catch {
+      DataConnectLogger.error("Unable to initialize Persistent provider \(error)")
     }
   }
   

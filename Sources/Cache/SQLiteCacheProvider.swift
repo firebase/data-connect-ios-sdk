@@ -23,25 +23,29 @@ class SQLiteCacheProvider: CacheProvider {
   private var db: OpaquePointer?
   private let queue = DispatchQueue(label: "com.google.firebase.dataconnect.sqlitecacheprovider")
 
-  init(_ cacheIdentifier: String) throws {
+  init(_ cacheIdentifier: String, ephemeral: Bool = false) throws {
     self.cacheIdentifier = cacheIdentifier
 
     try queue.sync {
-      let path = NSSearchPathForDirectoriesInDomains(
-        .applicationSupportDirectory,
-        .userDomainMask,
-        true
-      ).first!
-      let dbURL = URL(fileURLWithPath: path).appendingPathComponent("\(cacheIdentifier).sqlite3")
-
-      if sqlite3_open(dbURL.path, &db) != SQLITE_OK {
+      var dbIdentifier = ":memory:"
+      if !ephemeral {
+        let path = NSSearchPathForDirectoriesInDomains(
+          .applicationSupportDirectory,
+          .userDomainMask,
+          true
+        ).first!
+        let dbURL = URL(fileURLWithPath: path).appendingPathComponent("\(cacheIdentifier).sqlite3")
+        dbIdentifier = dbURL.path
+      }
+      if sqlite3_open(dbIdentifier, &db) != SQLITE_OK {
         throw
           DataConnectInternalError
           .sqliteError(
-            message: "Could not open database for identifier \(cacheIdentifier) at \(dbURL.path)"
+            message: "Could not open database for identifier \(cacheIdentifier) at \(dbIdentifier)"
           )
       }
 
+      DataConnectLogger.debug("Opened database with db path/id \(dbIdentifier) and cache identifier \(cacheIdentifier)")
       try createTables()
     }
   }
