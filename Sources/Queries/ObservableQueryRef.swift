@@ -27,7 +27,7 @@ public protocol ObservableQueryRef: QueryRef {
   var data: ResultData? { get }
   
   // source of the query results (server, cache, )
-  var source: QueryResultSource { get }
+  var source: ResultSource { get }
 
   // last error received. if last fetch was successful this is cleared
   var lastError: DataConnectError? { get }
@@ -51,7 +51,7 @@ public class QueryRefObservableObject<
   Variable: OperationVariable
 >: ObservableObject, ObservableQueryRef {
   
-  public var operationId: String {
+  var operationId: String {
     return baseRef.operationId
   }
 
@@ -103,7 +103,7 @@ public class QueryRefObservableObject<
   @Published public private(set) var lastError: DataConnectError?
   
   /// Source of the query results (server, local cache, ...)
-  @Published public private(set) var source: QueryResultSource = .unknown
+  @Published public private(set) var source: ResultSource = .unknown
 
   // QueryRef implementation
 
@@ -157,14 +157,14 @@ extension QueryRefObservableObject: QueryRefInternal {
 /// - ``data``: Published variable that contains bindable results of the query.
 /// - ``lastError``: Published variable that contains ``DataConnectError``  if last fetch had error.
 ///            If last fetch was successful, this variable is cleared
-@available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
+@available(macOS 15, iOS 17, tvOS 17, watchOS 10, *)
 @Observable
 public class QueryRefObservation<
   ResultData: Decodable & Sendable,
   Variable: OperationVariable
 >: ObservableQueryRef {
   
-  public var operationId: String {
+  var operationId: String {
     return baseRef.operationId
   }
 
@@ -214,7 +214,7 @@ public class QueryRefObservation<
   public private(set) var lastError: DataConnectError?
   
   /// Source of the query results (server, local cache, ...)
-  public private(set) var source: QueryResultSource = .unknown
+  public private(set) var source: ResultSource = .unknown
 
   // QueryRef implementation
 
@@ -234,7 +234,7 @@ public class QueryRefObservation<
   }
 }
 
-@available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
+@available(macOS 15, iOS 17, tvOS 17, watchOS 10, *)
 extension QueryRefObservation {
   nonisolated public func hash(into hasher: inout Hasher) {
       hasher.combine(baseRef)
@@ -245,14 +245,14 @@ extension QueryRefObservation {
     }
 }
 
-@available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
+@available(macOS 15, iOS 17, tvOS 17, watchOS 10, *)
 extension QueryRefObservation: CustomStringConvertible {
   nonisolated public var description: String {
     "QueryRefObservation(\(String(describing: baseRef)))"
   }
 }
 
-@available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
+@available(macOS 15, iOS 17, tvOS 17, watchOS 10, *)
 extension QueryRefObservation: QueryRefInternal {
   func publishServerResultsToSubscribers() async throws {
     try await baseRef.publishServerResultsToSubscribers()

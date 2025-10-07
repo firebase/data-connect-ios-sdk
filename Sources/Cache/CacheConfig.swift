@@ -20,18 +20,9 @@ public struct CacheConfig: Sendable {
   public let type: CacheProviderType // default provider is persistent type
   public let maxSize: Int
   
-  public init(type: CacheProviderType, maxSize: Int) {
+  public init(type: CacheProviderType = .persistent, maxSize: Int = 100_000_000) {
     self.type = type
     self.maxSize = maxSize
-  }
-  
-  public init() {
-    type = .persistent
-    #if os(watchOS)
-    maxSize = 40_000_000 
-    #else
-    maxSize = 100_000_000 
-    #endif
   }
   
 }
