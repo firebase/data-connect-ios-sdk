@@ -29,8 +29,8 @@ protocol CacheProvider {
   func setResultTree(queryId: String, tree: ResultTree)
 
   
-  func backingData(_ entityGuid: String) -> BackingDataObject
-  func updateBackingData(_ object: BackingDataObject)
+  func entityData(_ entityGuid: String) -> EntityDataObject
+  func updateEntityData(_ object: EntityDataObject)
   
   /*
    

@@ -20,7 +20,7 @@ let ResultTreeKindCodingKey = CodingUserInfoKey(rawValue: "com.google.firebase.d
 // Key that points to the QueryRef being updated in cache
 let UpdatingQueryRefsCodingKey = CodingUserInfoKey(rawValue: "com.google.firebase.dataconnect.updatingQueryRef")!
 
-// Key pointing to container for QueryRefs. BackingDataObjects fill this
+// Key pointing to container for QueryRefs. EntityDataObjects fill this
 let ImpactedRefsAccumulatorCodingKey = CodingUserInfoKey(rawValue: "com.google.firebase.dataconnect.impactedQueryRefs")!
 
 // Kind of result data we are encoding from or decoding to
@@ -29,8 +29,8 @@ enum ResultTreeKind {
   case dehydrated // JSON data is dehydrated and only contains refs to actual data objects
 }
 
-// Class used to accumulate query refs as we dehydrate the tree and find BDOs
-// BDOs contain references to other QueryRefs that reference the BDO
+// Class used to accumulate query refs as we dehydrate the tree and find EDOs
+// EDOs contain references to other QueryRefs that reference the EDO
 // We collect those QueryRefs here
 class ImpactedQueryRefsAccumulator {
   // operationIds of impacted QueryRefs
@@ -62,21 +62,21 @@ class ImpactedQueryRefsAccumulator {
 struct ResultTreeProcessor {
   
   /*
-   Go down the tree and convert them to Stubs
-    For each Stub
+   Go down the tree and convert them to nodes
+    For each Node
       - extract primary key
-      - Get the BDO for the PK
-        - extract scalars and update BDO with scalars
+      - Get the EDO for the PK
+        - extract scalars and update EDO with scalars
       - for each array
         - recursively process each object (could be scalar or composite)
-      - for composite objects (dictionaries), create references to their stubs
-        - create a Stub object and init it with dictionary.
+      - for composite objects (dictionaries), create references to their node
+        - create a Node and init it with dictionary.
    
    */
   
   func dehydrateResults(_ hydratedTree: String, cacheProvider: CacheProvider, requestor: (any QueryRefInternal)? = nil) throws -> (
     dehydratedResults: String,
-    rootObject: StubDataObject,
+    rootObject: EntityNode,
     impactedRefIds: [String]
   ) {
     let jsonDecoder = JSONDecoder()
@@ -85,7 +85,7 @@ struct ResultTreeProcessor {
     jsonDecoder.userInfo[CacheProviderUserInfoKey] = cacheProvider
     jsonDecoder.userInfo[ResultTreeKindCodingKey] = ResultTreeKind.hydrated
     jsonDecoder.userInfo[ImpactedRefsAccumulatorCodingKey] = impactedRefsAccumulator
-    let sdo = try jsonDecoder.decode(StubDataObject.self, from: hydratedTree.data(using: .utf8)!)
+    let enode = try jsonDecoder.decode(EntityNode.self, from: hydratedTree.data(using: .utf8)!)
     
     DataConnectLogger.debug("Impacted QueryRefs count: \(impactedRefsAccumulator.queryRefIds.count)")
     let impactedRefs = Array(impactedRefsAccumulator.queryRefIds)
@@ -93,7 +93,7 @@ struct ResultTreeProcessor {
     let jsonEncoder = JSONEncoder()
     jsonEncoder.userInfo[CacheProviderUserInfoKey] = cacheProvider
     jsonEncoder.userInfo[ResultTreeKindCodingKey] = ResultTreeKind.dehydrated
-    let jsonData = try jsonEncoder.encode(sdo)
+    let jsonData = try jsonEncoder.encode(enode)
     let dehydratedResultsString = String(data: jsonData, encoding: .utf8)!
     
     DataConnectLogger
@@ -101,22 +101,22 @@ struct ResultTreeProcessor {
         "\(#function): \nHydrated \n \(hydratedTree) \n\nDehydrated \n \(dehydratedResultsString)"
       )
     
-    return (dehydratedResultsString, sdo, impactedRefs)
+    return (dehydratedResultsString, enode, impactedRefs)
   }
   
   
   func hydrateResults(_ dehydratedTree: String, cacheProvider: CacheProvider) throws ->
-  (hydratedResults: String, rootObject: StubDataObject) {
+  (hydratedResults: String, rootObject: EntityNode) {
      let jsonDecoder = JSONDecoder()
      jsonDecoder.userInfo[CacheProviderUserInfoKey] = cacheProvider
      jsonDecoder.userInfo[ResultTreeKindCodingKey] = ResultTreeKind.dehydrated
-     let sdo = try jsonDecoder.decode(StubDataObject.self, from: dehydratedTree.data(using: .utf8)!)
-    DataConnectLogger.debug("Dehydrated Tree decoded to SDO: \(sdo)")
+     let enode = try jsonDecoder.decode(EntityNode.self, from: dehydratedTree.data(using: .utf8)!)
+    DataConnectLogger.debug("Dehydrated Tree decoded to EDO: \(enode)")
     
      let jsonEncoder = JSONEncoder()
      jsonEncoder.userInfo[CacheProviderUserInfoKey] = cacheProvider
      jsonEncoder.userInfo[ResultTreeKindCodingKey] = ResultTreeKind.hydrated
-     let hydratedResults = try jsonEncoder.encode(sdo)
+     let hydratedResults = try jsonEncoder.encode(enode)
      let hydratedResultsString = String(data: hydratedResults, encoding: .utf8)!
      
      DataConnectLogger
@@ -124,7 +124,7 @@ struct ResultTreeProcessor {
         "\(#function) Dehydrated \n \(dehydratedTree) \n\nHydrated \n \(hydratedResultsString)"
        )
      
-    return (hydratedResultsString, sdo)
+    return (hydratedResultsString, enode)
   }
   
 }
