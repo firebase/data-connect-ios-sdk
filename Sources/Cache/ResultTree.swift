@@ -23,7 +23,7 @@ struct ResultTree {
   let cachedAt: Date // Local time when the entry was cached / updated
   var lastAccessed: Date // Local time when the entry was read or updated
   
-  var rootObject: StubDataObject?
+  var rootObject: EntityNode?
   
   func isStale(_ ttl: TimeInterval) -> Bool {
     let now = Date()

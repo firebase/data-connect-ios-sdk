@@ -17,12 +17,12 @@ struct ScalarField {
   let value: AnyCodableValue
 }
 
-class BackingDataObject: CustomStringConvertible, Codable {
+class EntityDataObject: CustomStringConvertible, Codable {
   
-  // Set of QueryRefs that reference this BDO
+  // Set of QueryRefs that reference this EDO
   var referencedFrom = Set<String>()
   
-  var guid: String // globally unique id received from server
+  let guid: String // globally unique id received from server
   
   required init(guid: String) {
     self.guid = guid
@@ -36,7 +36,7 @@ class BackingDataObject: CustomStringConvertible, Codable {
   }
   
   // Updates value received from server and returns a list of QueryRef operation ids
-  // referenced from this BackingDataObject
+  // referenced from this EntityDataObject
   @discardableResult func updateServerValue(
     _ key: String,
     _ newValue: AnyCodableValue,
@@ -44,7 +44,7 @@ class BackingDataObject: CustomStringConvertible, Codable {
   ) -> [String] {
 
     self.serverValues[key] = newValue
-    DataConnectLogger.debug("BDO updateServerValue: \(key) \(newValue) for \(guid)")
+    DataConnectLogger.debug("EDO updateServerValue: \(key) \(newValue) for \(guid)")
     
     if let requestor {
       referencedFrom.insert(requestor.operationId)
@@ -62,7 +62,7 @@ class BackingDataObject: CustomStringConvertible, Codable {
   
   var description: String {
     return """
-      BackingDataObject:
+      EntityDataObject:
         globalID: \(guid)
         serverValues:
           \(serverValues.rawCopy())
@@ -84,7 +84,7 @@ class BackingDataObject: CustomStringConvertible, Codable {
   }
   
   required init(from decoder: Decoder) throws {
-    var container = try decoder.container(keyedBy: CodingKeys.self)
+    let container = try decoder.container(keyedBy: CodingKeys.self)
     
     let globalId = try container.decode(String.self, forKey: .globalID)
     self.guid = globalId
@@ -96,13 +96,13 @@ class BackingDataObject: CustomStringConvertible, Codable {
 }
 
 
-extension BackingDataObject: Equatable {
-  static func == (lhs: BackingDataObject, rhs: BackingDataObject) -> Bool {
+extension EntityDataObject: Equatable {
+  static func == (lhs: EntityDataObject, rhs: EntityDataObject) -> Bool {
     return lhs.guid == rhs.guid && lhs.serverValues.rawCopy() == rhs.serverValues.rawCopy()
   }
 }
 
-extension BackingDataObject: CustomDebugStringConvertible {
+extension EntityDataObject: CustomDebugStringConvertible {
   var debugDescription: String {
     return description
   }

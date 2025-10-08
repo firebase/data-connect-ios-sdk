@@ -18,32 +18,32 @@
  Codable Value must be a dict at root level
  
  Dict can contain
- (if BDO)
+ (if EDO)
  - Scalars, [Scalar] => Move this to DBO
  - References, [References] => Keep with
- (if no guid and therefore no BDO)
+ (if no guid and therefore no EDO)
  - Store CodableValue as - is
  
  
  */
 
 
-struct StubDataObject {
+struct EntityNode {
   
   // externalized (normalized) data.
   // Requires an entity globalID to be provided in selection set
-  var backingData: BackingDataObject?
+  var entityData: EntityDataObject?
   
-  // inline scalars are only populated if there is no BackingDataObject
+  // inline scalars are only populated if there is no EntityDataObject
   // i.e. if there is no entity globalID
   var scalars = [String: AnyCodableValue]()
   
-  // entity properties that point to other stub objects
-  var references = [String: StubDataObject]()
+  // entity properties that point to other entity nodes
+  var references = [String: EntityNode]()
   
   // properties that point to a list of other objects
   // scalar lists are stored inline.
-  var objectLists = [String: [StubDataObject]]()
+  var objectLists = [String: [EntityNode]]()
   
   enum CodingKeys: String, CodingKey {
     case globalID = "cacheId"
@@ -58,25 +58,25 @@ struct StubDataObject {
     impactedRefsAccumulator: ImpactedQueryRefsAccumulator? = nil
   ) {
     guard case let .dictionary(objectValues) = value else {
-      DataConnectLogger.error("StubDataObject inited with a non-dictionary type")
+      DataConnectLogger.error("EntityNode inited with a non-dictionary type")
       return nil
     }
     
     
     if case let .string(guid) = objectValues[GlobalIDKey] {
-      backingData = cacheProvider.backingData(guid)
+      entityData = cacheProvider.entityData(guid)
     } else if case let .uuid(guid) = objectValues[GlobalIDKey] {
       // underlying deserializer is detecting a uuid and converting it.
       // TODO: Remove once server starts to send the real GlobalID
-      backingData = cacheProvider.backingData(guid.uuidString)
+      entityData = cacheProvider.entityData(guid.uuidString)
     }
     
     for (key, value) in objectValues {
       switch value {
       case .dictionary(_):
         // a dictionary is treated as a composite object
-        // and converted to another Stub
-        if let st = StubDataObject(
+        // and converted to another node
+        if let st = EntityNode(
           value: value,
           cacheProvider: cacheProvider,
           impactedRefsAccumulator: impactedRefsAccumulator
@@ -86,10 +86,10 @@ struct StubDataObject {
           DataConnectLogger.warning("Failed to convert dictionary to a reference")
         }
       case .array(let objs):
-        var refArray = [StubDataObject]()
+        var refArray = [EntityNode]()
         var scalarArray = [AnyCodableValue]()
         for obj in objs {
-          if let st = StubDataObject(
+          if let st = EntityNode(
             value: obj,
             cacheProvider: cacheProvider,
             impactedRefsAccumulator: impactedRefsAccumulator
@@ -105,8 +105,8 @@ struct StubDataObject {
         if refArray.count > 0 {
           objectLists[key] = refArray
         } else if scalarArray.count > 0 {
-          if let backingData {
-            let impactedRefs = backingData.updateServerValue(
+          if let entityData {
+            let impactedRefs = entityData.updateServerValue(
               key,
               value,
               impactedRefsAccumulator?.requestor
@@ -117,8 +117,8 @@ struct StubDataObject {
           }
         }
       default:
-        if let backingData {
-          let impactedRefs = backingData.updateServerValue(
+        if let entityData {
+          let impactedRefs = entityData.updateServerValue(
             key,
             value,
             impactedRefsAccumulator?.requestor
@@ -132,14 +132,14 @@ struct StubDataObject {
       }
     } //for (key,value)
     
-    if let backingData {
-      for refId in backingData.referencedFrom { impactedRefsAccumulator?.append(refId) }
-      cacheProvider.updateBackingData(backingData)
+    if let entityData {
+      for refId in entityData.referencedFrom { impactedRefsAccumulator?.append(refId) }
+      cacheProvider.updateEntityData(entityData)
     }
   }
 }
 
-extension StubDataObject: Decodable {
+extension EntityNode: Decodable {
   
   init (from decoder: Decoder) throws {
     
@@ -164,21 +164,20 @@ extension StubDataObject: Decodable {
           .debug("Got impactedRefs before dehydration \(String(describing: impactedRefsAcc))")
       }
       
-      let sdo = StubDataObject(
+      let enode = EntityNode(
         value: value,
         cacheProvider: cacheProvider,
         impactedRefsAccumulator: impactedRefsAcc
       )
-      //DataConnectLogger.debug("Create SDO from JSON \(sdo?.debugDescription)")
       
       if impactedRefsAcc != nil {
         DataConnectLogger.debug("impactedRefs after dehydration \(String(describing: impactedRefsAcc))")
       }
       
-      if let sdo {
-        self = sdo
+      if let enode {
+        self = enode
       } else {
-        throw DataConnectCodecError.decodingFailed(message: "Failed to decode into a valid StubDataObject")
+        throw DataConnectCodecError.decodingFailed(message: "Failed to decode into a valid EntityNode")
       }
       
     } else {
@@ -186,14 +185,14 @@ extension StubDataObject: Decodable {
       let container = try decoder.container(keyedBy: CodingKeys.self)
       
       if let globalID = try container.decodeIfPresent(String.self, forKey: .globalID) {
-        self.backingData = cacheProvider.backingData(globalID)
+        self.entityData = cacheProvider.entityData(globalID)
       }
       
-      if let refs = try container.decodeIfPresent([String: StubDataObject].self, forKey: .references) {
+      if let refs = try container.decodeIfPresent([String: EntityNode].self, forKey: .references) {
         self.references = refs
       }
       
-      if let lists = try container.decodeIfPresent([String: [StubDataObject]].self, forKey: .objectLists) {
+      if let lists = try container.decodeIfPresent([String: [EntityNode]].self, forKey: .objectLists) {
         self.objectLists = lists
       }
       
@@ -205,7 +204,7 @@ extension StubDataObject: Decodable {
   }
 }
 
-extension StubDataObject: Encodable {
+extension EntityNode: Encodable {
   func encode(to encoder: Encoder) throws {
     guard let resultTreeKind = encoder.userInfo[ResultTreeKindCodingKey] as? ResultTreeKind else {
       throw DataConnectCodecError.decodingFailed(message: "Missing ResultTreeKind in decoder")
@@ -215,8 +214,8 @@ extension StubDataObject: Encodable {
       //var container = encoder.singleValueContainer()
       var container = encoder.container(keyedBy: DynamicCodingKey.self)
       
-      if let backingData {
-        let encodableData = try backingData.encodableData()
+      if let entityData {
+        let encodableData = try entityData.encodableData()
         for (key, value) in encodableData {
           try container.encode(value, forKey: DynamicCodingKey(stringValue: key)!)
         }
@@ -242,8 +241,8 @@ extension StubDataObject: Encodable {
     } else {
       // dehydrated tree required
       var container = encoder.container(keyedBy: CodingKeys.self)
-      if let backingData {
-        try container.encode(backingData.guid, forKey: .globalID)
+      if let entityData {
+        try container.encode(entityData.guid, forKey: .globalID)
       }
       
       if references.count > 0 {
@@ -261,20 +260,20 @@ extension StubDataObject: Encodable {
   }
 }
 
-extension StubDataObject: Equatable {
-  public static func == (lhs: StubDataObject, rhs: StubDataObject) -> Bool {
-    return lhs.backingData == rhs.backingData &&
+extension EntityNode: Equatable {
+  public static func == (lhs: EntityNode, rhs: EntityNode) -> Bool {
+    return lhs.entityData == rhs.entityData &&
     lhs.references == rhs.references &&
     lhs.objectLists == rhs.objectLists &&
     lhs.scalars == rhs.scalars
   }
 }
 
-extension StubDataObject: CustomDebugStringConvertible {
+extension EntityNode: CustomDebugStringConvertible {
   var debugDescription: String {
     return """
-      StubDataObject:
-          \(String(describing: self.backingData))
+      EntityNode:
+          \(String(describing: self.entityData))
         References:
           \(self.references)
         Lists:

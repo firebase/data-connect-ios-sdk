@@ -68,29 +68,29 @@ class SQLiteCacheProvider: CacheProvider {
       throw DataConnectInternalError.sqliteError(message: "Could not create result_tree table")
     }
 
-    let createBackingDataTable = """
-      CREATE TABLE IF NOT EXISTS backing_data (
+    let createEntityDataTable = """
+      CREATE TABLE IF NOT EXISTS entity_data (
           entity_guid TEXT PRIMARY KEY NOT NULL,
           object_state INTEGER DEFAULT 10,
           object BLOB NOT NULL
       );
       """
-    if sqlite3_exec(db, createBackingDataTable, nil, nil, nil) != SQLITE_OK {
-      throw DataConnectInternalError.sqliteError(message: "Could not create backing_data table")
+    if sqlite3_exec(db, createEntityDataTable, nil, nil, nil) != SQLITE_OK {
+      throw DataConnectInternalError.sqliteError(message: "Could not create entity_data table")
     }
 
-    // table to store reverse mapping of BDO => queryRefs mapping
-    // this is to know which BDOs are still referenced
-    let createBackingDataRefs = """
-      CREATE TABLE IF NOT EXISTS backing_data_query_refs (
-        entity_guid TEXT NOT NULL REFERENCES backing_data(entity_guid),
+    // table to store reverse mapping of EDO => queryRefs mapping
+    // this is to know which EDOs are still referenced
+    let createEntityDataRefs = """
+      CREATE TABLE IF NOT EXISTS entity_data_query_refs (
+        entity_guid TEXT NOT NULL REFERENCES entity_data(entity_guid),
         query_id TEXT NOT NULL REFERENCES result_tree(query_id),
         PRIMARY KEY (entity_guid, query_id)
       )
       """
-    if sqlite3_exec(db, createBackingDataRefs, nil, nil, nil) != SQLITE_OK {
+    if sqlite3_exec(db, createEntityDataRefs, nil, nil, nil) != SQLITE_OK {
       throw DataConnectInternalError.sqliteError(
-        message: "Could not create backing_data_query_refs table"
+        message: "Could not create entity_data_query_refs table"
       )
     }
   }
@@ -185,13 +185,13 @@ class SQLiteCacheProvider: CacheProvider {
     }
   }
 
-  func backingData(_ entityGuid: String) -> BackingDataObject {
+  func entityData(_ entityGuid: String) -> EntityDataObject {
     return queue.sync {
-      let query = "SELECT object FROM backing_data WHERE entity_guid = ?;"
+      let query = "SELECT object FROM entity_data WHERE entity_guid = ?;"
       var statement: OpaquePointer?
 
       if sqlite3_prepare_v2(db, query, -1, &statement, nil) != SQLITE_OK {
-        DataConnectLogger.error("Error preparing select statement for backing_data")
+        DataConnectLogger.error("Error preparing select statement for entity_data")
       } else {
         sqlite3_bind_text(statement, 1, (entityGuid as NSString).utf8String, -1, nil)
 
@@ -201,12 +201,12 @@ class SQLiteCacheProvider: CacheProvider {
             let data = Data(bytes: dataBlob, count: Int(dataBlobLength))
             sqlite3_finalize(statement)
             do {
-              let bdo = try JSONDecoder().decode(BackingDataObject.self, from: data)
-              DataConnectLogger.debug("Returning existing BDO for \(entityGuid)")
+              let edo = try JSONDecoder().decode(EntityDataObject.self, from: data)
+              DataConnectLogger.debug("Returning existing EDO for \(entityGuid)")
 
               let referencedQueryIds = _readQueryRefs(entityGuid: entityGuid)
-              bdo.referencedFrom = Set<String>(referencedQueryIds)
-              return bdo
+              edo.referencedFrom = Set<String>(referencedQueryIds)
+              return edo
             } catch {
               DataConnectLogger.error(
                 "Error decoding data object for entityGuid \(entityGuid): \(error)"
@@ -217,16 +217,16 @@ class SQLiteCacheProvider: CacheProvider {
         sqlite3_finalize(statement)
       }
 
-      // if we reach here it means we don't have a BDO in our database.
+      // if we reach here it means we don't have a EDO in our database.
       // So we create one.
-      let bdo = BackingDataObject(guid: entityGuid)
-      _setObject(entityGuid: entityGuid, object: bdo)
-      DataConnectLogger.debug("Created BDO for \(entityGuid)")
-      return bdo
+      let edo = EntityDataObject(guid: entityGuid)
+      _setObject(entityGuid: entityGuid, object: edo)
+      DataConnectLogger.debug("Created EDO for \(entityGuid)")
+      return edo
     }
   }
 
-  func updateBackingData(_ object: BackingDataObject) {
+  func updateEntityData(_ object: EntityDataObject) {
     queue.sync {
       _setObject(entityGuid: object.guid, object: object)
     }
@@ -234,15 +234,15 @@ class SQLiteCacheProvider: CacheProvider {
 
   // MARK: Private
   // These should run on queue but not call sync otherwise we deadlock
-  private func _setObject(entityGuid: String, object: BackingDataObject) {
+  private func _setObject(entityGuid: String, object: EntityDataObject) {
     dispatchPrecondition(condition: .onQueue(queue))
     do {
       let data = try JSONEncoder().encode(object)
-      let insert = "INSERT OR REPLACE INTO backing_data (entity_guid, object) VALUES (?, ?);"
+      let insert = "INSERT OR REPLACE INTO entity_data (entity_guid, object) VALUES (?, ?);"
       var statement: OpaquePointer?
 
       if sqlite3_prepare_v2(db, insert, -1, &statement, nil) != SQLITE_OK {
-        DataConnectLogger.error("Error preparing insert statement for backing_data")
+        DataConnectLogger.error("Error preparing insert statement for entity_data")
         return
       }
 
@@ -265,14 +265,14 @@ class SQLiteCacheProvider: CacheProvider {
     }
   }
 
-  private func _updateQueryRefs(object: BackingDataObject) {
+  private func _updateQueryRefs(object: EntityDataObject) {
     dispatchPrecondition(condition: .onQueue(queue))
 
     guard object.referencedFrom.count > 0 else {
       return
     }
     var insertReferences =
-      "INSERT OR REPLACE INTO backing_data_query_refs (entity_guid, query_id) VALUES "
+      "INSERT OR REPLACE INTO entity_data_query_refs (entity_guid, query_id) VALUES "
     for queryId in object.referencedFrom {
       insertReferences += "('\(object.guid)', '\(queryId)'), "
     }
@@ -281,7 +281,7 @@ class SQLiteCacheProvider: CacheProvider {
 
     var statementRefs: OpaquePointer?
     if sqlite3_prepare_v2(db, insertReferences, -1, &statementRefs, nil) != SQLITE_OK {
-      DataConnectLogger.error("Error preparing insert statement for backing_data_query_refs")
+      DataConnectLogger.error("Error preparing insert statement for entity_data_query_refs")
       return
     }
 
@@ -296,7 +296,7 @@ class SQLiteCacheProvider: CacheProvider {
 
   private func _readQueryRefs(entityGuid: String) -> [String] {
     let readRefs =
-      "SELECT query_id FROM backing_data_query_refs WHERE entity_guid = '\(entityGuid)'"
+      "SELECT query_id FROM entity_data_query_refs WHERE entity_guid = '\(entityGuid)'"
     var statementRefs: OpaquePointer?
     var queryIds: [String] = []
 
