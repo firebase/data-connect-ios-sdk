@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import Foundation
+
 struct ScalarField {
   let name: String
   let value: AnyCodableValue
@@ -19,16 +21,18 @@ struct ScalarField {
 
 class EntityDataObject: CustomStringConvertible, Codable {
   
-  // Set of QueryRefs that reference this EDO
-  var referencedFrom = Set<String>()
-  
   let guid: String // globally unique id received from server
+  
+  private let accessQueue = DispatchQueue(
+    label: "com.google.firebase.dataconnect.entityData",
+    autoreleaseFrequency: .workItem
+  )
   
   required init(guid: String) {
     self.guid = guid
   }
   
-  private var serverValues = SynchronizedDictionary<String, AnyCodableValue>()
+  private var serverValues = [String: AnyCodableValue]()
   
   enum CodingKeys: String, CodingKey {
     case globalID = "guid"
@@ -43,43 +47,71 @@ class EntityDataObject: CustomStringConvertible, Codable {
     _ requestor: (any QueryRefInternal)? = nil
   ) -> [String] {
 
-    self.serverValues[key] = newValue
-    DataConnectLogger.debug("EDO updateServerValue: \(key) \(newValue) for \(guid)")
-    
-    if let requestor {
-      referencedFrom.insert(requestor.operationId)
-      DataConnectLogger
-        .debug("Inserted referencedFrom \(requestor). New count \(referencedFrom.count)")
+    accessQueue.sync {
+      self.serverValues[key] = newValue
+      DataConnectLogger.debug("EDO updateServerValue: \(key) \(newValue) for \(guid)")
       
+      if let requestor {
+        referencedFrom.insert(requestor.operationId)
+        DataConnectLogger
+          .debug("Inserted referencedFrom \(requestor). New count \(referencedFrom.count)")
+        
+      }
+      let refs: [String] = Array<String>(referencedFrom)
+      return refs
     }
-    let refs: [String] = Array<String>(referencedFrom)
-    return refs
   }
   
   func value(forKey key: String) -> AnyCodableValue? {
-    return self.serverValues[key]
+    accessQueue.sync {
+      return self.serverValues[key]
+    }
   }
+  
+  // MARK: Track referenced QueryRefs
+  
+  // Set of QueryRefs that reference this EDO
+  private var referencedFrom = Set<String>()
+  
+  func updateReferencedFrom(_ refs: Set<String>) {
+    accessQueue.sync {
+      self.referencedFrom = refs
+    }
+  }
+  
+  func referencedFromRefs() -> Set<String> {
+    accessQueue.sync {
+      return self.referencedFrom
+    }
+  }
+  
+  var isReferencedFromAnyQueryRef: Bool {
+    accessQueue.sync {
+      return !referencedFrom.isEmpty
+    }
+  }
+  
   
   var description: String {
     return """
       EntityDataObject:
         globalID: \(guid)
         serverValues:
-          \(serverValues.rawCopy())
+          \(serverValues)
       """
   }
   
   func encodableData() throws -> [String: AnyCodableValue] {
     var encodingValues = [String: AnyCodableValue]()
     encodingValues[GlobalIDKey] = .string(guid)
-    encodingValues.merge(serverValues.rawCopy()) { (_, new) in new }
+    encodingValues.merge(serverValues) { (_, new) in new }
     return encodingValues
   }
   
   public func encode(to encoder: Encoder) throws {
     var container = encoder.container(keyedBy: CodingKeys.self)
     try container.encode(guid, forKey: .globalID)
-    try container.encode(serverValues.rawCopy(), forKey: .serverValues)
+    try container.encode(serverValues, forKey: .serverValues)
     // once we have localValues, we will need to merge between the two dicts and encode
   }
   
@@ -89,8 +121,7 @@ class EntityDataObject: CustomStringConvertible, Codable {
     let globalId = try container.decode(String.self, forKey: .globalID)
     self.guid = globalId
     
-    let rawValues = try container.decode([String: AnyCodableValue].self, forKey: .serverValues)
-    serverValues.updateValues(rawValues)
+    serverValues = try container.decode([String: AnyCodableValue].self, forKey: .serverValues)
   }
   
 }
@@ -98,7 +129,7 @@ class EntityDataObject: CustomStringConvertible, Codable {
 
 extension EntityDataObject: Equatable {
   static func == (lhs: EntityDataObject, rhs: EntityDataObject) -> Bool {
-    return lhs.guid == rhs.guid && lhs.serverValues.rawCopy() == rhs.serverValues.rawCopy()
+    return lhs.guid == rhs.guid && lhs.serverValues == rhs.serverValues
   }
 }
 

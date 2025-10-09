@@ -133,7 +133,7 @@ struct EntityNode {
     } //for (key,value)
     
     if let entityData {
-      for refId in entityData.referencedFrom { impactedRefsAccumulator?.append(refId) }
+      for refId in entityData.referencedFromRefs() { impactedRefsAccumulator?.append(refId) }
       cacheProvider.updateEntityData(entityData)
     }
   }

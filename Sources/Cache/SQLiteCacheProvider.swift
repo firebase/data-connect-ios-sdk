@@ -16,12 +16,21 @@ import FirebaseCore
 import Foundation
 import SQLite3
 
+fileprivate enum TableName {
+  static let entityDataObjects = "entity_data"
+  static let resultTree = "result_tree"
+  static let entityDataQueryRefs = "entity_data_query_refs"
+}
+
 class SQLiteCacheProvider: CacheProvider {
 
   let cacheIdentifier: String
 
   private var db: OpaquePointer?
-  private let queue = DispatchQueue(label: "com.google.firebase.dataconnect.sqlitecacheprovider")
+  private let queue = DispatchQueue(
+    label: "com.google.firebase.dataconnect.sqlitecacheprovider",
+    autoreleaseFrequency: .workItem
+  )
 
   init(_ cacheIdentifier: String, ephemeral: Bool = false) throws {
     self.cacheIdentifier = cacheIdentifier
@@ -58,7 +67,7 @@ class SQLiteCacheProvider: CacheProvider {
     dispatchPrecondition(condition: .onQueue(queue))
 
     let createResultTreeTable = """
-      CREATE TABLE IF NOT EXISTS result_tree (
+      CREATE TABLE IF NOT EXISTS \(TableName.resultTree) (
           query_id TEXT PRIMARY KEY NOT NULL,
           last_accessed REAL NOT NULL,
           tree BLOB NOT NULL
@@ -69,7 +78,7 @@ class SQLiteCacheProvider: CacheProvider {
     }
 
     let createEntityDataTable = """
-      CREATE TABLE IF NOT EXISTS entity_data (
+      CREATE TABLE IF NOT EXISTS \(TableName.entityDataObjects) (
           entity_guid TEXT PRIMARY KEY NOT NULL,
           object_state INTEGER DEFAULT 10,
           object BLOB NOT NULL
@@ -82,7 +91,7 @@ class SQLiteCacheProvider: CacheProvider {
     // table to store reverse mapping of EDO => queryRefs mapping
     // this is to know which EDOs are still referenced
     let createEntityDataRefs = """
-      CREATE TABLE IF NOT EXISTS entity_data_query_refs (
+      CREATE TABLE IF NOT EXISTS \(TableName.entityDataQueryRefs) (
         entity_guid TEXT NOT NULL REFERENCES entity_data(entity_guid),
         query_id TEXT NOT NULL REFERENCES result_tree(query_id),
         PRIMARY KEY (entity_guid, query_id)
@@ -205,7 +214,7 @@ class SQLiteCacheProvider: CacheProvider {
               DataConnectLogger.debug("Returning existing EDO for \(entityGuid)")
 
               let referencedQueryIds = _readQueryRefs(entityGuid: entityGuid)
-              edo.referencedFrom = Set<String>(referencedQueryIds)
+              edo.updateReferencedFrom(Set<String>(referencedQueryIds))
               return edo
             } catch {
               DataConnectLogger.error(
@@ -268,12 +277,12 @@ class SQLiteCacheProvider: CacheProvider {
   private func _updateQueryRefs(object: EntityDataObject) {
     dispatchPrecondition(condition: .onQueue(queue))
 
-    guard object.referencedFrom.count > 0 else {
+    guard object.isReferencedFromAnyQueryRef else {
       return
     }
     var insertReferences =
       "INSERT OR REPLACE INTO entity_data_query_refs (entity_guid, query_id) VALUES "
-    for queryId in object.referencedFrom {
+    for queryId in object.referencedFromRefs() {
       insertReferences += "('\(object.guid)', '\(queryId)'), "
     }
     insertReferences.removeLast(2)
