@@ -1,4 +1,4 @@
-// Copyright 2025 Google LLC
+// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import Foundation
 
-/// Types of supported cache providers
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public enum CacheProviderType: Sendable {
-  case ephemeral // cache is held in memory and not persisted to disk.
-  case persistent // cache is persisted to disk. This is the default type
-}
+public struct OperationResult<ResultData: Decodable & Sendable>: Sendable {
 
+  public let data: ResultData?
+  public let source: ResultSource
+}

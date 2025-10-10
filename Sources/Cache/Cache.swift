@@ -52,7 +52,7 @@ class Cache {
     }
     
     do {
-      switch config.type {
+      switch config.storage {
       case .ephemeral:
         self.cacheProvider = try SQLiteCacheProvider(identifier, ephemeral: true)
       case .persistent:
@@ -77,7 +77,7 @@ class Cache {
   private func contructCacheIdentifier() -> String {
     dispatchPrecondition(condition: .onQueue(queue))
     
-    let identifier = "\(self.config.type)-\(String(describing: dataConnect.app.options.projectID))-\(dataConnect.app.name)-\(dataConnect.connectorConfig.serviceId)-\(dataConnect.connectorConfig.connector)-\(dataConnect.connectorConfig.location)-\(Auth.auth(app: dataConnect.app).currentUser?.uid ?? "anon")-\(dataConnect.settings.host)"
+    let identifier = "\(self.config.storage)-\(String(describing: dataConnect.app.options.projectID))-\(dataConnect.app.name)-\(dataConnect.connectorConfig.serviceId)-\(dataConnect.connectorConfig.connector)-\(dataConnect.connectorConfig.location)-\(Auth.auth(app: dataConnect.app).currentUser?.uid ?? "anon")-\(dataConnect.settings.host)"
     let encoded = identifier.sha256
     DataConnectLogger.debug("Created Cache Identifier \(encoded) for \(identifier)")
     return encoded

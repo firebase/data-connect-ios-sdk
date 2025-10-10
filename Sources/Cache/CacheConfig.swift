@@ -17,11 +17,16 @@
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct CacheConfig: Sendable {
   
-  public let type: CacheProviderType // default provider is persistent type
-  public let maxSize: Int
+  public enum Storage: Sendable {
+    case persistent
+    case ephemeral
+  }
   
-  public init(type: CacheProviderType = .persistent, maxSize: Int = 100_000_000) {
-    self.type = type
+  public let storage: Storage // default provider is persistent type
+  public let maxSize: UInt64
+  
+  public init(storage: Storage = .persistent, maxSize: UInt64 = 100_000_000) {
+    self.storage = storage
     self.maxSize = maxSize
   }
   
