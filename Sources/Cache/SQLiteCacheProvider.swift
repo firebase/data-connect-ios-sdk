@@ -18,8 +18,15 @@ import SQLite3
 
 fileprivate enum TableName {
   static let entityDataObjects = "entity_data"
-  static let resultTree = "result_tree"
+  static let resultTree = "query_results"
   static let entityDataQueryRefs = "entity_data_query_refs"
+}
+
+fileprivate enum ColumnName {
+  static let entityId = "entity_guid"
+  static let data = "data"
+  static let queryId = "query_id"
+  static let lastAccessed = "last_accessed"
 }
 
 class SQLiteCacheProvider: CacheProvider {
@@ -68,20 +75,20 @@ class SQLiteCacheProvider: CacheProvider {
 
     let createResultTreeTable = """
       CREATE TABLE IF NOT EXISTS \(TableName.resultTree) (
-          query_id TEXT PRIMARY KEY NOT NULL,
-          last_accessed REAL NOT NULL,
-          tree BLOB NOT NULL
+          \(ColumnName.queryId) TEXT PRIMARY KEY NOT NULL,
+          \(ColumnName.lastAccessed) REAL NOT NULL,
+          \(ColumnName.data) BLOB NOT NULL
       );
       """
     if sqlite3_exec(db, createResultTreeTable, nil, nil, nil) != SQLITE_OK {
-      throw DataConnectInternalError.sqliteError(message: "Could not create result_tree table")
+      throw DataConnectInternalError
+        .sqliteError(message: "Could not create \(TableName.resultTree) table")
     }
 
     let createEntityDataTable = """
       CREATE TABLE IF NOT EXISTS \(TableName.entityDataObjects) (
-          entity_guid TEXT PRIMARY KEY NOT NULL,
-          object_state INTEGER DEFAULT 10,
-          object BLOB NOT NULL
+          \(ColumnName.entityId) TEXT PRIMARY KEY NOT NULL,
+          \(ColumnName.data) BLOB NOT NULL
       );
       """
     if sqlite3_exec(db, createEntityDataTable, nil, nil, nil) != SQLITE_OK {
@@ -92,9 +99,9 @@ class SQLiteCacheProvider: CacheProvider {
     // this is to know which EDOs are still referenced
     let createEntityDataRefs = """
       CREATE TABLE IF NOT EXISTS \(TableName.entityDataQueryRefs) (
-        entity_guid TEXT NOT NULL REFERENCES entity_data(entity_guid),
-        query_id TEXT NOT NULL REFERENCES result_tree(query_id),
-        PRIMARY KEY (entity_guid, query_id)
+        \(ColumnName.entityId) TEXT NOT NULL REFERENCES \(TableName.entityDataObjects)(\(ColumnName.entityId)),
+        \(ColumnName.queryId) TEXT NOT NULL REFERENCES \(TableName.resultTree)(\(ColumnName.queryId)),
+        PRIMARY KEY (\(ColumnName.entityId), \(ColumnName.queryId))
       )
       """
     if sqlite3_exec(db, createEntityDataRefs, nil, nil, nil) != SQLITE_OK {
@@ -107,7 +114,7 @@ class SQLiteCacheProvider: CacheProvider {
   private func updateLastAccessedTime(forQueryId queryId: String) {
 
     dispatchPrecondition(condition: .onQueue(queue))
-    let updateQuery = "UPDATE result_tree SET last_accessed = ? WHERE query_id = ?;"
+    let updateQuery = "UPDATE \(TableName.resultTree) SET \(ColumnName.lastAccessed) = ? WHERE \(ColumnName.queryId) = ?;"
     var statement: OpaquePointer?
 
     if sqlite3_prepare_v2(self.db, updateQuery, -1, &statement, nil) != SQLITE_OK {
@@ -119,7 +126,7 @@ class SQLiteCacheProvider: CacheProvider {
     sqlite3_bind_text(statement, 2, (queryId as NSString).utf8String, -1, nil)
 
     if sqlite3_step(statement) != SQLITE_DONE {
-      DataConnectLogger.error("Error updating last_accessed for query \(queryId)")
+      DataConnectLogger.error("Error updating \(ColumnName.lastAccessed) for query \(queryId)")
     }
     sqlite3_finalize(statement)
 
@@ -127,11 +134,11 @@ class SQLiteCacheProvider: CacheProvider {
 
   func resultTree(queryId: String) -> ResultTree? {
     return queue.sync {
-      let query = "SELECT tree FROM result_tree WHERE query_id = ?;"
+      let query = "SELECT \(ColumnName.data) FROM \(TableName.resultTree) WHERE \(ColumnName.queryId) = ?;"
       var statement: OpaquePointer?
 
       if sqlite3_prepare_v2(db, query, -1, &statement, nil) != SQLITE_OK {
-        DataConnectLogger.error("Error preparing select statement for result_tree")
+        DataConnectLogger.error("Error preparing select statement for \(TableName.resultTree)")
         return nil
       }
 
@@ -165,11 +172,11 @@ class SQLiteCacheProvider: CacheProvider {
         var tree = tree
         let data = try JSONEncoder().encode(tree)
         let insert =
-          "INSERT OR REPLACE INTO result_tree (query_id, last_accessed, tree) VALUES (?, ?, ?);"
+        "INSERT OR REPLACE INTO \(TableName.resultTree) (\(ColumnName.queryId), \(ColumnName.lastAccessed), \(ColumnName.data)) VALUES (?, ?, ?);"
         var statement: OpaquePointer?
 
         if sqlite3_prepare_v2(db, insert, -1, &statement, nil) != SQLITE_OK {
-          DataConnectLogger.error("Error preparing insert statement for result_tree")
+          DataConnectLogger.error("Error preparing insert statement for \(TableName.resultTree)")
           return
         }
 
@@ -196,11 +203,12 @@ class SQLiteCacheProvider: CacheProvider {
 
   func entityData(_ entityGuid: String) -> EntityDataObject {
     return queue.sync {
-      let query = "SELECT object FROM entity_data WHERE entity_guid = ?;"
+      let query = "SELECT \(ColumnName.data) FROM \(TableName.entityDataObjects) WHERE \(ColumnName.entityId) = ?;"
       var statement: OpaquePointer?
 
       if sqlite3_prepare_v2(db, query, -1, &statement, nil) != SQLITE_OK {
-        DataConnectLogger.error("Error preparing select statement for entity_data")
+        DataConnectLogger
+          .error("Error preparing select statement for \(TableName.entityDataObjects)")
       } else {
         sqlite3_bind_text(statement, 1, (entityGuid as NSString).utf8String, -1, nil)
 
@@ -247,7 +255,7 @@ class SQLiteCacheProvider: CacheProvider {
     dispatchPrecondition(condition: .onQueue(queue))
     do {
       let data = try JSONEncoder().encode(object)
-      let insert = "INSERT OR REPLACE INTO entity_data (entity_guid, object) VALUES (?, ?);"
+      let insert = "INSERT OR REPLACE INTO \(TableName.entityDataObjects) (\(ColumnName.entityId), \(ColumnName.data)) VALUES (?, ?);"
       var statement: OpaquePointer?
 
       if sqlite3_prepare_v2(db, insert, -1, &statement, nil) != SQLITE_OK {
@@ -281,7 +289,7 @@ class SQLiteCacheProvider: CacheProvider {
       return
     }
     var insertReferences =
-      "INSERT OR REPLACE INTO entity_data_query_refs (entity_guid, query_id) VALUES "
+    "INSERT OR REPLACE INTO \(TableName.entityDataQueryRefs) (\(ColumnName.entityId), \(ColumnName.queryId)) VALUES "
     for queryId in object.referencedFromRefs() {
       insertReferences += "('\(object.guid)', '\(queryId)'), "
     }
@@ -305,7 +313,7 @@ class SQLiteCacheProvider: CacheProvider {
 
   private func _readQueryRefs(entityGuid: String) -> [String] {
     let readRefs =
-      "SELECT query_id FROM entity_data_query_refs WHERE entity_guid = '\(entityGuid)'"
+    "SELECT \(ColumnName.queryId) FROM \(TableName.entityDataQueryRefs) WHERE \(ColumnName.entityId) = '\(entityGuid)'"
     var statementRefs: OpaquePointer?
     var queryIds: [String] = []
 
