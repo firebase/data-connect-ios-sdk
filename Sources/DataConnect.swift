@@ -54,8 +54,7 @@ public class DataConnect {
   public class func dataConnect(app: FirebaseApp? = FirebaseApp.app(),
                                 connectorConfig: ConnectorConfig,
                                 settings: DataConnectSettings = DataConnectSettings(),
-                                callerSDKType: CallerSDKType = .base,
-                                cacheConfig: CacheConfig? = CacheConfig())
+                                callerSDKType: CallerSDKType = .base)
     -> DataConnect {
     guard let app = app else {
       fatalError("No Firebase App present")
@@ -67,7 +66,7 @@ public class DataConnect {
         config: connectorConfig,
         settings: settings,
         callerSDKType: callerSDKType,
-        cacheConfig: cacheConfig
+        cacheConfig: settings.cacheConfig
       )
   }
 
