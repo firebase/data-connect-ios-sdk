@@ -17,9 +17,9 @@ import Foundation
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class OperationsManager {
   private var grpcClient: GrpcClient
-  
+
   private var cache: Cache?
- 
+
   private let queryRefAccessQueue = DispatchQueue(
     label: "firebase.dataconnect.queryRef.AccessQ",
     autoreleaseFrequency: .workItem
@@ -46,7 +46,7 @@ class OperationsManager {
     queryRefAccessQueue.sync {
       var req = request // requestId is a mutating call.
       let requestId = req.requestId
-      
+
       if let ref = queryRefs[requestId] {
         return ref
       }
@@ -74,10 +74,10 @@ class OperationsManager {
       return refObsObject
     } // accessQueue.sync
   }
-  
+
   func queryRef(for operationId: String) -> (any ObservableQueryRef)? {
     queryRefAccessQueue.sync {
-      return queryRefs[operationId]
+      queryRefs[operationId]
     }
   }
 

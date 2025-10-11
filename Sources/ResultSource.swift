@@ -12,17 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 /// Indicates the source of the query results data.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public enum ResultSource: Sendable {
-  
   /// source not known or cannot be determined
   case unknown
-  
+
   /// The query results are from server
   case server
-  
+
   /// Query results are from cache
   /// stale - indicates if cached data is within TTL or outside.
   case cache(stale: Bool)

@@ -12,20 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Foundation
 import CryptoKit
+import Foundation
 
 import Firebase
 
 @preconcurrency import Combine
 import Observation
 
-
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public protocol ObservableQueryRef: QueryRef {
   // results of fetch.
   var data: ResultData? { get }
-  
+
   // source of the query results (server, cache, )
   var source: ResultSource { get }
 
@@ -50,7 +49,6 @@ public class QueryRefObservableObject<
   ResultData: Decodable & Sendable,
   Variable: OperationVariable
 >: ObservableObject, ObservableQueryRef {
-  
   var operationId: String {
     return baseRef.operationId
   }
@@ -61,12 +59,10 @@ public class QueryRefObservableObject<
 
   private var resultsCancellable: AnyCancellable?
 
-  init(
-    request: QueryRequest<Variable>,
-    dataType: ResultData.Type,
-    grpcClient: GrpcClient,
-    cache: Cache?
-  ) {
+  init(request: QueryRequest<Variable>,
+       dataType: ResultData.Type,
+       grpcClient: GrpcClient,
+       cache: Cache?) {
     self.request = request
     baseRef = GenericQueryRef(
       request: request,
@@ -101,7 +97,7 @@ public class QueryRefObservableObject<
   /// Error thrown if error occurs during execution of query. If the last fetch was successful the
   /// error is cleared
   @Published public private(set) var lastError: DataConnectError?
-  
+
   /// Source of the query results (server, local cache, ...)
   @Published public private(set) var source: ResultSource = .unknown
 
@@ -109,7 +105,8 @@ public class QueryRefObservableObject<
 
   /// Executes the query and returns `ResultData`. This will also update the published `data`
   /// variable
-  public func execute(fetchPolicy: QueryFetchPolicy = .defaultPolicy) async throws -> OperationResult<ResultData> {
+  public func execute(fetchPolicy: QueryFetchPolicy = .defaultPolicy) async throws
+    -> OperationResult<ResultData> {
     let result = try await baseRef.execute(fetchPolicy: fetchPolicy)
     return result
   }
@@ -124,14 +121,14 @@ public class QueryRefObservableObject<
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension QueryRefObservableObject {
-  nonisolated public func hash(into hasher: inout Hasher) {
-      hasher.combine(baseRef)
-    }
-    
-  public static func == (lhs: QueryRefObservableObject, rhs: QueryRefObservableObject) -> Bool {
+public extension QueryRefObservableObject {
+  nonisolated func hash(into hasher: inout Hasher) {
+    hasher.combine(baseRef)
+  }
+
+  static func == (lhs: QueryRefObservableObject, rhs: QueryRefObservableObject) -> Bool {
     lhs.baseRef == rhs.baseRef
-    }
+  }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -163,7 +160,6 @@ public class QueryRefObservation<
   ResultData: Decodable & Sendable,
   Variable: OperationVariable
 >: ObservableQueryRef {
-  
   var operationId: String {
     return baseRef.operationId
   }
@@ -177,7 +173,8 @@ public class QueryRefObservation<
   @ObservationIgnored
   private var resultsCancellable: AnyCancellable?
 
-  init(request: QueryRequest<Variable>, dataType: ResultData.Type, grpcClient: GrpcClient, cache: Cache?) {
+  init(request: QueryRequest<Variable>, dataType: ResultData.Type, grpcClient: GrpcClient,
+       cache: Cache?) {
     self.request = request
     baseRef = GenericQueryRef(
       request: request,
@@ -212,7 +209,7 @@ public class QueryRefObservation<
   /// Error thrown if error occurs during execution of query. If the last fetch was successful the
   /// error is cleared
   public private(set) var lastError: DataConnectError?
-  
+
   /// Source of the query results (server, local cache, ...)
   public private(set) var source: ResultSource = .unknown
 
@@ -220,7 +217,8 @@ public class QueryRefObservation<
 
   /// Executes the query and returns `ResultData`. This will also update the published `data`
   /// variable
-  public func execute(fetchPolicy: QueryFetchPolicy = .defaultPolicy) async throws -> OperationResult<ResultData> {
+  public func execute(fetchPolicy: QueryFetchPolicy = .defaultPolicy) async throws
+    -> OperationResult<ResultData> {
     let result = try await baseRef.execute(fetchPolicy: fetchPolicy)
     return result
   }
@@ -229,25 +227,25 @@ public class QueryRefObservation<
   /// Use this function ONLY if you plan to use the Query Ref outside of SwiftUI context - (UIKit,
   /// background updates,...)
   public func subscribe() async throws
-  -> AnyPublisher<Result<OperationResult<ResultData>, AnyDataConnectError>, Never> {
+    -> AnyPublisher<Result<OperationResult<ResultData>, AnyDataConnectError>, Never> {
     return await baseRef.subscribe()
   }
 }
 
 @available(macOS 15, iOS 17, tvOS 17, watchOS 10, *)
-extension QueryRefObservation {
-  nonisolated public func hash(into hasher: inout Hasher) {
-      hasher.combine(baseRef)
-    }
-    
-  public static func == (lhs: QueryRefObservation, rhs: QueryRefObservation) -> Bool {
+public extension QueryRefObservation {
+  nonisolated func hash(into hasher: inout Hasher) {
+    hasher.combine(baseRef)
+  }
+
+  static func == (lhs: QueryRefObservation, rhs: QueryRefObservation) -> Bool {
     lhs.baseRef == rhs.baseRef
-    }
+  }
 }
 
 @available(macOS 15, iOS 17, tvOS 17, watchOS 10, *)
 extension QueryRefObservation: CustomStringConvertible {
-  nonisolated public var description: String {
+  public nonisolated var description: String {
     "QueryRefObservation(\(String(describing: baseRef)))"
   }
 }

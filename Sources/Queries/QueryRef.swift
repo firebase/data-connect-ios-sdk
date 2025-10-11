@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Foundation
 import CryptoKit
+import Foundation
 
 import Firebase
 
@@ -34,21 +34,23 @@ public enum ResultsPublisherType {
   case observableMacro
 }
 
-
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public protocol QueryRef: OperationRef, Equatable, Hashable {
   // This call starts query execution and publishes data
-  func subscribe() async throws -> AnyPublisher<Result<OperationResult<ResultData>, AnyDataConnectError>, Never>
-  
+  func subscribe() async throws -> AnyPublisher<Result<
+    OperationResult<ResultData>,
+    AnyDataConnectError
+  >, Never>
+
   // Execute override for queries to include fetch policy
   func execute(fetchPolicy: QueryFetchPolicy) async throws -> OperationResult<ResultData>
-  
-  //func execute(fetchPolicy: QueryFetchPolicy) async throws
+
+  // func execute(fetchPolicy: QueryFetchPolicy) async throws
 }
 
-extension QueryRef {
+public extension QueryRef {
   // default implementation for execute()
-  public func execute() async throws -> OperationResult<ResultData> {
+  func execute() async throws -> OperationResult<ResultData> {
     try await execute(fetchPolicy: .defaultPolicy)
   }
 }

@@ -22,18 +22,16 @@ let GlobalIDKey: String = "cacheId"
 let CacheProviderUserInfoKey = CodingUserInfoKey(rawValue: "fdc_cache_provider")!
 
 protocol CacheProvider {
-  
   var cacheIdentifier: String { get }
-  
+
   func resultTree(queryId: String) -> ResultTree?
   func setResultTree(queryId: String, tree: ResultTree)
 
-  
   func entityData(_ entityGuid: String) -> EntityDataObject
   func updateEntityData(_ object: EntityDataObject)
-  
+
   /*
-   
-  func size() -> Int
-   */
+
+   func size() -> Int
+    */
 }

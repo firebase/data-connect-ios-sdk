@@ -12,21 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Foundation
 import CryptoKit
+import Foundation
 
 extension Data {
   var sha256String: String {
     let hashDigest = SHA256.hash(data: self)
-    let hashString = hashDigest.compactMap{ String(format: "%02x", $0) }.joined()
+    let hashString = hashDigest.compactMap { String(format: "%02x", $0) }.joined()
     return hashString
   }
 }
 
 extension String {
   var sha256: String {
-    let digest = SHA256.hash(data: self.data(using: .utf8)!)
-    let hashString = digest.compactMap { String(format: "%02x", $0)}.joined()
+    let digest = SHA256.hash(data: data(using: .utf8)!)
+    let hashString = digest.compactMap { String(format: "%02x", $0) }.joined()
     return hashString
   }
 }

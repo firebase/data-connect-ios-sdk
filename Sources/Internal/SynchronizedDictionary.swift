@@ -16,10 +16,10 @@ import Foundation
 
 class SynchronizedDictionary<Key: Hashable, Value> {
   private var dictionary: [Key: Value] = [:]
-  private let queue: DispatchQueue = DispatchQueue(label: "com.google.firebase.dataconnect.syncDictionaryQ")
-  
+  private let queue: DispatchQueue = .init(label: "com.google.firebase.dataconnect.syncDictionaryQ")
+
   init() {}
-  
+
   subscript(key: Key) -> Value? {
     get {
       return queue.sync { self.dictionary[key] }
@@ -29,15 +29,14 @@ class SynchronizedDictionary<Key: Hashable, Value> {
       }
     }
   }
-  
+
   func rawCopy() -> [Key: Value] {
     return queue.sync { self.dictionary }
   }
-  
+
   func updateValues(_ values: [Key: Value]) {
     queue.async(flags: .barrier) {
-      self.dictionary.merge(values) { (_, new) in new }
+      self.dictionary.merge(values) { _, new in new }
     }
   }
-  
 }

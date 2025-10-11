@@ -15,16 +15,15 @@
 /// Policies for executing a Data Connect query. This value is passed to
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public enum QueryFetchPolicy {
-  
   /// default policy tries to fetch from cache if fetch is within the TTL.
   /// If fetch is outside TTL it revalidates / refreshes from the server.
   /// If server revalidation call fails, cached value is returned if present.
   /// TTL is specified as part of the query GQL configuration.
   case defaultPolicy
-  
+
   /// Always attempts to return from cache. Does not reach out to server
   case cache
-  
+
   /// Attempts to fetch from server ignoring cache.
   /// Cache is refreshed from server data after the call
   case server

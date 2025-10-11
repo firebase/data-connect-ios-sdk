@@ -15,74 +15,72 @@
 import FirebaseAuth
 
 class Cache {
-  
   let config: CacheConfig
   let dataConnect: DataConnect
-  
+
   private var cacheProvider: CacheProvider?
-  
+
   private let queue = DispatchQueue(label: "com.google.firebase.dataconnect.cache")
-  
+
   // holding it to avoid dereference
   private var authChangeListenerProtocol: NSObjectProtocol?
-  
+
   init(config: CacheConfig, dataConnect: DataConnect) {
     self.config = config
     self.dataConnect = dataConnect
-    
+
     // sync because we want the provider initialized immediately when in init
     queue.sync {
       self.initializeCacheProvider()
       setupChangeListeners()
     }
-    
   }
-  
+
   private func initializeCacheProvider() {
-    
     dispatchPrecondition(condition: .onQueue(queue))
-    
+
     let identifier = contructCacheIdentifier()
-    
+
     // Create a cacheProvider if -
     // we don't have an existing cacheProvider
     // we have one but its identifier is different than new one (e.g. auth uid changed)
-    if cacheProvider != nil && cacheProvider?.cacheIdentifier == identifier {
+    if cacheProvider != nil, cacheProvider?.cacheIdentifier == identifier {
       return
     }
-    
+
     do {
       switch config.storage {
       case .ephemeral:
-        self.cacheProvider = try SQLiteCacheProvider(identifier, ephemeral: true)
+        cacheProvider = try SQLiteCacheProvider(identifier, ephemeral: true)
       case .persistent:
-        self.cacheProvider = try SQLiteCacheProvider(identifier, ephemeral: false)
+        cacheProvider = try SQLiteCacheProvider(identifier, ephemeral: false)
       }
     } catch {
       DataConnectLogger.error("Unable to initialize Persistent provider \(error)")
     }
   }
-  
+
   private func setupChangeListeners() {
     dispatchPrecondition(condition: .onQueue(queue))
-    
+
     authChangeListenerProtocol = Auth.auth(app: dataConnect.app).addStateDidChangeListener { _, _ in
       self.queue.async(flags: .barrier) {
         self.initializeCacheProvider()
       }
     }
   }
-  
+
   // Create an identifier for the cache that the Provider will use for cache scoping
   private func contructCacheIdentifier() -> String {
     dispatchPrecondition(condition: .onQueue(queue))
-    
-    let identifier = "\(self.config.storage)-\(String(describing: dataConnect.app.options.projectID))-\(dataConnect.app.name)-\(dataConnect.connectorConfig.serviceId)-\(dataConnect.connectorConfig.connector)-\(dataConnect.connectorConfig.location)-\(Auth.auth(app: dataConnect.app).currentUser?.uid ?? "anon")-\(dataConnect.settings.host)"
+
+    let identifier =
+      "\(config.storage)-\(String(describing: dataConnect.app.options.projectID))-\(dataConnect.app.name)-\(dataConnect.connectorConfig.serviceId)-\(dataConnect.connectorConfig.connector)-\(dataConnect.connectorConfig.location)-\(Auth.auth(app: dataConnect.app).currentUser?.uid ?? "anon")-\(dataConnect.settings.host)"
     let encoded = identifier.sha256
     DataConnectLogger.debug("Created Cache Identifier \(encoded) for \(identifier)")
     return encoded
   }
-  
+
   func resultTree(queryId: String) -> ResultTree? {
     // result trees are stored dehydrated in the cache
     // retrieve cache, hydrate it and then return
@@ -90,14 +88,14 @@ class Cache {
       guard let dehydratedTree = cacheProvider?.resultTree(queryId: queryId) else {
         return nil
       }
-      
+
       do {
         let resultsProcessor = ResultTreeProcessor()
         let (hydratedResults, rootObj) = try resultsProcessor.hydrateResults(
           dehydratedTree.data,
           cacheProvider: cacheProvider!
         )
-        
+
         let hydratedTree = ResultTree(
           data: hydratedResults,
           ttl: dehydratedTree.ttl,
@@ -117,8 +115,9 @@ class Cache {
   func update(queryId: String, response: ServerResponse, requestor: (any QueryRefInternal)? = nil) {
     queue.async(flags: .barrier) {
       guard let cacheProvider = self.cacheProvider else {
-      DataConnectLogger.debug("Cache provider not initialized yet. Skipping update for \(queryId)")
-      return
+        DataConnectLogger
+          .debug("Cache provider not initialized yet. Skipping update for \(queryId)")
+        return
       }
       do {
         let processor = ResultTreeProcessor()
@@ -139,16 +138,17 @@ class Cache {
               rootObject: rootObj
             )
           )
-        
-        impactedRefs.forEach { refId in
+
+        for refId in impactedRefs {
           guard let q = self.dataConnect.queryRef(for: refId) as? (any QueryRefInternal) else {
-            return
+            continue
           }
           Task {
             do {
               try await q.publishCacheResultsToSubscribers(allowStale: true)
             } catch {
-              DataConnectLogger.warning("Error republishing cached results for impacted queryrefs \(error))")
+              DataConnectLogger
+                .warning("Error republishing cached results for impacted queryrefs \(error))")
             }
           }
         }
@@ -157,5 +157,4 @@ class Cache {
       }
     }
   }
-
 }

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Foundation
 import CryptoKit
+import Foundation
 
 import Firebase
 
@@ -23,14 +23,14 @@ import Firebase
 struct QueryRequest<Variable: OperationVariable>: OperationRequest, Hashable, Equatable {
   private(set) var operationName: String
   private(set) var variables: Variable?
-  
+
   // Computed requestId
   lazy var requestId: String = {
     var keyIdData = Data()
     if let nameData = operationName.data(using: .utf8) {
       keyIdData.append(nameData)
     }
-    
+
     if let variables {
       let encoder = JSONEncoder()
       encoder.outputFormatting = .sortedKeys
@@ -42,7 +42,7 @@ struct QueryRequest<Variable: OperationVariable>: OperationRequest, Hashable, Eq
           .warning("Error encoding variables to compute request identifier: \(error)")
       }
     }
-    
+
     return keyIdData.sha256String
   }()
 

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Foundation
 import CryptoKit
+import Foundation
 
 import Firebase
 
@@ -22,18 +22,19 @@ import Observation
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVariable>: QueryRef {
-  
-  private let resultsPublisher = PassthroughSubject<Result<OperationResult<ResultData>, AnyDataConnectError>,
-    Never>()
+  private let resultsPublisher = PassthroughSubject<
+    Result<OperationResult<ResultData>, AnyDataConnectError>,
+    Never
+  >()
 
   private var request: QueryRequest<Variable>
 
   private let grpcClient: GrpcClient
-  
+
   private let cache: Cache?
-  
+
   private var ttl: TimeInterval? = 10.0 //
-  
+
   // Ideally we would like this to be part of the QueryRef protocol
   // Not adding for now since the protocol is Public
   // This property is for now an internal property.
@@ -43,16 +44,17 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
     self.request = request
     self.grpcClient = grpcClient
     self.cache = cache
-    self.operationId = self.request.requestId
+    operationId = self.request.requestId
   }
 
   // This call starts query execution and publishes data to data var
   // In v0, it simply reloads query results
-  public func subscribe() -> AnyPublisher<Result<OperationResult<ResultData>, AnyDataConnectError>, Never> {
+  public func subscribe()
+    -> AnyPublisher<Result<OperationResult<ResultData>, AnyDataConnectError>, Never> {
     Task {
       do {
         _ = try await fetchCachedResults(allowStale: true)
-        try await Task.sleep(nanoseconds: 3000_000_000) //3secs
+        try await Task.sleep(nanoseconds: 3_000_000_000) // 3secs
         _ = try await fetchServerResults()
       } catch {}
     }
@@ -61,8 +63,8 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
 
   // one-shot execution. It will fetch latest data, update any caches
   // and updates the published data var
-  public func execute(fetchPolicy: QueryFetchPolicy = .defaultPolicy) async throws -> OperationResult<ResultData> {
-    
+  public func execute(fetchPolicy: QueryFetchPolicy = .defaultPolicy) async throws
+    -> OperationResult<ResultData> {
     switch fetchPolicy {
     case .defaultPolicy:
       let cachedResult = try await fetchCachedResults(allowStale: false)
@@ -96,27 +98,26 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
       request: request,
       resultType: ResultData.self
     )
-    
+
     do {
       if let cache {
-        cache.update(queryId: self.operationId, response: response, requestor: self)
-        
+        cache.update(queryId: operationId, response: response, requestor: self)
       }
     }
-    
+
     let decoder = JSONDecoder()
     let decodedData = try decoder.decode(
       ResultData.self,
       from: response.jsonResults.data(using: .utf8)!
     )
-    
+
     let result = OperationResult(data: decodedData, source: .server)
     // send to subscribers
     await updateData(data: result)
-    
+
     return result
   }
-  
+
   private func fetchCachedResults(allowStale: Bool) async throws -> OperationResult<ResultData> {
     guard let cache,
           let ttl,
@@ -124,25 +125,24 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
       DataConnectLogger.info("No cache provider configured or ttl is not set \(ttl)")
       return OperationResult(data: nil, source: .cache(stale: false))
     }
-    
-    if let cacheEntry = cache.resultTree(queryId: self.request.requestId),
-       (cacheEntry.isStale(ttl) && allowStale) || !cacheEntry.isStale(ttl)
-    {
+
+    if let cacheEntry = cache.resultTree(queryId: request.requestId),
+       (cacheEntry.isStale(ttl) && allowStale) || !cacheEntry.isStale(ttl) {
       let stale = cacheEntry.isStale(ttl)
-      
+
       let decoder = JSONDecoder()
       let decodedData = try decoder.decode(
         ResultData.self,
         from: cacheEntry.data.data(using: .utf8)!
       )
-      
+
       let result = OperationResult(data: decodedData, source: .cache(stale: stale))
       // send to subscribers
       await updateData(data: result)
-      
+
       return result
     }
-    
+
     return OperationResult(data: nil, source: .cache(stale: false))
   }
 
@@ -156,7 +156,7 @@ extension GenericQueryRef {
   nonisolated func hash(into hasher: inout Hasher) {
     hasher.combine(operationId)
   }
-  
+
   static func == (lhs: GenericQueryRef, rhs: GenericQueryRef) -> Bool {
     lhs.operationId == rhs.operationId
   }
@@ -172,10 +172,10 @@ extension GenericQueryRef: CustomStringConvertible {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension GenericQueryRef: QueryRefInternal {
   func publishServerResultsToSubscribers() async throws {
-    _ = try await self.fetchServerResults()
+    _ = try await fetchServerResults()
   }
 
   func publishCacheResultsToSubscribers(allowStale: Bool) async throws {
-    _ = try await self.fetchCachedResults(allowStale: allowStale)
+    _ = try await fetchCachedResults(allowStale: allowStale)
   }
 }
