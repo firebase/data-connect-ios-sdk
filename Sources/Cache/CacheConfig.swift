@@ -13,22 +13,19 @@
 // limitations under the License.
 
 /// Firebase Data Connect cache is configured per Connector.
-/// Specifies the cache configuration for Firebase Data Connect at a connector level 
+/// Specifies the cache configuration for Firebase Data Connect at a connector level
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct CacheConfig: Sendable {
-  
   public enum Storage: Sendable {
     case persistent
     case ephemeral
   }
-  
+
   public let storage: Storage // default provider is persistent type
   public let maxSize: UInt64
-  
+
   public init(storage: Storage = .persistent, maxSize: UInt64 = 100_000_000) {
     self.storage = storage
     self.maxSize = maxSize
   }
-  
 }
-

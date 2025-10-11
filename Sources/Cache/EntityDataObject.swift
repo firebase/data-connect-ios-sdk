@@ -20,112 +20,105 @@ struct ScalarField {
 }
 
 class EntityDataObject: CustomStringConvertible, Codable {
-  
   let guid: String // globally unique id received from server
-  
+
   private let accessQueue = DispatchQueue(
     label: "com.google.firebase.dataconnect.entityData",
     autoreleaseFrequency: .workItem
   )
-  
+
   required init(guid: String) {
     self.guid = guid
   }
-  
+
   private var serverValues = [String: AnyCodableValue]()
-  
+
   enum CodingKeys: String, CodingKey {
     case globalID = "guid"
     case serverValues = "serVal"
   }
-  
+
   // Updates value received from server and returns a list of QueryRef operation ids
   // referenced from this EntityDataObject
-  @discardableResult func updateServerValue(
-    _ key: String,
-    _ newValue: AnyCodableValue,
-    _ requestor: (any QueryRefInternal)? = nil
-  ) -> [String] {
-
+  @discardableResult func updateServerValue(_ key: String,
+                                            _ newValue: AnyCodableValue,
+                                            _ requestor: (any QueryRefInternal)? = nil)
+    -> [String] {
     accessQueue.sync {
       self.serverValues[key] = newValue
       DataConnectLogger.debug("EDO updateServerValue: \(key) \(newValue) for \(guid)")
-      
+
       if let requestor {
         referencedFrom.insert(requestor.operationId)
         DataConnectLogger
           .debug("Inserted referencedFrom \(requestor). New count \(referencedFrom.count)")
-        
       }
-      let refs: [String] = Array<String>(referencedFrom)
+      let refs = [String](referencedFrom)
       return refs
     }
   }
-  
+
   func value(forKey key: String) -> AnyCodableValue? {
     accessQueue.sync {
-      return self.serverValues[key]
+      self.serverValues[key]
     }
   }
-  
+
   // MARK: Track referenced QueryRefs
-  
+
   // Set of QueryRefs that reference this EDO
   private var referencedFrom = Set<String>()
-  
+
   func updateReferencedFrom(_ refs: Set<String>) {
     accessQueue.sync {
       self.referencedFrom = refs
     }
   }
-  
+
   func referencedFromRefs() -> Set<String> {
     accessQueue.sync {
-      return self.referencedFrom
+      self.referencedFrom
     }
   }
-  
+
   var isReferencedFromAnyQueryRef: Bool {
     accessQueue.sync {
-      return !referencedFrom.isEmpty
+      !referencedFrom.isEmpty
     }
   }
-  
-  
+
   var description: String {
     return """
-      EntityDataObject:
-        globalID: \(guid)
-        serverValues:
-          \(serverValues)
-      """
+    EntityDataObject:
+      globalID: \(guid)
+      serverValues:
+        \(serverValues)
+    """
   }
-  
+
   func encodableData() throws -> [String: AnyCodableValue] {
     var encodingValues = [String: AnyCodableValue]()
     encodingValues[GlobalIDKey] = .string(guid)
-    encodingValues.merge(serverValues) { (_, new) in new }
+    encodingValues.merge(serverValues) { _, new in new }
     return encodingValues
   }
-  
+
   public func encode(to encoder: Encoder) throws {
     var container = encoder.container(keyedBy: CodingKeys.self)
     try container.encode(guid, forKey: .globalID)
     try container.encode(serverValues, forKey: .serverValues)
     // once we have localValues, we will need to merge between the two dicts and encode
   }
-  
+
   required init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
-    
+
     let globalId = try container.decode(String.self, forKey: .globalID)
-    self.guid = globalId
-    
+    guid = globalId
+
     serverValues = try container.decode([String: AnyCodableValue].self, forKey: .serverValues)
   }
-  
 }
-
 
 extension EntityDataObject: Equatable {
   static func == (lhs: EntityDataObject, rhs: EntityDataObject) -> Bool {
@@ -138,5 +131,3 @@ extension EntityDataObject: CustomDebugStringConvertible {
     return description
   }
 }
-
-

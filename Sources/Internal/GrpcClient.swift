@@ -130,7 +130,7 @@ actor GrpcClient: CustomStringConvertible {
     VariableType: OperationVariable>(request: QueryRequest<VariableType>,
                                      resultType: ResultType
                                        .Type)
-  async throws -> ServerResponse {
+    async throws -> ServerResponse {
     guard let client else {
       DataConnectLogger.error("When calling executeQuery(), grpc client has not been configured.")
       throw DataConnectInitError.grpcNotConfigured()
@@ -159,10 +159,10 @@ actor GrpcClient: CustomStringConvertible {
        If we have Partial Errors, we follow the partial error route below.
        */
       guard !errorInfoList.isEmpty else {
-        // TODO: Extract ttl, server timestamp 
+        // TODO: Extract ttl, server timestamp
         return ServerResponse(jsonResults: resultsString, ttl: 10.0)
       }
-      
+
       // We have partial errors returned
       /*
        - if decode succeeds, errorList isEmpty = return data
@@ -173,9 +173,9 @@ actor GrpcClient: CustomStringConvertible {
        */
       do {
         let decodedResults = try codec.decode(result: results.data, asType: resultType)
-        
+
         // even though decode succeeded, we may still have received partial errors
-        
+
         let failureResponse = OperationFailureResponse(
           rawJsonData: resultsString, errors: errorInfoList,
           data: decodedResults
@@ -183,7 +183,7 @@ actor GrpcClient: CustomStringConvertible {
         throw DataConnectOperationError.executionFailed(
           response: failureResponse
         )
-        
+
       } catch let operationErr as DataConnectOperationError {
         // simply rethrow to avoid wrapping error
         throw operationErr

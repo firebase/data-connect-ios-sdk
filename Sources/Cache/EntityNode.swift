@@ -12,57 +12,51 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 /*
- 
+
  Init with JSON (root)
  Convert to CodableValue and Init itself
  Codable Value must be a dict at root level
- 
+
  Dict can contain
  (if EDO)
  - Scalars, [Scalar] => Move this to DBO
  - References, [References] => Keep with
  (if no guid and therefore no EDO)
  - Store CodableValue as - is
- 
- 
+
  */
 
-
 struct EntityNode {
-  
   // externalized (normalized) data.
   // Requires an entity globalID to be provided in selection set
   var entityData: EntityDataObject?
-  
+
   // inline scalars are only populated if there is no EntityDataObject
   // i.e. if there is no entity globalID
   var scalars = [String: AnyCodableValue]()
-  
+
   // entity properties that point to other entity nodes
   var references = [String: EntityNode]()
-  
+
   // properties that point to a list of other objects
   // scalar lists are stored inline.
   var objectLists = [String: [EntityNode]]()
-  
+
   enum CodingKeys: String, CodingKey {
     case globalID = "cacheId"
     case objectLists
     case references
     case scalars
   }
-   
-  init?(
-    value: AnyCodableValue,
-    cacheProvider: CacheProvider,
-    impactedRefsAccumulator: ImpactedQueryRefsAccumulator? = nil
-  ) {
+
+  init?(value: AnyCodableValue,
+        cacheProvider: CacheProvider,
+        impactedRefsAccumulator: ImpactedQueryRefsAccumulator? = nil) {
     guard case let .dictionary(objectValues) = value else {
       DataConnectLogger.error("EntityNode inited with a non-dictionary type")
       return nil
     }
-    
-    
+
     if case let .string(guid) = objectValues[GlobalIDKey] {
       entityData = cacheProvider.entityData(guid)
     } else if case let .uuid(guid) = objectValues[GlobalIDKey] {
@@ -70,10 +64,10 @@ struct EntityNode {
       // TODO: Remove once server starts to send the real GlobalID
       entityData = cacheProvider.entityData(guid.uuidString)
     }
-    
+
     for (key, value) in objectValues {
       switch value {
-      case .dictionary(_):
+      case .dictionary:
         // a dictionary is treated as a composite object
         // and converted to another node
         if let st = EntityNode(
@@ -85,7 +79,7 @@ struct EntityNode {
         } else {
           DataConnectLogger.warning("Failed to convert dictionary to a reference")
         }
-      case .array(let objs):
+      case let .array(objs):
         var refArray = [EntityNode]()
         var scalarArray = [AnyCodableValue]()
         for obj in objs {
@@ -111,9 +105,11 @@ struct EntityNode {
               value,
               impactedRefsAccumulator?.requestor
             )
-            
+
             // accumulate any impacted QueryRefs due to this change
-            for r in impactedRefs { impactedRefsAccumulator?.append(r) }
+            for r in impactedRefs {
+              impactedRefsAccumulator?.append(r)
+            }
           }
         }
       default:
@@ -123,83 +119,93 @@ struct EntityNode {
             value,
             impactedRefsAccumulator?.requestor
           )
-          
+
           // accumulate any QueryRefs impacted by this change
-          for r in impactedRefs { impactedRefsAccumulator?.append(r) }
+          for r in impactedRefs {
+            impactedRefsAccumulator?.append(r)
+          }
         } else {
           scalars[key] = value
         }
       }
-    } //for (key,value)
-    
+    } // for (key,value)
+
     if let entityData {
-      for refId in entityData.referencedFromRefs() { impactedRefsAccumulator?.append(refId) }
+      for refId in entityData.referencedFromRefs() {
+        impactedRefsAccumulator?.append(refId)
+      }
       cacheProvider.updateEntityData(entityData)
     }
   }
 }
 
 extension EntityNode: Decodable {
-  
-  init (from decoder: Decoder) throws {
-    
+  init(from decoder: Decoder) throws {
     guard let cacheProvider = decoder.userInfo[CacheProviderUserInfoKey] as? CacheProvider else {
       throw DataConnectCodecError.decodingFailed(message: "Missing CacheProvider in decoder")
     }
-    
+
     guard let resultTreeKind = decoder.userInfo[ResultTreeKindCodingKey] as? ResultTreeKind else {
       throw DataConnectCodecError.decodingFailed(message: "Missing ResultTreeKind in decoder")
     }
-    
+
     if resultTreeKind == .hydrated {
       // our input is a hydrated result tree
       let container = try decoder.singleValueContainer()
-      
+
       let value = try container.decode(AnyCodableValue.self)
-      
-      let impactedRefsAcc = decoder.userInfo[ImpactedRefsAccumulatorCodingKey] as? ImpactedQueryRefsAccumulator
-      
+
+      let impactedRefsAcc = decoder
+        .userInfo[ImpactedRefsAccumulatorCodingKey] as? ImpactedQueryRefsAccumulator
+
       if impactedRefsAcc != nil {
         DataConnectLogger
           .debug("Got impactedRefs before dehydration \(String(describing: impactedRefsAcc))")
       }
-      
+
       let enode = EntityNode(
         value: value,
         cacheProvider: cacheProvider,
         impactedRefsAccumulator: impactedRefsAcc
       )
-      
+
       if impactedRefsAcc != nil {
-        DataConnectLogger.debug("impactedRefs after dehydration \(String(describing: impactedRefsAcc))")
+        DataConnectLogger
+          .debug("impactedRefs after dehydration \(String(describing: impactedRefsAcc))")
       }
-      
+
       if let enode {
         self = enode
       } else {
-        throw DataConnectCodecError.decodingFailed(message: "Failed to decode into a valid EntityNode")
+        throw DataConnectCodecError
+          .decodingFailed(message: "Failed to decode into a valid EntityNode")
       }
-      
+
     } else {
       // our input is a dehydrated result tree
       let container = try decoder.container(keyedBy: CodingKeys.self)
-      
+
       if let globalID = try container.decodeIfPresent(String.self, forKey: .globalID) {
-        self.entityData = cacheProvider.entityData(globalID)
+        entityData = cacheProvider.entityData(globalID)
       }
-      
+
       if let refs = try container.decodeIfPresent([String: EntityNode].self, forKey: .references) {
-        self.references = refs
+        references = refs
       }
-      
-      if let lists = try container.decodeIfPresent([String: [EntityNode]].self, forKey: .objectLists) {
-        self.objectLists = lists
+
+      if let lists = try container.decodeIfPresent(
+        [String: [EntityNode]].self,
+        forKey: .objectLists
+      ) {
+        objectLists = lists
       }
-      
-      if let scalars = try container.decodeIfPresent([String: AnyCodableValue].self, forKey: .scalars) {
+
+      if let scalars = try container.decodeIfPresent(
+        [String: AnyCodableValue].self,
+        forKey: .scalars
+      ) {
         self.scalars = scalars
       }
-      
     }
   }
 }
@@ -209,30 +215,30 @@ extension EntityNode: Encodable {
     guard let resultTreeKind = encoder.userInfo[ResultTreeKindCodingKey] as? ResultTreeKind else {
       throw DataConnectCodecError.decodingFailed(message: "Missing ResultTreeKind in decoder")
     }
-    
+
     if resultTreeKind == .hydrated {
-      //var container = encoder.singleValueContainer()
+      // var container = encoder.singleValueContainer()
       var container = encoder.container(keyedBy: DynamicCodingKey.self)
-      
+
       if let entityData {
         let encodableData = try entityData.encodableData()
         for (key, value) in encodableData {
           try container.encode(value, forKey: DynamicCodingKey(stringValue: key)!)
         }
       }
-      
+
       if references.count > 0 {
         for (key, value) in references {
           try container.encode(value, forKey: DynamicCodingKey(stringValue: key)!)
         }
       }
-      
+
       if objectLists.count > 0 {
         for (key, value) in objectLists {
           try container.encode(value, forKey: DynamicCodingKey(stringValue: key)!)
         }
       }
-      
+
       if scalars.count > 0 {
         for (key, value) in scalars {
           try container.encode(value, forKey: DynamicCodingKey(stringValue: key)!)
@@ -244,15 +250,15 @@ extension EntityNode: Encodable {
       if let entityData {
         try container.encode(entityData.guid, forKey: .globalID)
       }
-      
+
       if references.count > 0 {
         try container.encode(references, forKey: .references)
       }
-      
+
       if objectLists.count > 0 {
         try container.encode(objectLists, forKey: .objectLists)
       }
-      
+
       if scalars.count > 0 {
         try container.encode(scalars, forKey: .scalars)
       }
@@ -263,23 +269,23 @@ extension EntityNode: Encodable {
 extension EntityNode: Equatable {
   public static func == (lhs: EntityNode, rhs: EntityNode) -> Bool {
     return lhs.entityData == rhs.entityData &&
-    lhs.references == rhs.references &&
-    lhs.objectLists == rhs.objectLists &&
-    lhs.scalars == rhs.scalars
+      lhs.references == rhs.references &&
+      lhs.objectLists == rhs.objectLists &&
+      lhs.scalars == rhs.scalars
   }
 }
 
 extension EntityNode: CustomDebugStringConvertible {
   var debugDescription: String {
     return """
-      EntityNode:
-          \(String(describing: self.entityData))
-        References:
-          \(self.references)
-        Lists:
-          \(self.objectLists)
-        Scalars:
-          \(self.scalars)
-      """
+    EntityNode:
+        \(String(describing: entityData))
+      References:
+        \(references)
+      Lists:
+        \(objectLists)
+      Scalars:
+        \(scalars)
+    """
   }
 }

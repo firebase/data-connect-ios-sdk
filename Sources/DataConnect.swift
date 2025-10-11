@@ -25,8 +25,8 @@ public class DataConnect {
 
   private(set) var grpcClient: GrpcClient
   private var operationsManager: OperationsManager
-  
-  private(set) var cache: Cache? = nil
+
+  private(set) var cache: Cache?
 
   private var callerSDKType: CallerSDKType = .base
 
@@ -91,19 +91,18 @@ public class DataConnect {
         connectorConfig: connectorConfig,
         callerSDKType: callerSDKType
       )
-      
+
       // TODO: Change this
       if let cache {
         self.cache = Cache(config: cache.config, dataConnect: self)
       }
-      
+
       operationsManager = OperationsManager(
         grpcClient: grpcClient,
         cache: self.cache
       )
     }
   }
-  
 
   // MARK: Init
 
@@ -124,13 +123,12 @@ public class DataConnect {
       connectorConfig: connectorConfig,
       callerSDKType: self.callerSDKType
     )
-    
+
     operationsManager = OperationsManager(grpcClient: grpcClient, cache: cache)
-    
+
     if let cacheConfig {
-      self.cache = Cache(config: cacheConfig, dataConnect: self)
+      cache = Cache(config: cacheConfig, dataConnect: self)
     }
-    
   }
 
   // MARK: Operations
@@ -166,9 +164,9 @@ public class DataConnect {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension DataConnect {
-  internal func queryRef(for operationId: String) -> (any QueryRef)? {
+  func queryRef(for operationId: String) -> (any QueryRef)? {
     accessQueue.sync {
-      return operationsManager.queryRef(for: operationId)
+      operationsManager.queryRef(for: operationId)
     }
   }
 }
@@ -211,7 +209,8 @@ private class InstanceStore {
   private var instances = [InstanceKey: DataConnect]()
 
   func instance(for app: FirebaseApp, config: ConnectorConfig,
-                settings: DataConnectSettings, callerSDKType: CallerSDKType, cacheConfig: CacheConfig? = nil) -> DataConnect {
+                settings: DataConnectSettings, callerSDKType: CallerSDKType,
+                cacheConfig: CacheConfig? = nil) -> DataConnect {
     accessQ.sync {
       let key = InstanceKey(app: app, config: config)
       if let inst = instances[key] {

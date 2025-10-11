@@ -47,12 +47,13 @@ public class MutationRef<
     )
     return results
   }
-  
+
   public func hash(into hasher: inout Hasher) {
     hasher.combine(request)
   }
-  
-  public static func == (lhs: MutationRef<ResultData, Variable>, rhs: MutationRef<ResultData, Variable>) -> Bool {
+
+  public static func == (lhs: MutationRef<ResultData, Variable>,
+                         rhs: MutationRef<ResultData, Variable>) -> Bool {
     return lhs.request as? MutationRequest<Variable> == rhs.request as? MutationRequest<Variable>
   }
 }

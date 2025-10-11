@@ -85,7 +85,7 @@ enum AnyCodableValue: Codable, Equatable, CustomStringConvertible {
     case let .bool(value):
       try container.encode(value)
     case let .uuid(value):
-      try container.encode(try UUIDCodableConverter().encode(input: value))
+      try container.encode(UUIDCodableConverter().encode(input: value))
     case let .timestamp(value):
       try container.encode(value)
     case let .dictionary(value):
@@ -96,7 +96,7 @@ enum AnyCodableValue: Codable, Equatable, CustomStringConvertible {
       try container.encodeNil()
     }
   }
-  
+
   var isScalar: Bool {
     switch self {
     case .array, .dictionary:
@@ -108,7 +108,7 @@ enum AnyCodableValue: Codable, Equatable, CustomStringConvertible {
       // it will be stored inline so treating as scalar
     }
   }
-  
+
   var description: String {
     switch self {
     case let .int64(value):
@@ -131,5 +131,4 @@ enum AnyCodableValue: Codable, Equatable, CustomStringConvertible {
       return "null"
     }
   }
-  
 }

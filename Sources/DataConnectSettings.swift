@@ -21,7 +21,8 @@ public struct DataConnectSettings: Hashable, Equatable, Sendable {
   public let sslEnabled: Bool
   public let cacheConfig: CacheConfig?
 
-  public init(host: String, port: Int, sslEnabled: Bool, cacheConfig: CacheConfig? = CacheConfig()) {
+  public init(host: String, port: Int, sslEnabled: Bool,
+              cacheConfig: CacheConfig? = CacheConfig()) {
     self.host = host
     self.port = port
     self.sslEnabled = sslEnabled
