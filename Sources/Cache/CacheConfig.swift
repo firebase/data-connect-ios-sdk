@@ -22,10 +22,10 @@ public struct CacheConfig: Sendable {
   }
 
   public let storage: Storage // default provider is persistent type
-  public let maxSize: UInt64
+  public let maxSizeBytes: UInt64
 
   public init(storage: Storage = .persistent, maxSize: UInt64 = 100_000_000) {
     self.storage = storage
-    self.maxSize = maxSize
+    self.maxSizeBytes = maxSize
   }
 }
