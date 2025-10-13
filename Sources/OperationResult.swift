@@ -17,5 +17,5 @@ import Foundation
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct OperationResult<ResultData: Decodable & Sendable>: Sendable {
   public let data: ResultData?
-  public let source: ResultSource
+  public let source: OperationResultSource
 }
