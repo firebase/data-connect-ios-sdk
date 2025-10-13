@@ -26,7 +26,7 @@ public protocol ObservableQueryRef: QueryRef {
   var data: ResultData? { get }
 
   // source of the query results (server, cache, )
-  var source: ResultSource { get }
+  var source: OperationResultSource { get }
 
   // last error received. if last fetch was successful this is cleared
   var lastError: DataConnectError? { get }
@@ -99,7 +99,7 @@ public class QueryRefObservableObject<
   @Published public private(set) var lastError: DataConnectError?
 
   /// Source of the query results (server, local cache, ...)
-  @Published public private(set) var source: ResultSource = .unknown
+  @Published public private(set) var source: OperationResultSource = .unknown
 
   // QueryRef implementation
 
@@ -211,7 +211,7 @@ public class QueryRefObservation<
   public private(set) var lastError: DataConnectError?
 
   /// Source of the query results (server, local cache, ...)
-  public private(set) var source: ResultSource = .unknown
+  public private(set) var source: OperationResultSource = .unknown
 
   // QueryRef implementation
 
