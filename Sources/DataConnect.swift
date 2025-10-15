@@ -66,7 +66,7 @@ public class DataConnect {
         config: connectorConfig,
         settings: settings,
         callerSDKType: callerSDKType,
-        cacheConfig: settings.cacheConfig
+        cacheSettings: settings.cacheSettings
       )
   }
 
@@ -107,7 +107,7 @@ public class DataConnect {
   // MARK: Init
 
   init(app: FirebaseApp, connectorConfig: ConnectorConfig, settings: DataConnectSettings,
-       callerSDKType: CallerSDKType = .base, cacheConfig: CacheConfig? = CacheConfig()) {
+       callerSDKType: CallerSDKType = .base, cacheSettings: CacheSettings? = CacheSettings()) {
     guard app.options.projectID != nil else {
       fatalError("Firebase DataConnect requires the projectID to be set in the app options")
     }
@@ -126,8 +126,8 @@ public class DataConnect {
 
     operationsManager = OperationsManager(grpcClient: grpcClient, cache: cache)
 
-    if let cacheConfig {
-      cache = Cache(config: cacheConfig, dataConnect: self)
+    if let cacheSettings {
+      cache = Cache(config: cacheSettings, dataConnect: self)
     }
   }
 
@@ -210,7 +210,7 @@ private class InstanceStore {
 
   func instance(for app: FirebaseApp, config: ConnectorConfig,
                 settings: DataConnectSettings, callerSDKType: CallerSDKType,
-                cacheConfig: CacheConfig? = nil) -> DataConnect {
+                cacheSettings: CacheSettings? = nil) -> DataConnect {
     accessQ.sync {
       let key = InstanceKey(app: app, config: config)
       if let inst = instances[key] {
@@ -221,7 +221,7 @@ private class InstanceStore {
           connectorConfig: config,
           settings: settings,
           callerSDKType: callerSDKType,
-          cacheConfig: cacheConfig
+          cacheSettings: cacheSettings
         )
         instances[key] = dc
         return dc

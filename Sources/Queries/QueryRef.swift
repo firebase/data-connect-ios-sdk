@@ -51,6 +51,6 @@ public protocol QueryRef: OperationRef, Equatable, Hashable {
 public extension QueryRef {
   // default implementation for execute()
   func execute() async throws -> OperationResult<ResultData> {
-    try await execute(fetchPolicy: .defaultPolicy)
+    try await execute(fetchPolicy: .preferCache)
   }
 }

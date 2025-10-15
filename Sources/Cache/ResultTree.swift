@@ -31,10 +31,10 @@ struct ResultTree {
   }
 
   enum CodingKeys: String, CodingKey {
-    case cachedAt = "ca"
-    case lastAccessed = "la"
-    case ttl
-    case data = "d"
+    case cachedAt = "ca" // cached at
+    case lastAccessed = "la" // last accessed
+    case ttl = "ri" // revalidation interval
+    case data = "d" // data cached
   }
 }
 

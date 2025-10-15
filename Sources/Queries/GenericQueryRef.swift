@@ -63,31 +63,21 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
 
   // one-shot execution. It will fetch latest data, update any caches
   // and updates the published data var
-  public func execute(fetchPolicy: QueryFetchPolicy = .defaultPolicy) async throws
+  public func execute(fetchPolicy: QueryFetchPolicy = .preferCache) async throws
     -> OperationResult<ResultData> {
     switch fetchPolicy {
-    case .defaultPolicy:
+    case .preferCache:
       let cachedResult = try await fetchCachedResults(allowStale: false)
       if cachedResult.data != nil {
         return cachedResult
       } else {
-        do {
-          let serverResults = try await fetchServerResults()
-          return serverResults
-        } catch let dcerr as DataConnectOperationError {
-          // TODO: Catch network specific error looking for deadline exceeded
-          /*
-           if dcErr is deadlineExceeded {
-            try await fetchCachedResults(allowStale: true)
-           } else rethrow
-           */
-          throw dcerr
-        }
+        let serverResults = try await fetchServerResults()
+        return serverResults
       }
-    case .cache:
+    case .cacheOnly:
       let cachedResult = try await fetchCachedResults(allowStale: true)
       return cachedResult
-    case .server:
+    case .serverOnly:
       let serverResults = try await fetchServerResults()
       return serverResults
     }
@@ -123,12 +113,11 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
           let ttl,
           ttl > 0 else {
       DataConnectLogger.info("No cache provider configured or ttl is not set \(ttl)")
-      return OperationResult(data: nil, source: .cache(stale: false))
+      return OperationResult(data: nil, source: .cache)
     }
 
     if let cacheEntry = cache.resultTree(queryId: request.requestId),
        (cacheEntry.isStale(ttl) && allowStale) || !cacheEntry.isStale(ttl) {
-      let stale = cacheEntry.isStale(ttl)
 
       let decoder = JSONDecoder()
       let decodedData = try decoder.decode(
@@ -136,14 +125,14 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
         from: cacheEntry.data.data(using: .utf8)!
       )
 
-      let result = OperationResult(data: decodedData, source: .cache(stale: stale))
+      let result = OperationResult(data: decodedData, source: .cache)
       // send to subscribers
       await updateData(data: result)
 
       return result
     }
 
-    return OperationResult(data: nil, source: .cache(stale: false))
+    return OperationResult(data: nil, source: .cache)
   }
 
   func updateData(data: OperationResult<ResultData>) async {

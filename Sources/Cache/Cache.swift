@@ -15,7 +15,7 @@
 import FirebaseAuth
 
 class Cache {
-  let config: CacheConfig
+  let config: CacheSettings
   let dataConnect: DataConnect
 
   private var cacheProvider: CacheProvider?
@@ -25,7 +25,7 @@ class Cache {
   // holding it to avoid dereference
   private var authChangeListenerProtocol: NSObjectProtocol?
 
-  init(config: CacheConfig, dataConnect: DataConnect) {
+  init(config: CacheSettings, dataConnect: DataConnect) {
     self.config = config
     self.dataConnect = dataConnect
 

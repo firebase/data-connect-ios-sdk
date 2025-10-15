@@ -19,12 +19,12 @@ public enum QueryFetchPolicy {
   /// If fetch is outside TTL it revalidates / refreshes from the server.
   /// If server revalidation call fails, cached value is returned if present.
   /// TTL is specified as part of the query GQL configuration.
-  case defaultPolicy
+  case preferCache
 
   /// Always attempts to return from cache. Does not reach out to server
-  case cache
+  case cacheOnly
 
   /// Attempts to fetch from server ignoring cache.
   /// Cache is refreshed from server data after the call
-  case server
+  case serverOnly
 }

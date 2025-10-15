@@ -26,7 +26,7 @@ public protocol ObservableQueryRef: QueryRef {
   var data: ResultData? { get }
 
   // source of the query results (server, cache, )
-  var source: OperationResultSource { get }
+  var source: DataSource? { get }
 
   // last error received. if last fetch was successful this is cleared
   var lastError: DataConnectError? { get }
@@ -99,13 +99,13 @@ public class QueryRefObservableObject<
   @Published public private(set) var lastError: DataConnectError?
 
   /// Source of the query results (server, local cache, ...)
-  @Published public private(set) var source: OperationResultSource = .unknown
+  @Published public private(set) var source: DataSource?
 
   // QueryRef implementation
 
   /// Executes the query and returns `ResultData`. This will also update the published `data`
   /// variable
-  public func execute(fetchPolicy: QueryFetchPolicy = .defaultPolicy) async throws
+  public func execute(fetchPolicy: QueryFetchPolicy = .preferCache) async throws
     -> OperationResult<ResultData> {
     let result = try await baseRef.execute(fetchPolicy: fetchPolicy)
     return result
@@ -211,13 +211,13 @@ public class QueryRefObservation<
   public private(set) var lastError: DataConnectError?
 
   /// Source of the query results (server, local cache, ...)
-  public private(set) var source: OperationResultSource = .unknown
+  public private(set) var source: DataSource?
 
   // QueryRef implementation
 
   /// Executes the query and returns `ResultData`. This will also update the published `data`
   /// variable
-  public func execute(fetchPolicy: QueryFetchPolicy = .defaultPolicy) async throws
+  public func execute(fetchPolicy: QueryFetchPolicy = .preferCache) async throws
     -> OperationResult<ResultData> {
     let result = try await baseRef.execute(fetchPolicy: fetchPolicy)
     return result
