@@ -57,7 +57,7 @@ struct SetupDevEnv {
       }
 
       do {
-        let commandToRun = "TMPDIR=$(mktemp -d); curl -sL https://firebase.tools/dataconnect | bash"
+        let commandToRun = "curl -sL https://firebase.tools/dataconnect | TMPDIR=$(mktemp -d) bash"
         try executor.run(commandToRun)
       } catch {
         print("❌ Error running command: \(error)")
