@@ -50,7 +50,7 @@ class Cache {
 
     do {
       switch config.storage {
-      case .ephemeral:
+      case .memory:
         cacheProvider = try SQLiteCacheProvider(identifier, ephemeral: true)
       case .persistent:
         cacheProvider = try SQLiteCacheProvider(identifier, ephemeral: false)

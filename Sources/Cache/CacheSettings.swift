@@ -18,7 +18,7 @@
 public struct CacheSettings: Sendable {
   public enum Storage: Sendable {
     case persistent
-    case ephemeral
+    case memory
   }
 
   public let storage: Storage // default provider is persistent type
