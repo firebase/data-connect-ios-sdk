@@ -14,6 +14,7 @@
 
 import FirebaseAuth
 
+// Client cache that internally uses a CacheProvider to store content.
 class Cache {
   let config: CacheSettings
   let dataConnect: DataConnect
@@ -22,7 +23,7 @@ class Cache {
 
   private let queue = DispatchQueue(label: "com.google.firebase.dataconnect.cache")
 
-  // holding it to avoid dereference
+  // holding it to avoid dealloc
   private var authChangeListenerProtocol: NSObjectProtocol?
 
   init(config: CacheSettings, dataConnect: DataConnect) {
@@ -77,7 +78,7 @@ class Cache {
     let identifier =
       "\(config.storage)-\(String(describing: dataConnect.app.options.projectID))-\(dataConnect.app.name)-\(dataConnect.connectorConfig.serviceId)-\(dataConnect.connectorConfig.connector)-\(dataConnect.connectorConfig.location)-\(Auth.auth(app: dataConnect.app).currentUser?.uid ?? "anon")-\(dataConnect.settings.host)"
     let encoded = identifier.sha256
-    DataConnectLogger.debug("Created Cache Identifier \(encoded) for \(identifier)")
+    DataConnectLogger.debug("Created Encoded Cache Identifier \(encoded) for \(identifier)")
     return encoded
   }
 
@@ -106,13 +107,15 @@ class Cache {
 
         return hydratedTree
       } catch {
-        DataConnectLogger.warning("Error getting result tree \(error)")
+        DataConnectLogger.warning("Error decoding result tree \(error)")
         return nil
       }
     }
   }
 
   func update(queryId: String, response: ServerResponse, requestor: (any QueryRefInternal)? = nil) {
+    // server response contains hydrated trees
+    // dehydrate (normalize) the results and store dehydrated trees
     queue.async(flags: .barrier) {
       guard let cacheProvider = self.cacheProvider else {
         DataConnectLogger

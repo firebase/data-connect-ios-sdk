@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// Firebase Data Connect cache is configured per Connector.
-/// Specifies the cache configuration for Firebase Data Connect at a connector level
+/// Specifies the cache configuration for a Firebase Data Connect instance
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct CacheSettings: Sendable {
   public enum Storage: Sendable {

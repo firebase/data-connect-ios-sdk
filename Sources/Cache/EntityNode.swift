@@ -11,21 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-/*
 
- Init with JSON (root)
- Convert to CodableValue and Init itself
- Codable Value must be a dict at root level
-
- Dict can contain
- (if EDO)
- - Scalars, [Scalar] => Move this to DBO
- - References, [References] => Keep with
- (if no guid and therefore no EDO)
- - Store CodableValue as - is
-
- */
-
+// Represents an object node in the ResultTree.
 struct EntityNode {
   // externalized (normalized) data.
   // Requires an entity globalID to be provided in selection set
@@ -43,7 +30,7 @@ struct EntityNode {
   var objectLists = [String: [EntityNode]]()
 
   enum CodingKeys: String, CodingKey {
-    case globalID = "cacheId"
+    case globalID = "guid"
     case objectLists
     case references
     case scalars

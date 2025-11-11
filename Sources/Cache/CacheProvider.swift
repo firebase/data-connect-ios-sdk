@@ -31,8 +31,4 @@ protocol CacheProvider {
   func entityData(_ entityGuid: String) -> EntityDataObject
   func updateEntityData(_ object: EntityDataObject)
 
-  /*
-
-   func size() -> Int
-    */
 }

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Used for inline inline hydration of entity values
 struct DynamicCodingKey: CodingKey {
   var intValue: Int?
   let stringValue: String

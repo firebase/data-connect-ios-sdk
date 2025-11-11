@@ -12,19 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// Policies for executing a Data Connect query. This value is passed to
+/// Policies for executing a Data Connect query. This value is optionally passed to `execute()`
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public enum QueryFetchPolicy {
-  /// default policy tries to fetch from cache if fetch is within the TTL.
-  /// If fetch is outside TTL it revalidates / refreshes from the server.
-  /// If server revalidation call fails, cached value is returned if present.
-  /// TTL is specified as part of the query GQL configuration.
+  /// default policy tries to fetch from cache if fetch is within the revalidationInterval.
+  /// If fetch is outside revalidationInterval it revalidates / refreshes from the server.
+  /// Throws if server revalidation fails
+  /// Callers may call with `cacheOnly` policy to fetch data (if present) outside revalidationInterval from cache.
+  /// revalidationInterval is specified as part of the query YAML config using `client-cache.revalidateAfter` key
   case preferCache
 
   /// Always attempts to return from cache. Does not reach out to server
   case cacheOnly
 
   /// Attempts to fetch from server ignoring cache.
-  /// Cache is refreshed from server data after the call
+  /// Cache is refreshed from server data if call succeeds.
+  /// Throws if server call fails
   case serverOnly
 }

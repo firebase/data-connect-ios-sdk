@@ -22,11 +22,11 @@ let ResultTreeKindCodingKey =
 let UpdatingQueryRefsCodingKey =
   CodingUserInfoKey(rawValue: "com.google.firebase.dataconnect.updatingQueryRef")!
 
-// Key pointing to container for QueryRefs. EntityDataObjects fill this
+// Key pointing to accumulator for referenced QueryRefs. EntityDataObjects fill this
 let ImpactedRefsAccumulatorCodingKey =
   CodingUserInfoKey(rawValue: "com.google.firebase.dataconnect.impactedQueryRefs")!
 
-// Kind of result data we are encoding from or decoding to
+// Kind-of result data we are encoding from or decoding to
 enum ResultTreeKind {
   case hydrated // JSON data is full hydrated and contains full data in the tree
   case dehydrated // JSON data is dehydrated and only contains refs to actual data objects
@@ -60,19 +60,19 @@ class ImpactedQueryRefsAccumulator {
   }
 }
 
-// Normalization and recontruction of ResultTree
+// Dehydration (normalization) and hydration of the data
+// Hooks into the Codable process with userInfo flags driving what data gets encoded / decoded
 struct ResultTreeProcessor {
   /*
-   Go down the tree and convert them to nodes
+   Go down the tree and convert them to entity nodes
     For each Node
-      - extract primary key
-      - Get the EDO for the PK
+      - extract globalID
+      - Get the EDO for the globalID
         - extract scalars and update EDO with scalars
       - for each array
         - recursively process each object (could be scalar or composite)
       - for composite objects (dictionaries), create references to their node
         - create a Node and init it with dictionary.
-
    */
 
   func dehydrateResults(_ hydratedTree: String, cacheProvider: CacheProvider,

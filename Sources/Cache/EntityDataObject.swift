@@ -19,7 +19,8 @@ struct ScalarField {
   let value: AnyCodableValue
 }
 
-class EntityDataObject: CustomStringConvertible, Codable {
+// Represents a normalized entity shared amongst queries.
+class EntityDataObject: Codable {
   let guid: String // globally unique id received from server
 
   private let accessQueue = DispatchQueue(
@@ -35,10 +36,10 @@ class EntityDataObject: CustomStringConvertible, Codable {
 
   enum CodingKeys: String, CodingKey {
     case globalID = "guid"
-    case serverValues = "serVal"
+    case serverValues = "sval"
   }
 
-  // Updates value received from server and returns a list of QueryRef operation ids
+  // Updates the value received from server and returns a list of QueryRef operation ids
   // referenced from this EntityDataObject
   @discardableResult func updateServerValue(_ key: String,
                                             _ newValue: AnyCodableValue,
@@ -87,15 +88,8 @@ class EntityDataObject: CustomStringConvertible, Codable {
     }
   }
 
-  var description: String {
-    return """
-    EntityDataObject:
-      globalID: \(guid)
-      serverValues:
-        \(serverValues)
-    """
-  }
-
+  // MARK: Encoding / Decoding support
+  
   func encodableData() throws -> [String: AnyCodableValue] {
     var encodingValues = [String: AnyCodableValue]()
     encodingValues[GlobalIDKey] = .string(guid)
@@ -107,7 +101,6 @@ class EntityDataObject: CustomStringConvertible, Codable {
     var container = encoder.container(keyedBy: CodingKeys.self)
     try container.encode(guid, forKey: .globalID)
     try container.encode(serverValues, forKey: .serverValues)
-    // once we have localValues, we will need to merge between the two dicts and encode
   }
 
   required init(from decoder: Decoder) throws {
@@ -117,6 +110,17 @@ class EntityDataObject: CustomStringConvertible, Codable {
     guid = globalId
 
     serverValues = try container.decode([String: AnyCodableValue].self, forKey: .serverValues)
+  }
+}
+
+extension EntityDataObject: CustomStringConvertible {
+  var description: String {
+    return """
+    EntityDataObject:
+      globalID: \(guid)
+      serverValues:
+        \(serverValues)
+    """
   }
 }
 
