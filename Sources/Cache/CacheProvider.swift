@@ -16,9 +16,6 @@ import Foundation
 
 import FirebaseCore
 
-// FDC field name in server response that identifies a GlobalID
-let GlobalIDKey: String = "cacheId"
-
 // Key to store cache provider in Codables userInfo object. 
 let CacheProviderUserInfoKey = CodingUserInfoKey(rawValue: "fdc_cache_provider")!
 

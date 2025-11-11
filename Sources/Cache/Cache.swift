@@ -14,6 +14,9 @@
 
 import FirebaseAuth
 
+// FDC field name in server response that identifies a GlobalID
+let GlobalIDKey: String = "_id"
+
 // Client cache that internally uses a CacheProvider to store content.
 class Cache {
   let config: CacheSettings
