@@ -36,13 +36,13 @@ final class IntegrationTests: IntegrationTestBase {
     let result = try await DataConnect.kitchenSinkConnector.createTestIdMutation.execute(
       id: specifiedUUID
     )
-    XCTAssertEqual(result.data.testId_insert.id, specifiedUUID)
+    XCTAssertEqual(result.data?.testId_insert.id, specifiedUUID)
   }
 
   // test for an auto generated UUID assignment
   func testAutoId() async throws {
     let result = try await DataConnect.kitchenSinkConnector.createTestAutoIdMutation.execute()
-    _ = result.data.testAutoId_insert.id
+    _ = result.data?.testAutoId_insert.id
     // if we get till here - we have successfully got a UUID and decoded it. So test is successful
     XCTAssert(true)
   }
@@ -68,7 +68,7 @@ final class IntegrationTests: IntegrationTestBase {
     let dc = DataConnect.kitchenSinkConnector.dataConnect
 
     XCTAssertEqual(
-      executeResult.data.standardScalars_insert.id,
+      executeResult.data?.standardScalars_insert.id,
       standardScalarUUID,
       "UUID mismatch between specified and returned"
     )
@@ -76,21 +76,21 @@ final class IntegrationTests: IntegrationTestBase {
     let queryResult = try await DataConnect.kitchenSinkConnector
       .getStandardScalarQuery.execute(id: standardScalarUUID)
 
-    let returnedDecimal = queryResult.data.standardScalars?.decimal
+    let returnedDecimal = queryResult.data?.standardScalars?.decimal
     XCTAssertEqual(
       returnedDecimal,
       testDecimal,
       "Decimal value mismatch between sent \(testDecimal) and received \(String(describing: returnedDecimal))"
     )
 
-    let returnedNumber = queryResult.data.standardScalars?.number
+    let returnedNumber = queryResult.data?.standardScalars?.number
     XCTAssertEqual(
       returnedNumber,
       testInt,
       "Int value mismatch between sent \(testInt) and received \(String(describing: returnedNumber))"
     )
 
-    let returnedText = queryResult.data.standardScalars?.text
+    let returnedText = queryResult.data?.standardScalars?.text
     XCTAssertEqual(
       returnedText,
       testText,
@@ -117,28 +117,28 @@ final class IntegrationTests: IntegrationTestBase {
     let queryResult = try await DataConnect.kitchenSinkConnector
       .getScalarBoundaryQuery.ref(id: scalaryBoundaryUUID).execute()
 
-    let returnedMaxInt = queryResult.data.scalarBoundary?.maxNumber
+    let returnedMaxInt = queryResult.data?.scalarBoundary?.maxNumber
     XCTAssertEqual(
       returnedMaxInt,
       maxInt,
       "Returned maxInt \(String(describing: returnedMaxInt)) is not same as sent \(maxInt)"
     )
 
-    let returnedMinInt = queryResult.data.scalarBoundary?.minNumber
+    let returnedMinInt = queryResult.data?.scalarBoundary?.minNumber
     XCTAssertEqual(
       returnedMinInt,
       minInt,
       "Returned minInt \(minInt) is not same as sent \(minInt)"
     )
 
-    let returnedMaxFloat = queryResult.data.scalarBoundary?.maxDecimal
+    let returnedMaxFloat = queryResult.data?.scalarBoundary?.maxDecimal
     XCTAssertEqual(
       returnedMaxFloat,
       maxFloat,
       "Returned maxFloat \(String(describing: returnedMaxFloat)) is not same as sent \(maxFloat)"
     )
 
-    let returnedMinFloat = queryResult.data.scalarBoundary?.minDecimal
+    let returnedMinFloat = queryResult.data?.scalarBoundary?.minDecimal
     XCTAssertEqual(
       returnedMinFloat,
       minFloat,
@@ -163,21 +163,21 @@ final class IntegrationTests: IntegrationTestBase {
       id: largeNumUUID
     )
 
-    let returnedLargeNum = result.data.largeIntType?.num
+    let returnedLargeNum = result.data?.largeIntType?.num
     XCTAssertEqual(
       returnedLargeNum,
       largeNum,
       "Int64 returned \(String(describing: returnedLargeNum)) does not match sent \(largeNum)"
     )
 
-    let returnedMax = result.data.largeIntType?.maxNum
+    let returnedMax = result.data?.largeIntType?.maxNum
     XCTAssertEqual(
       returnedMax,
       largeNumMax,
       "Int64 max returned \(String(describing: returnedMax)) does not match sent \(largeNumMax)"
     )
 
-    let returnedMin = result.data.largeIntType?.minNum
+    let returnedMin = result.data?.largeIntType?.minNum
     XCTAssertEqual(
       returnedMin,
       largeNumMin,
@@ -198,7 +198,7 @@ final class IntegrationTests: IntegrationTestBase {
       id: localDateUUID
     )
     .execute()
-    let returnedLd = result.data.localDateType?.localDate
+    let returnedLd = result.data?.localDateType?.localDate
     XCTAssertEqual(ld, returnedLd)
   }
 }
