@@ -13,6 +13,7 @@
 // limitations under the License.
 
 // Represents an object node in the ResultTree.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct EntityNode {
   // externalized (normalized) data.
   // Requires an entity globalID to be provided in selection set

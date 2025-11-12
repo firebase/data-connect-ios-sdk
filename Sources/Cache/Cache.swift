@@ -18,6 +18,7 @@ import FirebaseAuth
 let GlobalIDKey: String = "_id"
 
 // Client cache that internally uses a CacheProvider to store content.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class Cache {
   let config: CacheSettings
   let dataConnect: DataConnect

@@ -20,6 +20,7 @@ struct ScalarField {
 }
 
 // Represents a normalized entity shared amongst queries.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class EntityDataObject: Codable {
   let guid: String // globally unique id received from server
 

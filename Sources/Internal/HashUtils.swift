@@ -15,6 +15,7 @@
 import CryptoKit
 import Foundation
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension Data {
   var sha256String: String {
     let hashDigest = SHA256.hash(data: self)
@@ -23,6 +24,7 @@ extension Data {
   }
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension String {
   var sha256: String {
     let digest = SHA256.hash(data: data(using: .utf8)!)

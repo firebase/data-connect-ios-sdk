@@ -16,12 +16,14 @@ import FirebaseCore
 import Foundation
 import SQLite3
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private enum TableName {
   static let entityDataObjects = "entity_data"
   static let resultTree = "query_results"
   static let entityDataQueryRefs = "entity_data_query_refs"
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private enum ColumnName {
   static let entityId = "entity_guid"
   static let data = "data"
@@ -29,6 +31,7 @@ private enum ColumnName {
   static let lastAccessed = "last_accessed"
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class SQLiteCacheProvider: CacheProvider {
   let cacheIdentifier: String
 

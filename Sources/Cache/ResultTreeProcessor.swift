@@ -35,6 +35,7 @@ enum ResultTreeKind {
 // Class used to accumulate query refs as we dehydrate the tree and find EDOs
 // EDOs contain references to other QueryRefs that reference the EDO
 // We collect those QueryRefs here
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class ImpactedQueryRefsAccumulator {
   // operationIds of impacted QueryRefs
   private(set) var queryRefIds: Set<String> = []
@@ -62,6 +63,7 @@ class ImpactedQueryRefsAccumulator {
 
 // Dehydration (normalization) and hydration of the data
 // Hooks into the Codable process with userInfo flags driving what data gets encoded / decoded
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ResultTreeProcessor {
   /*
    Go down the tree and convert them to entity nodes

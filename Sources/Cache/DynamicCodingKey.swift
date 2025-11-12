@@ -13,6 +13,7 @@
 // limitations under the License.
 
 // Used for inline inline hydration of entity values
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct DynamicCodingKey: CodingKey {
   var intValue: Int?
   let stringValue: String
