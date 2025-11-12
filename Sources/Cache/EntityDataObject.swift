@@ -89,7 +89,7 @@ class EntityDataObject: Codable {
   }
 
   // MARK: Encoding / Decoding support
-  
+
   func encodableData() throws -> [String: AnyCodableValue] {
     var encodingValues = [String: AnyCodableValue]()
     encodingValues[GlobalIDKey] = .string(guid)

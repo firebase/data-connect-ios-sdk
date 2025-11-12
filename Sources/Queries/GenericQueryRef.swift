@@ -118,7 +118,6 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
 
     if let cacheEntry = cache.resultTree(queryId: request.requestId),
        (cacheEntry.isStale(ttl) && allowStale) || !cacheEntry.isStale(ttl) {
-
       let decoder = JSONDecoder()
       let decodedData = try decoder.decode(
         ResultData.self,

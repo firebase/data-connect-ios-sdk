@@ -25,6 +25,6 @@ public struct CacheSettings: Sendable {
 
   public init(storage: Storage = .persistent, maxSize: UInt64 = 100_000_000) {
     self.storage = storage
-    self.maxSizeBytes = maxSize
+    maxSizeBytes = maxSize
   }
 }

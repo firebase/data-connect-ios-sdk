@@ -45,7 +45,6 @@ public protocol QueryRef: OperationRef, Equatable, Hashable {
 
   /// Execute override for queries to include fetch policy. Defaults to `preferCache` policy
   func execute(fetchPolicy: QueryFetchPolicy) async throws -> OperationResult<ResultData>
-
 }
 
 public extension QueryRef {

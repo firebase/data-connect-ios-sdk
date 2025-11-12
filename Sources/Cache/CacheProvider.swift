@@ -16,7 +16,7 @@ import Foundation
 
 import FirebaseCore
 
-// Key to store cache provider in Codables userInfo object. 
+// Key to store cache provider in Codables userInfo object.
 let CacheProviderUserInfoKey = CodingUserInfoKey(rawValue: "fdc_cache_provider")!
 
 protocol CacheProvider {
@@ -27,5 +27,4 @@ protocol CacheProvider {
 
   func entityData(_ entityGuid: String) -> EntityDataObject
   func updateEntityData(_ object: EntityDataObject)
-
 }

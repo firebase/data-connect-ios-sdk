@@ -18,8 +18,10 @@ public enum QueryFetchPolicy {
   /// default policy tries to fetch from cache if fetch is within the revalidationInterval.
   /// If fetch is outside revalidationInterval it revalidates / refreshes from the server.
   /// Throws if server revalidation fails
-  /// Callers may call with `cacheOnly` policy to fetch data (if present) outside revalidationInterval from cache.
-  /// revalidationInterval is specified as part of the query YAML config using `client-cache.revalidateAfter` key
+  /// Callers may call with `cacheOnly` policy to fetch data (if present) outside
+  /// revalidationInterval from cache.
+  /// revalidationInterval is specified as part of the query YAML config using
+  /// `client-cache.revalidateAfter` key
   case preferCache
 
   /// Always attempts to return from cache. Does not reach out to server
