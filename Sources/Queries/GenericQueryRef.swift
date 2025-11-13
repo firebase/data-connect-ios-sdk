@@ -97,7 +97,7 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
 
     do {
       if let cache {
-        cache.update(queryId: operationId, response: response, requestor: self)
+        await cache.update(queryId: operationId, response: response, requestor: self)
       }
     }
 
@@ -122,7 +122,7 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
       return OperationResult(data: nil, source: .cache)
     }
 
-    if let cacheEntry = cache.resultTree(queryId: request.requestId),
+    if let cacheEntry = await cache.resultTree(queryId: request.requestId),
        (cacheEntry.isStale(ttl) && allowStale) || !cacheEntry.isStale(ttl) {
       let decoder = JSONDecoder()
       let decodedData = try decoder.decode(
