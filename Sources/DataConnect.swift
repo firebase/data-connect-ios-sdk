@@ -19,12 +19,14 @@ import Foundation
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class DataConnect {
-  private var connectorConfig: ConnectorConfig
-  private var app: FirebaseApp
-  private var settings: DataConnectSettings
+  private(set) var connectorConfig: ConnectorConfig
+  private(set) var app: FirebaseApp
+  private(set) var settings: DataConnectSettings
 
   private(set) var grpcClient: GrpcClient
   private var operationsManager: OperationsManager
+
+  private(set) var cache: Cache?
 
   private var callerSDKType: CallerSDKType = .base
 
@@ -63,7 +65,8 @@ public class DataConnect {
         for: app,
         config: connectorConfig,
         settings: settings,
-        callerSDKType: callerSDKType
+        callerSDKType: callerSDKType,
+        cacheSettings: settings.cacheSettings
       )
   }
 
@@ -89,14 +92,21 @@ public class DataConnect {
         callerSDKType: callerSDKType
       )
 
-      operationsManager = OperationsManager(grpcClient: grpcClient)
+      if let cache {
+        self.cache = Cache(config: cache.config, dataConnect: self)
+      }
+
+      operationsManager = OperationsManager(
+        grpcClient: grpcClient,
+        cache: self.cache
+      )
     }
   }
 
   // MARK: Init
 
   init(app: FirebaseApp, connectorConfig: ConnectorConfig, settings: DataConnectSettings,
-       callerSDKType: CallerSDKType = .base) {
+       callerSDKType: CallerSDKType = .base, cacheSettings: CacheSettings? = CacheSettings()) {
     guard app.options.projectID != nil else {
       fatalError("Firebase DataConnect requires the projectID to be set in the app options")
     }
@@ -112,7 +122,12 @@ public class DataConnect {
       connectorConfig: connectorConfig,
       callerSDKType: self.callerSDKType
     )
-    operationsManager = OperationsManager(grpcClient: grpcClient)
+
+    operationsManager = OperationsManager(grpcClient: grpcClient, cache: cache)
+
+    if let cacheSettings {
+      cache = Cache(config: cacheSettings, dataConnect: self)
+    }
   }
 
   // MARK: Operations
@@ -142,6 +157,15 @@ public class DataConnect {
     accessQueue.sync {
       let request = MutationRequest(operationName: name, variables: variables)
       return operationsManager.mutationRef(for: request, with: resultsDataType)
+    }
+  }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension DataConnect {
+  func queryRef(for operationId: String) -> (any QueryRef)? {
+    accessQueue.sync {
+      operationsManager.queryRef(for: operationId)
     }
   }
 }
@@ -184,7 +208,8 @@ private class InstanceStore {
   private var instances = [InstanceKey: DataConnect]()
 
   func instance(for app: FirebaseApp, config: ConnectorConfig,
-                settings: DataConnectSettings, callerSDKType: CallerSDKType) -> DataConnect {
+                settings: DataConnectSettings, callerSDKType: CallerSDKType,
+                cacheSettings: CacheSettings? = nil) -> DataConnect {
     accessQ.sync {
       let key = InstanceKey(app: app, config: config)
       if let inst = instances[key] {
@@ -194,7 +219,8 @@ private class InstanceStore {
           app: app,
           connectorConfig: config,
           settings: settings,
-          callerSDKType: callerSDKType
+          callerSDKType: callerSDKType,
+          cacheSettings: cacheSettings
         )
         instances[key] = dc
         return dc

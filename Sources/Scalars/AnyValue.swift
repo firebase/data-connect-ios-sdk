@@ -14,6 +14,8 @@
 
 import Foundation
 
+import FirebaseCore
+
 /// AnyValue represents the Any graphql scalar, which represents Codable data -  scalar data (Int,
 /// Double, String, Bool,...) or a JSON object
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -102,75 +104,3 @@ extension AnyValue: Hashable {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension AnyValue: Sendable {}
-
-// MARK: -
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-enum AnyCodableValue: Codable, Equatable {
-  case string(String)
-  case int64(Int64)
-  case number(Double)
-  case bool(Bool)
-  case dictionary([String: AnyCodableValue])
-  case array([AnyCodableValue])
-  case null
-
-  static func == (lhs: AnyCodableValue, rhs: AnyCodableValue) -> Bool {
-    switch (lhs, rhs) {
-    case let (.string(l), .string(r)): return l == r
-    case let (.int64(l), .int64(r)): return l == r
-    case let (.number(l), .number(r)): return l == r
-    case let (.bool(l), .bool(r)): return l == r
-    case let (.dictionary(l), .dictionary(r)): return l == r
-    case let (.array(l), .array(r)): return l == r
-    case (.null, .null): return true
-    default: return false
-    }
-  }
-
-  init(from decoder: Decoder) throws {
-    let container = try decoder.singleValueContainer()
-
-    if let stringVal = try? container.decode(String.self) {
-      if let int64Val = try? Int64CodableConverter().decode(input: stringVal) {
-        self = .int64(int64Val)
-      } else {
-        self = .string(stringVal)
-      }
-    } else if let doubleVal = try? container.decode(Double.self) {
-      self = .number(doubleVal)
-    } else if let boolVal = try? container.decode(Bool.self) {
-      self = .bool(boolVal)
-    } else if let dictVal = try? container.decode([String: AnyCodableValue].self) {
-      self = .dictionary(dictVal)
-    } else if let arrayVal = try? container.decode([AnyCodableValue].self) {
-      self = .array(arrayVal)
-    } else if container.decodeNil() {
-      self = .null
-    } else {
-      throw DataConnectCodecError
-        .decodingFailed(message: "Error decode AnyCodableValue from \(container)")
-    }
-  }
-
-  func encode(to encoder: Encoder) throws {
-    var container = encoder.singleValueContainer()
-    switch self {
-    case let .int64(value):
-      let encodedVal = try? Int64CodableConverter().encode(input: value)
-      try container.encode(encodedVal)
-    case let .string(value):
-      try container.encode(value)
-    case let .number(value):
-      try container.encode(value)
-    case let .bool(value):
-      try container.encode(value)
-    case let .dictionary(value):
-      try container.encode(value)
-    case let .array(value):
-      try container.encode(value)
-    case .null:
-      try container.encodeNil()
-    }
-  }
-}

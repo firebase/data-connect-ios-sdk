@@ -42,7 +42,7 @@ final class AnyScalarTests: IntegrationTestBase {
 
     let result = try await DataConnect.kitchenSinkConnector.getAnyValueTypeQuery.ref(id: anyValueId)
       .execute()
-    let anyValueResult = result.data.anyValueType?.props
+    let anyValueResult = result.data?.anyValueType?.props
     let decodedResult = try anyValueResult?.decodeValue(String.self)
 
     XCTAssertEqual(testData, decodedResult)
@@ -60,7 +60,7 @@ final class AnyScalarTests: IntegrationTestBase {
 
     let result = try await DataConnect.kitchenSinkConnector.getAnyValueTypeQuery.ref(id: anyValueId)
       .execute()
-    let anyValueResult = result.data.anyValueType?.props
+    let anyValueResult = result.data?.anyValueType?.props
     let decodedResult = try anyValueResult?.decodeValue(Int.self)
 
     XCTAssertEqual(testNumber, decodedResult)
@@ -79,7 +79,7 @@ final class AnyScalarTests: IntegrationTestBase {
 
     let result = try await DataConnect.kitchenSinkConnector.getAnyValueTypeQuery.ref(id: anyValueId)
       .execute()
-    let anyValueResult = result.data.anyValueType?.props
+    let anyValueResult = result.data?.anyValueType?.props
     let decodedResult = try anyValueResult?.decodeValue(Double.self)
 
     XCTAssertEqual(testDouble, decodedResult)
@@ -97,7 +97,7 @@ final class AnyScalarTests: IntegrationTestBase {
 
     let result = try await DataConnect.kitchenSinkConnector.getAnyValueTypeQuery.ref(id: anyValueId)
       .execute()
-    let anyValueResult = result.data.anyValueType?.props
+    let anyValueResult = result.data?.anyValueType?.props
     let decodedResult = try anyValueResult?.decodeValue(Int64.self)
 
     XCTAssertEqual(testInt64, decodedResult)
@@ -113,7 +113,7 @@ final class AnyScalarTests: IntegrationTestBase {
 
     let result = try await DataConnect.kitchenSinkConnector.getAnyValueTypeQuery.ref(id: anyValueId)
       .execute()
-    let anyValueResult = result.data.anyValueType?.props
+    let anyValueResult = result.data?.anyValueType?.props
     let decodedResult = try anyValueResult?.decodeValue(Int64.self)
 
     XCTAssertEqual(int64Max, decodedResult)
@@ -129,7 +129,7 @@ final class AnyScalarTests: IntegrationTestBase {
 
     let result = try await DataConnect.kitchenSinkConnector.getAnyValueTypeQuery.ref(id: anyValueId)
       .execute()
-    let anyValueResult = result.data.anyValueType?.props
+    let anyValueResult = result.data?.anyValueType?.props
     let decodedResult = try anyValueResult?.decodeValue(Int64.self)
 
     XCTAssertEqual(int64Min, decodedResult)
@@ -147,7 +147,7 @@ final class AnyScalarTests: IntegrationTestBase {
 
     let result = try await DataConnect.kitchenSinkConnector.getAnyValueTypeQuery.ref(id: anyValueId)
       .execute()
-    let anyValueResult = result.data.anyValueType?.props
+    let anyValueResult = result.data?.anyValueType?.props
     let decodedResult = try anyValueResult?.decodeValue(Double.self)
 
     XCTAssertEqual(testDouble, decodedResult)
@@ -162,7 +162,7 @@ final class AnyScalarTests: IntegrationTestBase {
 
     let result = try await DataConnect.kitchenSinkConnector.getAnyValueTypeQuery.ref(id: anyValueId)
       .execute()
-    let anyValueResult = result.data.anyValueType?.props
+    let anyValueResult = result.data?.anyValueType?.props
     let decodedResult = try anyValueResult?.decodeValue(UUID.self)
 
     XCTAssertEqual(anyValueId, decodedResult)
@@ -180,7 +180,7 @@ final class AnyScalarTests: IntegrationTestBase {
 
     let result = try await DataConnect.kitchenSinkConnector.getAnyValueTypeQuery.ref(id: anyValueId)
       .execute()
-    let anyValueResult = result.data.anyValueType?.props
+    let anyValueResult = result.data?.anyValueType?.props
     let decodedResult = try anyValueResult?.decodeValue(Double.self)
 
     XCTAssertEqual(testDouble, decodedResult)
@@ -233,7 +233,7 @@ final class AnyScalarTests: IntegrationTestBase {
 
     let result = try await DataConnect.kitchenSinkConnector.getAnyValueTypeQuery.ref(id: anyValueId)
       .execute()
-    let anyValueResult = result.data.anyValueType?.props
+    let anyValueResult = result.data?.anyValueType?.props
     let decodedResult = try anyValueResult?.decodeValue(AnyValueTestStruct.self)
 
     XCTAssertEqual(structVal, decodedResult)
@@ -255,7 +255,7 @@ final class AnyScalarTests: IntegrationTestBase {
     let result = try await DataConnect.kitchenSinkConnector.getAnyValueTypeQuery.execute(
       id: anyValueId
     )
-    let anyValueResult = result.data.anyValueType?.props
+    let anyValueResult = result.data?.anyValueType?.props
     let decodedResult = try anyValueResult?.decodeValue([Double].self)
 
     XCTAssertEqual(intArray, decodedResult)
