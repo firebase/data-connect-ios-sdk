@@ -32,7 +32,8 @@ actor Cache {
     self.config = config
     self.dataConnect = dataConnect
 
-    // sync because we want the provider initialized immediately when in init
+    // this is a potential race since update or get could get scheduled before initialize
+    // workarounds are complex since caller DataConnect APIs aren't async
     Task {
       await initializeCacheProvider()
       await setupChangeListeners()
@@ -40,8 +41,6 @@ actor Cache {
   }
 
   private func initializeCacheProvider() {
-    // dispatchPrecondition(condition: .onQueue(queue))
-
     let identifier = contructCacheIdentifier()
 
     // Create a cacheProvider if -
