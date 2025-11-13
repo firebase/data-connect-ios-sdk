@@ -92,7 +92,6 @@ public class DataConnect {
         callerSDKType: callerSDKType
       )
 
-      // TODO: Change this
       if let cache {
         self.cache = Cache(config: cache.config, dataConnect: self)
       }

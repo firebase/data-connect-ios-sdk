@@ -14,11 +14,6 @@
 
 import Foundation
 
-struct ScalarField {
-  let name: String
-  let value: AnyCodableValue
-}
-
 // Represents a normalized entity shared amongst queries.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class EntityDataObject: Codable {

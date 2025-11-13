@@ -54,9 +54,10 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
     Task {
       do {
         _ = try await fetchCachedResults(allowStale: true)
-        try await Task.sleep(nanoseconds: 3_000_000_000) // 3secs
         _ = try await fetchServerResults()
-      } catch {}
+      } catch {
+        resultsPublisher.send(.failure(AnyDataConnectError(dataConnectError: DataConnectInternalError.internalError(message: "Failed to subscribe to query", cause: error))))
+      }
     }
     return resultsPublisher.eraseToAnyPublisher()
   }

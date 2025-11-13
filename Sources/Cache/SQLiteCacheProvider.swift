@@ -47,12 +47,16 @@ class SQLiteCacheProvider: CacheProvider {
     try queue.sync {
       var dbIdentifier = ":memory:"
       if !ephemeral {
-        let path = NSSearchPathForDirectoriesInDomains(
-          .applicationSupportDirectory,
-          .userDomainMask,
-          true
-        ).first!
-        let dbURL = URL(fileURLWithPath: path).appendingPathComponent("\(cacheIdentifier).sqlite3")
+        guard let path = FileManager.default.urls(
+          for: .documentDirectory,
+          in: .userDomainMask
+        )
+        .first else {
+          throw DataConnectInternalError.sqliteError(
+            message: "Could not find document directory."
+          )
+        }
+        let dbURL = path.appendingPathComponent("\(cacheIdentifier).sqlite3")
         dbIdentifier = dbURL.path
       }
       if sqlite3_open(dbIdentifier, &db) != SQLITE_OK {
@@ -67,7 +71,13 @@ class SQLiteCacheProvider: CacheProvider {
         .debug(
           "Opened database with db path/id \(dbIdentifier) and cache identifier \(cacheIdentifier)"
         )
-      try createTables()
+      do {
+        try createTables()
+      } catch {
+        sqlite3_close(db)
+        db = nil
+        throw error
+      }
     }
   }
 
@@ -124,9 +134,12 @@ class SQLiteCacheProvider: CacheProvider {
       "UPDATE \(TableName.resultTree) SET \(ColumnName.lastAccessed) = ? WHERE \(ColumnName.queryId) = ?;"
     var statement: OpaquePointer?
 
-    if sqlite3_prepare_v2(db, updateQuery, -1, &statement, nil) != SQLITE_OK {
+    guard sqlite3_prepare_v2(db, updateQuery, -1, &statement, nil) == SQLITE_OK else {
       DataConnectLogger.error("Error preparing update statement for result_tree")
       return
+    }
+    defer {
+      sqlite3_finalize(statement)
     }
 
     sqlite3_bind_double(statement, 1, Date().timeIntervalSince1970)
@@ -135,7 +148,6 @@ class SQLiteCacheProvider: CacheProvider {
     if sqlite3_step(statement) != SQLITE_DONE {
       DataConnectLogger.error("Error updating \(ColumnName.lastAccessed) for query \(queryId)")
     }
-    sqlite3_finalize(statement)
   }
 
   func resultTree(queryId: String) -> ResultTree? {
@@ -144,9 +156,12 @@ class SQLiteCacheProvider: CacheProvider {
         "SELECT \(ColumnName.data) FROM \(TableName.resultTree) WHERE \(ColumnName.queryId) = ?;"
       var statement: OpaquePointer?
 
-      if sqlite3_prepare_v2(db, query, -1, &statement, nil) != SQLITE_OK {
+      guard sqlite3_prepare_v2(db, query, -1, &statement, nil) == SQLITE_OK else {
         DataConnectLogger.error("Error preparing select statement for \(TableName.resultTree)")
         return nil
+      }
+      defer {
+        sqlite3_finalize(statement)
       }
 
       sqlite3_bind_text(statement, 1, (queryId as NSString).utf8String, -1, nil)
@@ -155,7 +170,6 @@ class SQLiteCacheProvider: CacheProvider {
         if let dataBlob = sqlite3_column_blob(statement, 0) {
           let dataBlobLength = sqlite3_column_bytes(statement, 0)
           let data = Data(bytes: dataBlob, count: Int(dataBlobLength))
-          sqlite3_finalize(statement)
           do {
             let tree = try JSONDecoder().decode(ResultTree.self, from: data)
             self.updateLastAccessedTime(forQueryId: queryId)
@@ -167,7 +181,6 @@ class SQLiteCacheProvider: CacheProvider {
         }
       }
 
-      sqlite3_finalize(statement)
       DataConnectLogger.debug("\(#function) no result tree found for queryId \(queryId)")
       return nil
     }
@@ -176,21 +189,21 @@ class SQLiteCacheProvider: CacheProvider {
   func setResultTree(queryId: String, tree: ResultTree) {
     queue.sync {
       do {
-        var tree = tree
         let data = try JSONEncoder().encode(tree)
         let insert =
           "INSERT OR REPLACE INTO \(TableName.resultTree) (\(ColumnName.queryId), \(ColumnName.lastAccessed), \(ColumnName.data)) VALUES (?, ?, ?);"
         var statement: OpaquePointer?
 
-        if sqlite3_prepare_v2(db, insert, -1, &statement, nil) != SQLITE_OK {
+        guard sqlite3_prepare_v2(db, insert, -1, &statement, nil) == SQLITE_OK else {
           DataConnectLogger.error("Error preparing insert statement for \(TableName.resultTree)")
           return
         }
-
-        tree.lastAccessed = Date()
+        defer {
+          sqlite3_finalize(statement)
+        }
 
         sqlite3_bind_text(statement, 1, (queryId as NSString).utf8String, -1, nil)
-        sqlite3_bind_double(statement, 2, tree.lastAccessed.timeIntervalSince1970)
+        sqlite3_bind_double(statement, 2, Date().timeIntervalSince1970)
         _ = data.withUnsafeBytes { (bytes: UnsafeRawBufferPointer) in
           sqlite3_bind_blob(statement, 3, bytes.baseAddress, Int32(bytes.count), nil)
         }
@@ -198,8 +211,6 @@ class SQLiteCacheProvider: CacheProvider {
         if sqlite3_step(statement) != SQLITE_DONE {
           DataConnectLogger.error("Error inserting result tree for queryId \(queryId)")
         }
-
-        sqlite3_finalize(statement)
 
         DataConnectLogger.debug("\(#function) - query \(queryId), tree \(tree)")
       } catch {
@@ -214,32 +225,39 @@ class SQLiteCacheProvider: CacheProvider {
         "SELECT \(ColumnName.data) FROM \(TableName.entityDataObjects) WHERE \(ColumnName.entityId) = ?;"
       var statement: OpaquePointer?
 
-      if sqlite3_prepare_v2(db, query, -1, &statement, nil) != SQLITE_OK {
+      guard sqlite3_prepare_v2(db, query, -1, &statement, nil) == SQLITE_OK else {
         DataConnectLogger
           .error("Error preparing select statement for \(TableName.entityDataObjects)")
-      } else {
-        sqlite3_bind_text(statement, 1, (entityGuid as NSString).utf8String, -1, nil)
+        // if we reach here it means we don't have a EDO in our database.
+        // So we create one.
+        let edo = EntityDataObject(guid: entityGuid)
+        _setObject(entityGuid: entityGuid, object: edo)
+        DataConnectLogger.debug("Created EDO for \(entityGuid)")
+        return edo
+      }
+      defer {
+        sqlite3_finalize(statement)
+      }
 
-        if sqlite3_step(statement) == SQLITE_ROW {
-          if let dataBlob = sqlite3_column_blob(statement, 0) {
-            let dataBlobLength = sqlite3_column_bytes(statement, 0)
-            let data = Data(bytes: dataBlob, count: Int(dataBlobLength))
-            sqlite3_finalize(statement)
-            do {
-              let edo = try JSONDecoder().decode(EntityDataObject.self, from: data)
-              DataConnectLogger.debug("Returning existing EDO for \(entityGuid)")
+      sqlite3_bind_text(statement, 1, (entityGuid as NSString).utf8String, -1, nil)
 
-              let referencedQueryIds = _readQueryRefs(entityGuid: entityGuid)
-              edo.updateReferencedFrom(Set<String>(referencedQueryIds))
-              return edo
-            } catch {
-              DataConnectLogger.error(
-                "Error decoding data object for entityGuid \(entityGuid): \(error)"
-              )
-            }
+      if sqlite3_step(statement) == SQLITE_ROW {
+        if let dataBlob = sqlite3_column_blob(statement, 0) {
+          let dataBlobLength = sqlite3_column_bytes(statement, 0)
+          let data = Data(bytes: dataBlob, count: Int(dataBlobLength))
+          do {
+            let edo = try JSONDecoder().decode(EntityDataObject.self, from: data)
+            DataConnectLogger.debug("Returning existing EDO for \(entityGuid)")
+
+            let referencedQueryIds = _readQueryRefs(entityGuid: entityGuid)
+            edo.updateReferencedFrom(Set<String>(referencedQueryIds))
+            return edo
+          } catch {
+            DataConnectLogger.error(
+              "Error decoding data object for entityGuid \(entityGuid): \(error)"
+            )
           }
         }
-        sqlite3_finalize(statement)
       }
 
       // if we reach here it means we don't have a EDO in our database.
@@ -268,9 +286,12 @@ class SQLiteCacheProvider: CacheProvider {
         "INSERT OR REPLACE INTO \(TableName.entityDataObjects) (\(ColumnName.entityId), \(ColumnName.data)) VALUES (?, ?);"
       var statement: OpaquePointer?
 
-      if sqlite3_prepare_v2(db, insert, -1, &statement, nil) != SQLITE_OK {
+      guard sqlite3_prepare_v2(db, insert, -1, &statement, nil) == SQLITE_OK else {
         DataConnectLogger.error("Error preparing insert statement for entity_data")
         return
+      }
+      defer {
+        sqlite3_finalize(statement)
       }
 
       sqlite3_bind_text(statement, 1, (entityGuid as NSString).utf8String, -1, nil)
@@ -282,14 +303,12 @@ class SQLiteCacheProvider: CacheProvider {
         DataConnectLogger.error("Error inserting data object for entityGuid \(entityGuid)")
       }
 
-      sqlite3_finalize(statement)
-
-      // update references
-      _updateQueryRefs(object: object)
-
     } catch {
       DataConnectLogger.error("Error encoding data object for entityGuid \(entityGuid): \(error)")
     }
+    
+    // update references
+    _updateQueryRefs(object: object)
   }
 
   private func _updateQueryRefs(object: EntityDataObject) {
@@ -298,49 +317,78 @@ class SQLiteCacheProvider: CacheProvider {
     guard object.isReferencedFromAnyQueryRef else {
       return
     }
-    var insertReferences =
-      "INSERT OR REPLACE INTO \(TableName.entityDataQueryRefs) (\(ColumnName.entityId), \(ColumnName.queryId)) VALUES "
-    for queryId in object.referencedFromRefs() {
-      insertReferences += "('\(object.guid)', '\(queryId)'), "
-    }
-    insertReferences.removeLast(2)
-    insertReferences += ";"
-
+    
+    let sql = "INSERT OR REPLACE INTO \(TableName.entityDataQueryRefs) (\(ColumnName.entityId), \(ColumnName.queryId)) VALUES (?, ?);"
     var statementRefs: OpaquePointer?
-    if sqlite3_prepare_v2(db, insertReferences, -1, &statementRefs, nil) != SQLITE_OK {
+
+    guard sqlite3_prepare_v2(db, sql, -1, &statementRefs, nil) == SQLITE_OK else {
       DataConnectLogger.error("Error preparing insert statement for entity_data_query_refs")
       return
     }
-
-    if sqlite3_step(statementRefs) != SQLITE_DONE {
-      DataConnectLogger.error(
-        "Error inserting data object references for entityGuid \(object.guid)"
-      )
+    defer {
+      sqlite3_finalize(statementRefs)
     }
 
-    sqlite3_finalize(statementRefs)
+    let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
+    
+    sqlite3_exec(db, "BEGIN TRANSACTION", nil, nil, nil)
+
+    var success = true
+    let entityGuid = object.guid
+    for queryId in object.referencedFromRefs() {
+      guard sqlite3_bind_text(
+        statementRefs,
+        1,
+        entityGuid,
+        -1,
+        SQLITE_TRANSIENT
+      ) == SQLITE_OK,
+        sqlite3_bind_text(statementRefs, 2, queryId, -1, SQLITE_TRANSIENT) == SQLITE_OK
+      else {
+        DataConnectLogger.error("Error binding parameters for entity_data_query_refs")
+        success = false
+        break
+      }
+
+      if sqlite3_step(statementRefs) != SQLITE_DONE {
+        DataConnectLogger
+          .error("Error inserting data object references for entityGuid \(entityGuid)")
+        success = false
+        break
+      }
+      
+      sqlite3_reset(statementRefs)
+    }
+
+    if success {
+      sqlite3_exec(db, "COMMIT TRANSACTION", nil, nil, nil)
+    } else {
+      sqlite3_exec(db, "ROLLBACK TRANSACTION", nil, nil, nil)
+    }
   }
 
   private func _readQueryRefs(entityGuid: String) -> [String] {
     let readRefs =
-      "SELECT \(ColumnName.queryId) FROM \(TableName.entityDataQueryRefs) WHERE \(ColumnName.entityId) = '\(entityGuid)'"
+      "SELECT \(ColumnName.queryId) FROM \(TableName.entityDataQueryRefs) WHERE \(ColumnName.entityId) = ?"
     var statementRefs: OpaquePointer?
     var queryIds: [String] = []
 
-    if sqlite3_prepare_v2(db, readRefs, -1, &statementRefs, nil) == SQLITE_OK {
-      while sqlite3_step(statementRefs) == SQLITE_ROW {
-        if let cString = sqlite3_column_text(statementRefs, 0) {
-          queryIds.append(String(cString: cString))
-        }
-      }
-
+    guard sqlite3_prepare_v2(db, readRefs, -1, &statementRefs, nil) == SQLITE_OK else {
+      DataConnectLogger.error("Error preparing select statement for \(TableName.entityDataQueryRefs)")
+      return []
+    }
+    defer {
       sqlite3_finalize(statementRefs)
-
-      return queryIds
-    } else {
-      DataConnectLogger.error("Error reading query references for \(entityGuid)")
     }
 
-    return []
+    sqlite3_bind_text(statementRefs, 1, (entityGuid as NSString).utf8String, -1, nil)
+
+    while sqlite3_step(statementRefs) == SQLITE_ROW {
+      if let cString = sqlite3_column_text(statementRefs, 0) {
+        queryIds.append(String(cString: cString))
+      }
+    }
+
+    return queryIds
   }
 }

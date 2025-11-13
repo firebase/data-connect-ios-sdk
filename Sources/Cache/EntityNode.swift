@@ -205,7 +205,6 @@ extension EntityNode: Encodable {
     }
 
     if resultTreeKind == .hydrated {
-      // var container = encoder.singleValueContainer()
       var container = encoder.container(keyedBy: DynamicCodingKey.self)
 
       if let entityData {
