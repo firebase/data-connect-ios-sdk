@@ -80,7 +80,7 @@ class Cache {
     dispatchPrecondition(condition: .onQueue(queue))
 
     let identifier =
-      "\(config.storage)-\( dataConnect.app.options.projectID!)-\(dataConnect.app.name)-\(dataConnect.connectorConfig.serviceId)-\(dataConnect.connectorConfig.connector)-\(dataConnect.connectorConfig.location)-\(Auth.auth(app: dataConnect.app).currentUser?.uid ?? "anon")-\(dataConnect.settings.host)"
+      "\(config.storage)-\(dataConnect.app.options.projectID!)-\(dataConnect.app.name)-\(dataConnect.connectorConfig.serviceId)-\(dataConnect.connectorConfig.connector)-\(dataConnect.connectorConfig.location)-\(Auth.auth(app: dataConnect.app).currentUser?.uid ?? "anon")-\(dataConnect.settings.host)"
     let encoded = identifier.sha256
     DataConnectLogger.debug("Created Encoded Cache Identifier \(encoded) for \(identifier)")
     return encoded
@@ -90,12 +90,11 @@ class Cache {
     // result trees are stored dehydrated in the cache
     // retrieve cache, hydrate it and then return
     queue.sync {
-      
       guard let cacheProvider else {
         DataConnectLogger.error("CacheProvider is nil in the Cache")
         return nil
       }
-      
+
       guard let dehydratedTree = cacheProvider.resultTree(queryId: queryId) else {
         return nil
       }

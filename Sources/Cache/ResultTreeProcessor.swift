@@ -86,7 +86,7 @@ struct ResultTreeProcessor {
     guard let hydratedData = hydratedTree.data(using: .utf8) else {
       throw DataConnectCodecError.encodingFailed()
     }
-    
+
     let jsonDecoder = JSONDecoder()
     let impactedRefsAccumulator = ImpactedQueryRefsAccumulator(requestor: requestor)
 
@@ -103,7 +103,7 @@ struct ResultTreeProcessor {
     jsonEncoder.userInfo[CacheProviderUserInfoKey] = cacheProvider
     jsonEncoder.userInfo[ResultTreeKindCodingKey] = ResultTreeKind.dehydrated
     let jsonData = try jsonEncoder.encode(enode)
-    
+
     guard let dehydratedResultsString = String(data: jsonData, encoding: .utf8) else {
       throw DataConnectCodecError.encodingFailed()
     }
@@ -118,12 +118,11 @@ struct ResultTreeProcessor {
 
   func hydrateResults(_ dehydratedTree: String, cacheProvider: CacheProvider) throws ->
     (hydratedResults: String, rootObject: EntityNode) {
-      
-      guard let dehydratedData = dehydratedTree.data(using: .utf8) else {
-        throw DataConnectCodecError
-          .decodingFailed(message: "Failed to convert dehydratedTree to Data")
-      }
-      
+    guard let dehydratedData = dehydratedTree.data(using: .utf8) else {
+      throw DataConnectCodecError
+        .decodingFailed(message: "Failed to convert dehydratedTree to Data")
+    }
+
     let jsonDecoder = JSONDecoder()
     jsonDecoder.userInfo[CacheProviderUserInfoKey] = cacheProvider
     jsonDecoder.userInfo[ResultTreeKindCodingKey] = ResultTreeKind.dehydrated
@@ -135,10 +134,10 @@ struct ResultTreeProcessor {
     jsonEncoder.userInfo[ResultTreeKindCodingKey] = ResultTreeKind.hydrated
 
     let hydratedResults = try jsonEncoder.encode(enode)
-      guard let hydratedResultsString = String(data: hydratedResults, encoding: .utf8) else {
-        throw DataConnectCodecError
-          .encodingFailed(message: "Failed to convert EDO to String")
-      }
+    guard let hydratedResultsString = String(data: hydratedResults, encoding: .utf8) else {
+      throw DataConnectCodecError
+        .encodingFailed(message: "Failed to convert EDO to String")
+    }
 
     DataConnectLogger
       .debug(

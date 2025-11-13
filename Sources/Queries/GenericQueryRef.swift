@@ -56,7 +56,12 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
         _ = try await fetchCachedResults(allowStale: true)
         _ = try await fetchServerResults()
       } catch {
-        resultsPublisher.send(.failure(AnyDataConnectError(dataConnectError: DataConnectInternalError.internalError(message: "Failed to subscribe to query", cause: error))))
+        resultsPublisher
+          .send(.failure(AnyDataConnectError(dataConnectError: DataConnectInternalError
+              .internalError(
+                message: "Failed to subscribe to query",
+                cause: error
+              ))))
       }
     }
     return resultsPublisher.eraseToAnyPublisher()

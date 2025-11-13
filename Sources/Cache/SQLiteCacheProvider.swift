@@ -306,7 +306,7 @@ class SQLiteCacheProvider: CacheProvider {
     } catch {
       DataConnectLogger.error("Error encoding data object for entityGuid \(entityGuid): \(error)")
     }
-    
+
     // update references
     _updateQueryRefs(object: object)
   }
@@ -317,8 +317,9 @@ class SQLiteCacheProvider: CacheProvider {
     guard object.isReferencedFromAnyQueryRef else {
       return
     }
-    
-    let sql = "INSERT OR REPLACE INTO \(TableName.entityDataQueryRefs) (\(ColumnName.entityId), \(ColumnName.queryId)) VALUES (?, ?);"
+
+    let sql =
+      "INSERT OR REPLACE INTO \(TableName.entityDataQueryRefs) (\(ColumnName.entityId), \(ColumnName.queryId)) VALUES (?, ?);"
     var statementRefs: OpaquePointer?
 
     guard sqlite3_prepare_v2(db, sql, -1, &statementRefs, nil) == SQLITE_OK else {
@@ -330,7 +331,7 @@ class SQLiteCacheProvider: CacheProvider {
     }
 
     let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
-    
+
     sqlite3_exec(db, "BEGIN TRANSACTION", nil, nil, nil)
 
     var success = true
@@ -356,7 +357,7 @@ class SQLiteCacheProvider: CacheProvider {
         success = false
         break
       }
-      
+
       sqlite3_reset(statementRefs)
     }
 
@@ -374,7 +375,8 @@ class SQLiteCacheProvider: CacheProvider {
     var queryIds: [String] = []
 
     guard sqlite3_prepare_v2(db, readRefs, -1, &statementRefs, nil) == SQLITE_OK else {
-      DataConnectLogger.error("Error preparing select statement for \(TableName.entityDataQueryRefs)")
+      DataConnectLogger
+        .error("Error preparing select statement for \(TableName.entityDataQueryRefs)")
       return []
     }
     defer {
