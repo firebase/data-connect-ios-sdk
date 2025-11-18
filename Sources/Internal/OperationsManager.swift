@@ -52,7 +52,7 @@ class OperationsManager {
       }
 
       if publisher == .auto || publisher == .observableMacro {
-        if #available(iOS 17, macOS 15, tvOS 17, watchOS 10, *) {
+        if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *) {
           let obsRef = QueryRefObservation<ResultDataType, VariableType>(
             request: request,
             dataType: resultType,

@@ -12,10 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import CryptoKit
 import Foundation
-
-import Firebase
 
 @preconcurrency import Combine
 import Observation
@@ -154,7 +151,7 @@ extension QueryRefObservableObject: QueryRefInternal {
 /// - ``data``: Published variable that contains bindable results of the query.
 /// - ``lastError``: Published variable that contains ``DataConnectError``  if last fetch had error.
 ///            If last fetch was successful, this variable is cleared
-@available(macOS 15, iOS 17, tvOS 17, watchOS 10, *)
+@available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
 @Observable
 public class QueryRefObservation<
   ResultData: Decodable & Sendable,
@@ -232,7 +229,7 @@ public class QueryRefObservation<
   }
 }
 
-@available(macOS 15, iOS 17, tvOS 17, watchOS 10, *)
+@available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
 public extension QueryRefObservation {
   nonisolated func hash(into hasher: inout Hasher) {
     hasher.combine(baseRef)
@@ -243,14 +240,14 @@ public extension QueryRefObservation {
   }
 }
 
-@available(macOS 15, iOS 17, tvOS 17, watchOS 10, *)
+@available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
 extension QueryRefObservation: CustomStringConvertible {
   public nonisolated var description: String {
     "QueryRefObservation(\(String(describing: baseRef)))"
   }
 }
 
-@available(macOS 15, iOS 17, tvOS 17, watchOS 10, *)
+@available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
 extension QueryRefObservation: QueryRefInternal {
   func publishServerResultsToSubscribers() async throws {
     try await baseRef.publishServerResultsToSubscribers()

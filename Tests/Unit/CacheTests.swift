@@ -45,41 +45,35 @@ final class CacheTests: XCTestCase {
   // Confirm that providing same entity cache id uses the same EntityDataObject instance
   func testEntityDataObjectReuse() throws {
     do {
-      guard let cacheProvider else {
-        XCTFail("cacheProvider is nil")
-        return
-      }
+      let cp = try XCTUnwrap(cacheProvider)
 
       let resultsProcessor = ResultTreeProcessor()
-      try resultsProcessor.dehydrateResults(resultTreeJson, cacheProvider: cacheProvider)
+      try resultsProcessor.dehydrateResults(resultTreeJson, cacheProvider: cp)
 
       let reused_id = "27E85023-D465-4240-82D6-0055AA122406"
 
-      let user1 = cacheProvider.entityData(reused_id)
-      let user2 = cacheProvider.entityData(reused_id)
+      let user1 = cp.entityData(reused_id)
+      let user2 = cp.entityData(reused_id)
 
-      // both user objects should be references to same instance
+      // both user objects should be references to same db entity
       XCTAssertTrue(user1 == user2)
     }
   }
 
   func testDehydrationHydration() throws {
     do {
-      guard let cacheProvider else {
-        XCTFail("cacheProvider is nil")
-        return
-      }
+      let cp = try XCTUnwrap(cacheProvider)
 
       let resultsProcessor = ResultTreeProcessor()
 
       let (dehydratedTree, do1, _) = try resultsProcessor.dehydrateResults(
         resultTreeOneItemJson,
-        cacheProvider: cacheProvider
+        cacheProvider: cp
       )
 
       let (hydratedTree, do2) = try resultsProcessor.hydrateResults(
         dehydratedTree,
-        cacheProvider: cacheProvider
+        cacheProvider: cp
       )
 
       XCTAssertEqual(do1, do2)

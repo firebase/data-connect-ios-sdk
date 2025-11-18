@@ -12,10 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import CryptoKit
 import Foundation
-
-import Firebase
 
 @preconcurrency import Combine
 import Observation

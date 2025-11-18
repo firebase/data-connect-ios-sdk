@@ -66,17 +66,9 @@ class ImpactedQueryRefsAccumulator {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ResultTreeProcessor {
   /*
-   Go down the tree and convert them to entity nodes
-    For each Node
-      - extract globalID
-      - Get the EDO for the globalID
-        - extract scalars and update EDO with scalars
-      - for each array
-        - recursively process each object (could be scalar or composite)
-      - for composite objects (dictionaries), create references to their node
-        - create a Node and init it with dictionary.
+    Takes a JSON tree with data and normalizes the entities contained in it,
+    creating a resultant JSON tree with references to entities.
    */
-
   func dehydrateResults(_ hydratedTree: String, cacheProvider: CacheProvider,
                         requestor: (any QueryRefInternal)? = nil) throws -> (
     dehydratedResults: String,
@@ -116,6 +108,9 @@ struct ResultTreeProcessor {
     return (dehydratedResultsString, enode, impactedRefs)
   }
 
+  /*
+      Takes a dehydrated tree and fills it up with Entity data from referenced entities.
+   */
   func hydrateResults(_ dehydratedTree: String, cacheProvider: CacheProvider) throws ->
     (hydratedResults: String, rootObject: EntityNode) {
     guard let dehydratedData = dehydratedTree.data(using: .utf8) else {

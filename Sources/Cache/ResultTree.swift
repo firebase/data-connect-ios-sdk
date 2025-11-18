@@ -14,14 +14,19 @@
 
 import Foundation
 
-import FirebaseCore
-
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct ResultTree {
-  let data: String // tree data - could be hydrated or dehydrated.
-  let ttl: TimeInterval // interval during which query results are considered fresh
-  let cachedAt: Date // Local time when the entry was cached / updated
-  var lastAccessed: Date // Local time when the entry was read or updated
+struct ResultTree: Codable {
+  // tree data - could be hydrated or dehydrated.
+  let data: String
+
+  // interval during which query results are considered fresh
+  let ttl: TimeInterval
+
+  // Local time when the entry was cached / updated
+  let cachedAt: Date
+
+  // Local time when the entry was read or updated
+  var lastAccessed: Date
 
   var rootObject: EntityNode?
 
@@ -35,23 +40,5 @@ struct ResultTree {
     case lastAccessed = "la" // last accessed
     case ttl = "ri" // revalidation interval
     case data = "d" // data cached
-  }
-}
-
-extension ResultTree: Codable {
-  init(from decoder: any Decoder) throws {
-    let container = try decoder.container(keyedBy: CodingKeys.self)
-    cachedAt = try container.decode(Date.self, forKey: .cachedAt)
-    lastAccessed = try container.decode(Date.self, forKey: .lastAccessed)
-    ttl = try container.decode(TimeInterval.self, forKey: .ttl)
-    data = try container.decode(String.self, forKey: .data)
-  }
-
-  func encode(to encoder: any Encoder) throws {
-    var container = encoder.container(keyedBy: CodingKeys.self)
-    try container.encode(cachedAt, forKey: .cachedAt)
-    try container.encode(lastAccessed, forKey: .lastAccessed)
-    try container.encode(ttl, forKey: .ttl)
-    try container.encode(data, forKey: .data)
   }
 }

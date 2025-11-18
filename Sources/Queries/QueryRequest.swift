@@ -12,10 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import CryptoKit
 import Foundation
-
-import Firebase
 
 /// A QueryRequest is used to get a QueryRef to a Data Connect query using the specified query name
 /// and input variables to the query
@@ -51,7 +48,8 @@ struct QueryRequest<Variable: OperationVariable>: OperationRequest, Hashable, Eq
     self.variables = variables
   }
 
-  // Hashable and Equatable implementation
+  // MARK: - Hashable and Equatable implementation
+
   func hash(into hasher: inout Hasher) {
     hasher.combine(operationName)
     if let variables {
@@ -64,16 +62,6 @@ struct QueryRequest<Variable: OperationVariable>: OperationRequest, Hashable, Eq
       return false
     }
 
-    if lhs.variables == nil && rhs.variables == nil {
-      return true
-    }
-
-    guard let lhsVar = lhs.variables,
-          let rhsVar = rhs.variables,
-          lhsVar == rhsVar else {
-      return false
-    }
-
-    return true
+    return lhs.variables == rhs.variables
   }
 }

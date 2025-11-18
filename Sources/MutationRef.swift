@@ -31,18 +31,18 @@ public class MutationRef<
   ResultData: Decodable & Sendable,
   Variable: OperationVariable
 >: OperationRef {
-  private var request: any OperationRequest
+  private var request: MutationRequest<Variable>
 
   private var grpcClient: GrpcClient
 
-  init(request: any OperationRequest, grpcClient: GrpcClient) {
+  init(request: MutationRequest<Variable>, grpcClient: GrpcClient) {
     self.request = request
     self.grpcClient = grpcClient
   }
 
   public func execute() async throws -> OperationResult<ResultData> {
     let results = try await grpcClient.executeMutation(
-      request: request as! MutationRequest<Variable>,
+      request: request,
       resultType: ResultData.self
     )
     return results
@@ -54,6 +54,6 @@ public class MutationRef<
 
   public static func == (lhs: MutationRef<ResultData, Variable>,
                          rhs: MutationRef<ResultData, Variable>) -> Bool {
-    return lhs.request as? MutationRequest<Variable> == rhs.request as? MutationRequest<Variable>
+    return lhs.request == rhs.request
   }
 }

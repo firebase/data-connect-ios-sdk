@@ -14,8 +14,6 @@
 
 import Foundation
 
-import FirebaseCore
-
 /// AnyValue represents the Any graphql scalar, which represents Codable data -  scalar data (Int,
 /// Double, String, Bool,...) or a JSON object
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
