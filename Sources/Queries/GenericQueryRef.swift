@@ -30,7 +30,24 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
 
   private let cache: Cache?
 
-  private var ttl: TimeInterval? = 10.0 //
+  // maxAge received from server in query response
+  private var serverMaxAge: TimeInterval? = nil
+
+  // maxAge computed based on server or cache settings
+  // server is given priority over cache settings
+  private var maxAge: TimeInterval {
+    if let serverMaxAge {
+      DataConnectLogger.debug("Using maxAge specified from server \(serverMaxAge)")
+      return serverMaxAge
+    }
+
+    if let ma = cache?.config.maxAge {
+      DataConnectLogger.debug("Using maxAge specified from cache settings \(ma)")
+      return ma
+    }
+
+    return 0
+  }
 
   // Ideally we would like this to be part of the QueryRef protocol
   // Not adding for now since the protocol is Public
@@ -94,6 +111,7 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
 
     do {
       if let cache {
+        serverMaxAge = response.maxAge
         await cache.update(queryId: operationId, response: response, requestor: self)
       }
     }
@@ -112,15 +130,14 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
   }
 
   private func fetchCachedResults(allowStale: Bool) async throws -> OperationResult<ResultData> {
-    guard let cache,
-          let ttl,
-          ttl > 0 else {
-      DataConnectLogger.info("No cache provider configured or ttl is not set \(ttl)")
+    guard let cache
+    else {
+      DataConnectLogger.info("No cache provider configured")
       return OperationResult(data: nil, source: .cache)
     }
 
     if let cacheEntry = await cache.resultTree(queryId: request.requestId),
-       (cacheEntry.isStale(ttl) && allowStale) || !cacheEntry.isStale(ttl) {
+       (cacheEntry.isStale(maxAge) && allowStale) || !cacheEntry.isStale(maxAge) {
       let decoder = JSONDecoder()
       let decodedData = try decoder.decode(
         ResultData.self,

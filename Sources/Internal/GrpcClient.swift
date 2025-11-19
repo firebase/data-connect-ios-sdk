@@ -159,8 +159,8 @@ actor GrpcClient: CustomStringConvertible {
        If we have Partial Errors, we follow the partial error route below.
        */
       guard !errorInfoList.isEmpty else {
-        // TODO: Extract ttl, server timestamp
-        return ServerResponse(jsonResults: resultsString, ttl: 10.0)
+        // TODO: Extract ttl, server timestamp when available
+        return ServerResponse(jsonResults: resultsString, maxAge: nil)
       }
 
       // We have partial errors returned

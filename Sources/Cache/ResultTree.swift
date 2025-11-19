@@ -19,9 +19,6 @@ struct ResultTree: Codable {
   // tree data - could be hydrated or dehydrated.
   let data: String
 
-  // interval during which query results are considered fresh
-  let ttl: TimeInterval
-
   // Local time when the entry was cached / updated
   let cachedAt: Date
 
@@ -38,7 +35,6 @@ struct ResultTree: Codable {
   enum CodingKeys: String, CodingKey {
     case cachedAt = "ca" // cached at
     case lastAccessed = "la" // last accessed
-    case ttl = "ri" // revalidation interval
     case data = "d" // data cached
   }
 }

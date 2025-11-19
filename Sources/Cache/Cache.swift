@@ -113,7 +113,6 @@ actor Cache {
 
       let hydratedTree = ResultTree(
         data: hydratedResults,
-        ttl: dehydratedTree.ttl,
         cachedAt: dehydratedTree.cachedAt,
         lastAccessed: dehydratedTree.lastAccessed,
         rootObject: rootObj
@@ -147,7 +146,6 @@ actor Cache {
           queryId: queryId,
           tree: .init(
             data: dehydratedResults,
-            ttl: response.ttl,
             cachedAt: Date(),
             lastAccessed: Date(),
             rootObject: rootObj

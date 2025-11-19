@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import Foundation
+
 /// Specifies the cache configuration for a `DataConnect` instance.
 ///
 /// You can configure the cache's storage policy and its maximum size.
@@ -33,13 +35,22 @@ public struct CacheSettings: Sendable {
   /// to trigger cleanup procedures. The default is 100MB (100,000,000 bytes).
   public let maxSizeBytes: UInt64
 
+  /// Max time interval before a queries cache is considered stale and refreshed from the server
+  /// This interval does not imply that cached data is evicted and it can still be accessed using
+  /// the `cacheOnly` fetch policy
+  public let maxAge: TimeInterval
+
   /// Creates a new cache settings configuration.
   ///
   /// - Parameters:
   ///   - storage: The storage mechanism to use. Defaults to `.persistent`.
   ///   - maxSize: The maximum desired size of the cache in bytes. Defaults to 100MB.
-  public init(storage: Storage = .persistent, maxSize: UInt64 = 100_000_000) {
+  ///   - maxAge: The max time interval before a queries cache is considered stale and refreshed
+  /// from the server
+  public init(storage: Storage = .persistent, maxSize: UInt64 = 100_000_000,
+              maxAge: TimeInterval = 0) {
     self.storage = storage
     maxSizeBytes = maxSize
+    self.maxAge = maxAge
   }
 }

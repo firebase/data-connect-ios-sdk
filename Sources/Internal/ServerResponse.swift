@@ -16,5 +16,5 @@ import Foundation
 
 struct ServerResponse {
   let jsonResults: String
-  let ttl: TimeInterval
+  let maxAge: TimeInterval?
 }
