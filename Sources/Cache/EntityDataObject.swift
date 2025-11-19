@@ -31,7 +31,7 @@ class EntityDataObject: Codable {
   private var serverValues = [String: AnyCodableValue]()
 
   enum CodingKeys: String, CodingKey {
-    case globalID = "guid"
+    case guid = "_id"
     case serverValues = "sval"
   }
 
@@ -84,28 +84,15 @@ class EntityDataObject: Codable {
     }
   }
 
-  // MARK: Encoding / Decoding support
-
+  // inline encodable data
+  // used when trying to create a hydrated tree
   func encodableData() throws -> [String: AnyCodableValue] {
-    var encodingValues = [String: AnyCodableValue]()
-    encodingValues[GlobalIDKey] = .string(guid)
-    encodingValues.merge(serverValues) { _, new in new }
-    return encodingValues
-  }
-
-  public func encode(to encoder: Encoder) throws {
-    var container = encoder.container(keyedBy: CodingKeys.self)
-    try container.encode(guid, forKey: .globalID)
-    try container.encode(serverValues, forKey: .serverValues)
-  }
-
-  required init(from decoder: Decoder) throws {
-    let container = try decoder.container(keyedBy: CodingKeys.self)
-
-    let globalId = try container.decode(String.self, forKey: .globalID)
-    guid = globalId
-
-    serverValues = try container.decode([String: AnyCodableValue].self, forKey: .serverValues)
+    accessQueue.sync {
+      var encodingValues = [String: AnyCodableValue]()
+      encodingValues[GlobalIDKey] = .string(guid)
+      encodingValues.merge(serverValues) { _, new in new }
+      return encodingValues
+    }
   }
 }
 
