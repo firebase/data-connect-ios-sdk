@@ -12,17 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// Specifies the cache configuration for a Firebase Data Connect instance
+/// Specifies the cache configuration for a `DataConnect` instance.
+///
+/// You can configure the cache's storage policy and its maximum size.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct CacheSettings: Sendable {
+  /// Defines the storage mechanism for the cache.
   public enum Storage: Sendable {
+    /// The cache will be written to disk, persisting data across application launches.
     case persistent
+    /// The cache will only be stored in memory and will be cleared when the application terminates.
     case memory
   }
 
-  public let storage: Storage // default provider is persistent type
+  /// The storage mechanism to be used for caching. The default is `.persistent`.
+  public let storage: Storage
+  /// The maximum size of the cache in bytes.
+  ///
+  /// This size is not strictly enforced but is used as a guideline by the cache
+  /// to trigger cleanup procedures. The default is 100MB (100,000,000 bytes).
   public let maxSizeBytes: UInt64
 
+  /// Creates a new cache settings configuration.
+  ///
+  /// - Parameters:
+  ///   - storage: The storage mechanism to use. Defaults to `.persistent`.
+  ///   - maxSize: The maximum desired size of the cache in bytes. Defaults to 100MB.
   public init(storage: Storage = .persistent, maxSize: UInt64 = 100_000_000) {
     self.storage = storage
     maxSizeBytes = maxSize
