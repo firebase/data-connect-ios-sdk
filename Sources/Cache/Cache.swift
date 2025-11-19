@@ -21,7 +21,7 @@ let GlobalIDKey: String = "_id"
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 actor Cache {
   let config: CacheSettings
-  let dataConnect: DataConnect
+  weak var dataConnect: DataConnect?
 
   private var cacheProvider: CacheProvider?
 
@@ -42,6 +42,11 @@ actor Cache {
 
   private func initializeCacheProvider() {
     let identifier = contructCacheIdentifier()
+    
+    guard identifier.isEmpty == false else {
+      DataConnectLogger.error("CacheIdentifier is empty. Caching is disabled")
+      return
+    }
 
     // Create a cacheProvider if -
     // we don't have an existing cacheProvider
@@ -63,6 +68,11 @@ actor Cache {
   }
 
   private func setupChangeListeners() {
+    guard let dataConnect else {
+      DataConnectLogger.error("Unable to setup auth change listeners since DataConnect is nil")
+      return
+    }
+    
     authChangeListenerProtocol = Auth.auth(app: dataConnect.app).addStateDidChangeListener { _, _ in
       self.initializeCacheProvider()
     }
@@ -70,6 +80,11 @@ actor Cache {
 
   // Create an identifier for the cache that the Provider will use for cache scoping
   private func contructCacheIdentifier() -> String {
+    guard let dataConnect else {
+      DataConnectLogger.error("Unable to construct a cache identifier since DataConnect is nil")
+      return ""
+    }
+    
     let identifier =
       "\(config.storage)-\(dataConnect.app.options.projectID!)-\(dataConnect.app.name)-\(dataConnect.connectorConfig.serviceId)-\(dataConnect.connectorConfig.connector)-\(dataConnect.connectorConfig.location)-\(Auth.auth(app: dataConnect.app).currentUser?.uid ?? "anon")-\(dataConnect.settings.host)"
     let encoded = identifier.sha256
@@ -139,16 +154,18 @@ actor Cache {
           )
         )
 
-      for refId in impactedRefs {
-        guard let q = dataConnect.queryRef(for: refId) as? (any QueryRefInternal) else {
-          continue
-        }
-        Task {
-          do {
-            try await q.publishCacheResultsToSubscribers(allowStale: true)
-          } catch {
-            DataConnectLogger
-              .warning("Error republishing cached results for impacted queryrefs \(error))")
+      if let dataConnect {
+        for refId in impactedRefs {
+          guard let q = dataConnect.queryRef(for: refId) as? (any QueryRefInternal) else {
+            continue
+          }
+          Task {
+            do {
+              try await q.publishCacheResultsToSubscribers(allowStale: true)
+            } catch {
+              DataConnectLogger
+                .warning("Error republishing cached results for impacted queryrefs \(error))")
+            }
           }
         }
       }
