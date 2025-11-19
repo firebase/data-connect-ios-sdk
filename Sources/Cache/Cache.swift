@@ -42,7 +42,7 @@ actor Cache {
 
   private func initializeCacheProvider() {
     let identifier = contructCacheIdentifier()
-    
+
     guard identifier.isEmpty == false else {
       DataConnectLogger.error("CacheIdentifier is empty. Caching is disabled")
       return
@@ -72,7 +72,7 @@ actor Cache {
       DataConnectLogger.error("Unable to setup auth change listeners since DataConnect is nil")
       return
     }
-    
+
     authChangeListenerProtocol = Auth.auth(app: dataConnect.app).addStateDidChangeListener { _, _ in
       self.initializeCacheProvider()
     }
@@ -84,7 +84,7 @@ actor Cache {
       DataConnectLogger.error("Unable to construct a cache identifier since DataConnect is nil")
       return ""
     }
-    
+
     let identifier =
       "\(config.storage)-\(dataConnect.app.options.projectID!)-\(dataConnect.app.name)-\(dataConnect.connectorConfig.serviceId)-\(dataConnect.connectorConfig.connector)-\(dataConnect.connectorConfig.location)-\(Auth.auth(app: dataConnect.app).currentUser?.uid ?? "anon")-\(dataConnect.settings.host)"
     let encoded = identifier.sha256
