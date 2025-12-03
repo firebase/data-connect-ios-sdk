@@ -46,7 +46,8 @@ public struct CacheSettings: Sendable {
   ///   - storage: The storage mechanism to use. Defaults to `.persistent`.
   ///   - maxSize: The maximum desired size of the cache in bytes. Defaults to 100MB.
   ///   - maxAge: The max time interval before a queries cache is considered stale and refreshed
-  /// from the server
+  /// from the server. Defaults to zero, implying queries results are always fetched from server and
+  /// also cached. Results can be fetched from cache using the `cacheOnly` flag.
   public init(storage: Storage = .persistent, maxSize: UInt64 = 100_000_000,
               maxAge: TimeInterval = 0) {
     self.storage = storage
