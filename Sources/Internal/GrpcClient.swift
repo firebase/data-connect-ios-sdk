@@ -130,13 +130,13 @@ actor GrpcClient: CustomStringConvertible {
     VariableType: OperationVariable>(request: QueryRequest<VariableType>,
                                      resultType: ResultType
                                        .Type)
-    async throws -> OperationResult<ResultType> {
+    async throws -> ServerResponse {
     guard let client else {
       DataConnectLogger.error("When calling executeQuery(), grpc client has not been configured.")
       throw DataConnectInitError.grpcNotConfigured()
     }
 
-    let codec = Codec()
+    let codec = ProtoCodec()
     let grpcRequest = try codec.createQueryRequestProto(
       connectorName: connectorName,
       request: request
@@ -147,13 +147,23 @@ actor GrpcClient: CustomStringConvertible {
       DataConnectLogger
         .debug("executeQuery() sends grpc request: \(requestString, privacy: .private).")
       let results = try await client.executeQuery(grpcRequest, callOptions: createCallOptions())
-      let resultsString = try results.jsonString()
+      let resultsString = try results.data.jsonString()
       DataConnectLogger
         .debug("executeQuery() receives response: \(resultsString, privacy: .private).")
 
       // lets decode partial errors. We need these whether we succeed or fail
       let errorInfoList = createErrorInfoList(errors: results.errors)
 
+      /*
+       If we don't have Partial Errors, we return the result string to be decoded at query level
+       If we have Partial Errors, we follow the partial error route below.
+       */
+      guard !errorInfoList.isEmpty else {
+        // TODO: Extract ttl, server timestamp when available
+        return ServerResponse(jsonResults: resultsString, maxAge: nil)
+      }
+
+      // We have partial errors returned
       /*
        - if decode succeeds, errorList isEmpty = return data
        - if decode succeeds, errorList notEmpty = throw OperationError with decodedData
@@ -165,17 +175,14 @@ actor GrpcClient: CustomStringConvertible {
         let decodedResults = try codec.decode(result: results.data, asType: resultType)
 
         // even though decode succeeded, we may still have received partial errors
-        if !errorInfoList.isEmpty {
-          let failureResponse = OperationFailureResponse(
-            rawJsonData: resultsString, errors: errorInfoList,
-            data: decodedResults
-          )
-          throw DataConnectOperationError.executionFailed(
-            response: failureResponse
-          )
-        } else {
-          return OperationResult(data: decodedResults)
-        }
+
+        let failureResponse = OperationFailureResponse(
+          rawJsonData: resultsString, errors: errorInfoList,
+          data: decodedResults
+        )
+        throw DataConnectOperationError.executionFailed(
+          response: failureResponse
+        )
 
       } catch let operationErr as DataConnectOperationError {
         // simply rethrow to avoid wrapping error
@@ -198,7 +205,7 @@ actor GrpcClient: CustomStringConvertible {
         }
       }
     } catch {
-      // we failed at executing the call
+      // we failed at executing the server call itself
       DataConnectLogger.error(
         "executeQuery(): \(requestString, privacy: .private) grpc call FAILED with \(error)."
       )
@@ -217,7 +224,7 @@ actor GrpcClient: CustomStringConvertible {
       throw DataConnectInitError.grpcNotConfigured()
     }
 
-    let codec = Codec()
+    let codec = ProtoCodec()
     let grpcRequest = try codec.createMutationRequestProto(
       connectorName: connectorName,
       request: request
@@ -256,7 +263,7 @@ actor GrpcClient: CustomStringConvertible {
             response: failureResponse
           )
         } else {
-          return OperationResult(data: decodedResults)
+          return OperationResult(data: decodedResults, source: .server)
         }
 
       } catch let operationErr as DataConnectOperationError {

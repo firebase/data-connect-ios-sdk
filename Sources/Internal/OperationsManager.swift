@@ -18,11 +18,13 @@ import Foundation
 class OperationsManager {
   private var grpcClient: GrpcClient
 
+  private var cache: Cache?
+
   private let queryRefAccessQueue = DispatchQueue(
     label: "firebase.dataconnect.queryRef.AccessQ",
     autoreleaseFrequency: .workItem
   )
-  private var queryRefs = [AnyHashable: any ObservableQueryRef]()
+  private var queryRefs = [String: any ObservableQueryRef]()
 
   private let mutationRefAccessQueue = DispatchQueue(
     label: "firebase.dataconnect.mutRef.AccessQ",
@@ -30,8 +32,9 @@ class OperationsManager {
   )
   private var mutationRefs = [AnyHashable: any OperationRef]()
 
-  init(grpcClient: GrpcClient) {
+  init(grpcClient: GrpcClient, cache: Cache? = nil) {
     self.grpcClient = grpcClient
+    self.cache = cache
   }
 
   func queryRef<ResultDataType: Decodable & Sendable,
@@ -41,7 +44,10 @@ class OperationsManager {
                                      publisher: ResultsPublisherType = .auto)
     -> any ObservableQueryRef {
     queryRefAccessQueue.sync {
-      if let ref = queryRefs[AnyHashable(request)] {
+      var req = request // requestId is a mutating call.
+      let requestId = req.requestId
+
+      if let ref = queryRefs[requestId] {
         return ref
       }
 
@@ -50,9 +56,10 @@ class OperationsManager {
           let obsRef = QueryRefObservation<ResultDataType, VariableType>(
             request: request,
             dataType: resultType,
-            grpcClient: self.grpcClient
+            grpcClient: self.grpcClient,
+            cache: self.cache
           ) as (any ObservableQueryRef)
-          queryRefs[AnyHashable(request)] = obsRef
+          queryRefs[requestId] = obsRef
           return obsRef
         }
       }
@@ -60,11 +67,18 @@ class OperationsManager {
       let refObsObject = QueryRefObservableObject<ResultDataType, VariableType>(
         request: request,
         dataType: resultType,
-        grpcClient: grpcClient
+        grpcClient: grpcClient,
+        cache: self.cache
       ) as (any ObservableQueryRef)
-      queryRefs[AnyHashable(request)] = refObsObject
+      queryRefs[requestId] = refObsObject
       return refObsObject
     } // accessQueue.sync
+  }
+
+  func queryRef(for operationId: String) -> (any ObservableQueryRef)? {
+    queryRefAccessQueue.sync {
+      queryRefs[operationId]
+    }
   }
 
   func mutationRef<ResultDataType: Decodable,

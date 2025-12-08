@@ -16,20 +16,24 @@ import Foundation
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct DataConnectSettings: Hashable, Equatable, Sendable {
-  public private(set) var host: String
-  public private(set) var port: Int
-  public private(set) var sslEnabled: Bool
+  public let host: String
+  public let port: Int
+  public let sslEnabled: Bool
+  public let cacheSettings: CacheSettings?
 
-  public init(host: String, port: Int, sslEnabled: Bool) {
+  public init(host: String, port: Int, sslEnabled: Bool,
+              cacheSettings: CacheSettings? = CacheSettings()) {
     self.host = host
     self.port = port
     self.sslEnabled = sslEnabled
+    self.cacheSettings = cacheSettings
   }
 
   public init() {
     host = "firebasedataconnect.googleapis.com"
     port = 443
     sslEnabled = true
+    cacheSettings = CacheSettings()
   }
 
   public func hash(into hasher: inout Hasher) {

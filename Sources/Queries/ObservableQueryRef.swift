@@ -17,113 +17,13 @@ import Foundation
 @preconcurrency import Combine
 import Observation
 
-/// The type of publisher to use for the Query Ref
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public enum ResultsPublisherType {
-  /// automatically determine ObservableQueryRef.
-  /// Tries to pick the iOS 17+ Observation but falls back to ObservableObject
-  case auto
-
-  /// pre-iOS 17 ObservableObject
-  case observableObject
-
-  /// iOS 17+ Observation framework
-  case observableMacro
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct QueryRequest<Variable: OperationVariable>: OperationRequest, Hashable, Equatable {
-  private(set) var operationName: String
-  private(set) var variables: Variable?
-
-  init(operationName: String, variables: Variable? = nil) {
-    self.operationName = operationName
-    self.variables = variables
-  }
-
-  // Hashable and Equatable implementation
-  func hash(into hasher: inout Hasher) {
-    hasher.combine(operationName)
-    if let variables {
-      hasher.combine(variables)
-    }
-  }
-
-  static func == (lhs: QueryRequest, rhs: QueryRequest) -> Bool {
-    guard lhs.operationName == rhs.operationName else {
-      return false
-    }
-
-    if lhs.variables == nil && rhs.variables == nil {
-      return true
-    }
-
-    guard let lhsVar = lhs.variables,
-          let rhsVar = rhs.variables,
-          lhsVar == rhsVar else {
-      return false
-    }
-
-    return true
-  }
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public protocol QueryRef: OperationRef {
-  // This call starts query execution and publishes data
-  func subscribe() async throws -> AnyPublisher<Result<ResultData, AnyDataConnectError>, Never>
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVariable>: QueryRef {
-  private let resultsPublisher = PassthroughSubject<Result<ResultData, AnyDataConnectError>,
-    Never>()
-
-  private let request: QueryRequest<Variable>
-
-  private let grpcClient: GrpcClient
-
-  init(request: QueryRequest<Variable>, grpcClient: GrpcClient) {
-    self.request = request
-    self.grpcClient = grpcClient
-  }
-
-  // This call starts query execution and publishes data to data var
-  // In v0, it simply reloads query results
-  public func subscribe() -> AnyPublisher<Result<ResultData, AnyDataConnectError>, Never> {
-    Task {
-      do {
-        _ = try await reloadResults()
-      } catch {}
-    }
-    return resultsPublisher.eraseToAnyPublisher()
-  }
-
-  // one-shot execution. It will fetch latest data, update any caches
-  // and updates the published data var
-  public func execute() async throws -> OperationResult<ResultData> {
-    let resultData = try await reloadResults()
-    return OperationResult(data: resultData)
-  }
-
-  private func reloadResults() async throws -> ResultData {
-    let results = try await grpcClient.executeQuery(
-      request: request,
-      resultType: ResultData.self
-    )
-    await updateData(data: results.data)
-    return results.data
-  }
-
-  func updateData(data: ResultData) async {
-    resultsPublisher.send(.success(data))
-  }
-}
-
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public protocol ObservableQueryRef: QueryRef {
   // results of fetch.
   var data: ResultData? { get }
+
+  // source of the query results (server, cache, )
+  var source: DataSource? { get }
 
   // last error received. if last fetch was successful this is cleared
   var lastError: DataConnectError? { get }
@@ -146,15 +46,26 @@ public class QueryRefObservableObject<
   ResultData: Decodable & Sendable,
   Variable: OperationVariable
 >: ObservableObject, ObservableQueryRef {
+  var operationId: String {
+    return baseRef.operationId
+  }
+
   private var request: QueryRequest<Variable>
 
   private var baseRef: GenericQueryRef<ResultData, Variable>
 
   private var resultsCancellable: AnyCancellable?
 
-  init(request: QueryRequest<Variable>, dataType: ResultData.Type, grpcClient: GrpcClient) {
+  init(request: QueryRequest<Variable>,
+       dataType: ResultData.Type,
+       grpcClient: GrpcClient,
+       cache: Cache?) {
     self.request = request
-    baseRef = GenericQueryRef(request: request, grpcClient: grpcClient)
+    baseRef = GenericQueryRef(
+      request: request,
+      grpcClient: grpcClient,
+      cache: cache
+    )
     setupSubscription()
   }
 
@@ -164,8 +75,9 @@ public class QueryRefObservableObject<
         .receive(on: DispatchQueue.main)
         .sink(receiveValue: { result in
           switch result {
-          case let .success(resultData):
-            self.data = resultData
+          case let .success(operationResult):
+            self.data = operationResult.data
+            self.source = operationResult.source
             self.lastError = nil
           case let .failure(dcerror):
             self.lastError = dcerror.dataConnectError
@@ -183,12 +95,16 @@ public class QueryRefObservableObject<
   /// error is cleared
   @Published public private(set) var lastError: DataConnectError?
 
+  /// Source of the query results (server, local cache, ...)
+  @Published public private(set) var source: DataSource?
+
   // QueryRef implementation
 
   /// Executes the query and returns `ResultData`. This will also update the published `data`
   /// variable
-  public func execute() async throws -> OperationResult<ResultData> {
-    let result = try await baseRef.execute()
+  public func execute(fetchPolicy: QueryFetchPolicy = .preferCache) async throws
+    -> OperationResult<ResultData> {
+    let result = try await baseRef.execute(fetchPolicy: fetchPolicy)
     return result
   }
 
@@ -196,8 +112,30 @@ public class QueryRefObservableObject<
   /// Use this function ONLY if you plan to use the Query Ref outside of SwiftUI context - (UIKit,
   /// background updates,...)
   public func subscribe() async throws
-    -> AnyPublisher<Result<ResultData, AnyDataConnectError>, Never> {
+    -> AnyPublisher<Result<OperationResult<ResultData>, AnyDataConnectError>, Never> {
     return await baseRef.subscribe()
+  }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public extension QueryRefObservableObject {
+  nonisolated func hash(into hasher: inout Hasher) {
+    hasher.combine(baseRef)
+  }
+
+  static func == (lhs: QueryRefObservableObject, rhs: QueryRefObservableObject) -> Bool {
+    lhs.baseRef == rhs.baseRef
+  }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension QueryRefObservableObject: QueryRefInternal {
+  func publishServerResultsToSubscribers() async throws {
+    try await baseRef.publishServerResultsToSubscribers()
+  }
+
+  func publishCacheResultsToSubscribers(allowStale: Bool) async throws {
+    try await baseRef.publishCacheResultsToSubscribers(allowStale: allowStale)
   }
 }
 
@@ -219,6 +157,10 @@ public class QueryRefObservation<
   ResultData: Decodable & Sendable,
   Variable: OperationVariable
 >: ObservableQueryRef {
+  var operationId: String {
+    return baseRef.operationId
+  }
+
   @ObservationIgnored
   private var request: QueryRequest<Variable>
 
@@ -228,9 +170,14 @@ public class QueryRefObservation<
   @ObservationIgnored
   private var resultsCancellable: AnyCancellable?
 
-  init(request: QueryRequest<Variable>, dataType: ResultData.Type, grpcClient: GrpcClient) {
+  init(request: QueryRequest<Variable>, dataType: ResultData.Type, grpcClient: GrpcClient,
+       cache: Cache?) {
     self.request = request
-    baseRef = GenericQueryRef(request: request, grpcClient: grpcClient)
+    baseRef = GenericQueryRef(
+      request: request,
+      grpcClient: grpcClient,
+      cache: cache
+    )
     setupSubscription()
   }
 
@@ -241,7 +188,8 @@ public class QueryRefObservation<
         .sink(receiveValue: { result in
           switch result {
           case let .success(resultData):
-            self.data = resultData
+            self.data = resultData.data
+            self.source = resultData.source
             self.lastError = nil
           case let .failure(dcerror):
             self.lastError = dcerror.dataConnectError
@@ -259,12 +207,16 @@ public class QueryRefObservation<
   /// error is cleared
   public private(set) var lastError: DataConnectError?
 
+  /// Source of the query results (server, local cache, ...)
+  public private(set) var source: DataSource?
+
   // QueryRef implementation
 
   /// Executes the query and returns `ResultData`. This will also update the published `data`
   /// variable
-  public func execute() async throws -> OperationResult<ResultData> {
-    let result = try await baseRef.execute()
+  public func execute(fetchPolicy: QueryFetchPolicy = .preferCache) async throws
+    -> OperationResult<ResultData> {
+    let result = try await baseRef.execute(fetchPolicy: fetchPolicy)
     return result
   }
 
@@ -272,7 +224,36 @@ public class QueryRefObservation<
   /// Use this function ONLY if you plan to use the Query Ref outside of SwiftUI context - (UIKit,
   /// background updates,...)
   public func subscribe() async throws
-    -> AnyPublisher<Result<ResultData, AnyDataConnectError>, Never> {
+    -> AnyPublisher<Result<OperationResult<ResultData>, AnyDataConnectError>, Never> {
     return await baseRef.subscribe()
+  }
+}
+
+@available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
+public extension QueryRefObservation {
+  nonisolated func hash(into hasher: inout Hasher) {
+    hasher.combine(baseRef)
+  }
+
+  static func == (lhs: QueryRefObservation, rhs: QueryRefObservation) -> Bool {
+    lhs.baseRef == rhs.baseRef
+  }
+}
+
+@available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
+extension QueryRefObservation: CustomStringConvertible {
+  public nonisolated var description: String {
+    "QueryRefObservation(\(String(describing: baseRef)))"
+  }
+}
+
+@available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
+extension QueryRefObservation: QueryRefInternal {
+  func publishServerResultsToSubscribers() async throws {
+    try await baseRef.publishServerResultsToSubscribers()
+  }
+
+  func publishCacheResultsToSubscribers(allowStale: Bool) async throws {
+    try await baseRef.publishCacheResultsToSubscribers(allowStale: allowStale)
   }
 }

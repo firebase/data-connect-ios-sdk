@@ -14,27 +14,9 @@
 
 import Foundation
 
+/// Structure representing the value returned by operation calls - query or mutation
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public struct ConnectorConfig: Hashable, Equatable, Sendable {
-  public let serviceId: String
-  public let location: String
-  public let connector: String
-
-  public init(serviceId: String, location: String, connector: String) {
-    self.serviceId = serviceId
-    self.location = location
-    self.connector = connector
-  }
-
-  public func hash(into hasher: inout Hasher) {
-    hasher.combine(serviceId)
-    hasher.combine(location)
-    hasher.combine(connector)
-  }
-
-  public static func == (lhs: Self, rhs: Self) -> Bool {
-    return lhs.serviceId == rhs.serviceId &&
-      lhs.location == rhs.location &&
-      lhs.connector == rhs.connector
-  }
+public struct OperationResult<ResultData: Decodable & Sendable>: Sendable {
+  public let data: ResultData?
+  public let source: DataSource
 }
