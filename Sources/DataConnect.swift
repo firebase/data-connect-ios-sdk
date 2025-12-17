@@ -124,8 +124,8 @@ public class DataConnect {
 
     operationsManager = OperationsManager(grpcClient: grpcClient, cache: cache)
 
-    if let cs = settings.cacheSettings {
-      cache = Cache(config: cs, dataConnect: self)
+    if let cacheSettings = settings.cacheSettings {
+      cache = Cache(config: cacheSettings, dataConnect: self)
     }
   }
 
