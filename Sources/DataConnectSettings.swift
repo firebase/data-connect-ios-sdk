@@ -22,7 +22,7 @@ public struct DataConnectSettings: Hashable, Equatable, Sendable {
   public let cacheSettings: CacheSettings?
 
   public init(host: String, port: Int, sslEnabled: Bool,
-              cacheSettings: CacheSettings? = CacheSettings()) {
+              cacheSettings: CacheSettings? = nil) {
     self.host = host
     self.port = port
     self.sslEnabled = sslEnabled
@@ -33,7 +33,7 @@ public struct DataConnectSettings: Hashable, Equatable, Sendable {
     host = "firebasedataconnect.googleapis.com"
     port = 443
     sslEnabled = true
-    cacheSettings = CacheSettings()
+    cacheSettings = nil
   }
 
   public func hash(into hasher: inout Hasher) {
