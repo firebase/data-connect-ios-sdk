@@ -107,7 +107,6 @@ class SQLiteCacheProvider: CacheProvider {
     if sqlite3_exec(db, createEntityDataTable, nil, nil, nil) != SQLITE_OK {
       throw DataConnectInternalError.sqliteError(message: "Could not create entity_data table")
     }
-     
   }
 
   private func updateLastAccessedTime(forQueryId queryId: String) {
@@ -286,7 +285,5 @@ class SQLiteCacheProvider: CacheProvider {
     } catch {
       DataConnectLogger.error("Error encoding data object for entityGuid \(entityGuid): \(error)")
     }
-
   }
-
 }

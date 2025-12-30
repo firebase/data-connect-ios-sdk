@@ -28,7 +28,7 @@ let ImpactedRefsAccumulatorCodingKey =
 
 // Key pointing to queryId being processed
 let QueryIdCodingKey =
-CodingUserInfoKey(rawValue: "com.google.firebase.dataconnect.queryId")!
+  CodingUserInfoKey(rawValue: "com.google.firebase.dataconnect.queryId")!
 
 // Kind-of result data we are encoding from or decoding to
 enum ResultTreeKind {
@@ -45,13 +45,13 @@ class ImpactedQueryRefsAccumulator {
   private(set) var queryRefIds: Set<String> = []
 
   // QueryRef requesting impacted
-  //let requestor: (any QueryRefInternal)?
+  // let requestor: (any QueryRefInternal)?
   let requestorId: String?
 
   init(requestor: (any QueryRefInternal)? = nil) {
-    self.requestorId = requestor?.operationId
+    requestorId = requestor?.operationId
   }
-  
+
   init(requestorId: String? = nil) {
     self.requestorId = requestorId
   }
@@ -78,7 +78,8 @@ struct ResultTreeProcessor {
     Takes a JSON tree with data and normalizes the entities contained in it,
     creating a resultant JSON tree with references to entities.
    */
-  func dehydrateResults(_ queryId: String, _ hydratedTree: String, cacheProvider: CacheProvider) throws -> (
+  func dehydrateResults(_ queryId: String, _ hydratedTree: String,
+                        cacheProvider: CacheProvider) throws -> (
     dehydratedResults: String,
     rootObject: EntityNode,
     impactedRefIds: [String]
