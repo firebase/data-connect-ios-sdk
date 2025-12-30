@@ -26,10 +26,6 @@ let UpdatingQueryRefsCodingKey =
 let ImpactedRefsAccumulatorCodingKey =
   CodingUserInfoKey(rawValue: "com.google.firebase.dataconnect.impactedQueryRefs")!
 
-// Key pointing to queryId being processed
-let QueryIdCodingKey =
-  CodingUserInfoKey(rawValue: "com.google.firebase.dataconnect.queryId")!
-
 // Kind-of result data we are encoding from or decoding to
 enum ResultTreeKind {
   case hydrated // JSON data is full hydrated and contains full data in the tree
@@ -53,13 +49,7 @@ class ImpactedQueryRefsAccumulator {
 
   // appends the impacted operationId not matching requestor
   func append(_ queryRefId: String) {
-    guard requestorId != nil else {
-      queryRefIds.insert(queryRefId)
-      return
-    }
-
-    if let requestorId,
-       queryRefId != requestorId {
+    if requestorId != queryRefId {
       queryRefIds.insert(queryRefId)
     }
   }
