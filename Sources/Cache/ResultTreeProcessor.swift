@@ -26,6 +26,10 @@ let UpdatingQueryRefsCodingKey =
 let ImpactedRefsAccumulatorCodingKey =
   CodingUserInfoKey(rawValue: "com.google.firebase.dataconnect.impactedQueryRefs")!
 
+// Key pointing to queryId being processed
+let QueryIdCodingKey =
+CodingUserInfoKey(rawValue: "com.google.firebase.dataconnect.queryId")!
+
 // Kind-of result data we are encoding from or decoding to
 enum ResultTreeKind {
   case hydrated // JSON data is full hydrated and contains full data in the tree
@@ -41,21 +45,26 @@ class ImpactedQueryRefsAccumulator {
   private(set) var queryRefIds: Set<String> = []
 
   // QueryRef requesting impacted
-  let requestor: (any QueryRefInternal)?
+  //let requestor: (any QueryRefInternal)?
+  let requestorId: String?
 
   init(requestor: (any QueryRefInternal)? = nil) {
-    self.requestor = requestor
+    self.requestorId = requestor?.operationId
+  }
+  
+  init(requestorId: String? = nil) {
+    self.requestorId = requestorId
   }
 
   // appends the impacted operationId not matching requestor
   func append(_ queryRefId: String) {
-    guard requestor != nil else {
+    guard requestorId != nil else {
       queryRefIds.insert(queryRefId)
       return
     }
 
-    if let requestor = requestor,
-       queryRefId != requestor.operationId {
+    if let requestorId,
+       queryRefId != requestorId {
       queryRefIds.insert(queryRefId)
     }
   }
@@ -69,8 +78,7 @@ struct ResultTreeProcessor {
     Takes a JSON tree with data and normalizes the entities contained in it,
     creating a resultant JSON tree with references to entities.
    */
-  func dehydrateResults(_ hydratedTree: String, cacheProvider: CacheProvider,
-                        requestor: (any QueryRefInternal)? = nil) throws -> (
+  func dehydrateResults(_ queryId: String, _ hydratedTree: String, cacheProvider: CacheProvider) throws -> (
     dehydratedResults: String,
     rootObject: EntityNode,
     impactedRefIds: [String]
@@ -80,7 +88,7 @@ struct ResultTreeProcessor {
     }
 
     let jsonDecoder = JSONDecoder()
-    let impactedRefsAccumulator = ImpactedQueryRefsAccumulator(requestor: requestor)
+    let impactedRefsAccumulator = ImpactedQueryRefsAccumulator(requestorId: queryId)
 
     jsonDecoder.userInfo[CacheProviderUserInfoKey] = cacheProvider
     jsonDecoder.userInfo[ResultTreeKindCodingKey] = ResultTreeKind.hydrated

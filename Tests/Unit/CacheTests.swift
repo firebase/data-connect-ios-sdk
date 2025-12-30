@@ -23,6 +23,12 @@ final class CacheTests: XCTestCase {
     {"item":{"desc":null,"_id":"a2e64ada1771434aa3ec73f6a6d05428","price":40.456,"reviews":[{"title":"Item4 Review1 byUser3","id":"d769b8d6d4064e81948fb6b9374fba54","_id":"03ADC9EC-0102-4F24-BE8B-F6C0DD102EA4","user":{"name":"User3","id":"69562c9aee2f47ee8abb8181d4df53ec","_id":"65928AFC-22FA-422D-A2F1-85980DC682AE"}}],"id":"98e55525f20f4ee190034adcd6fb01dc","name":"Item4"}}
 
   """
+  
+  // Updates the price of the item
+  let resultTreeOneItemUpdateJson = """
+    {"item":{"desc":null,"_id":"a2e64ada1771434aa3ec73f6a6d05428","price":64,"reviews":[{"title":"Item4 Review1 byUser3","id":"d769b8d6d4064e81948fb6b9374fba54","_id":"03ADC9EC-0102-4F24-BE8B-F6C0DD102EA4","user":{"name":"User3","id":"69562c9aee2f47ee8abb8181d4df53ec","_id":"65928AFC-22FA-422D-A2F1-85980DC682AE"}}],"id":"98e55525f20f4ee190034adcd6fb01dc","name":"Item4"}}
+
+  """
 
   let resultTreeOneItemSimple = """
       {"item":{"desc":"itemDesc","name":"itemsOne", "_id":"123","price":4}}
@@ -48,7 +54,7 @@ final class CacheTests: XCTestCase {
       let cp = try XCTUnwrap(cacheProvider)
 
       let resultsProcessor = ResultTreeProcessor()
-      try resultsProcessor.dehydrateResults(resultTreeJson, cacheProvider: cp)
+      _ = try resultsProcessor.dehydrateResults("queryList", resultTreeJson, cacheProvider: cp)
 
       let reused_id = "27E85023-D465-4240-82D6-0055AA122406"
 
@@ -66,7 +72,7 @@ final class CacheTests: XCTestCase {
 
       let resultsProcessor = ResultTreeProcessor()
 
-      let (dehydratedTree, do1, _) = try resultsProcessor.dehydrateResults(
+      let (dehydratedTree, do1, _) = try resultsProcessor.dehydrateResults("queryOneItem",
         resultTreeOneItemJson,
         cacheProvider: cp
       )
@@ -77,6 +83,42 @@ final class CacheTests: XCTestCase {
       )
 
       XCTAssertEqual(do1, do2)
+    }
+  }
+  
+  func testImpactedRefs() throws {
+    do {
+      let cp = try XCTUnwrap(cacheProvider)
+
+      let resultsProcessor = ResultTreeProcessor()
+
+      let queryIdList = "queryList"
+      let (_, _, impactedRefs) = try resultsProcessor.dehydrateResults(
+        queryIdList,
+        resultTreeJson,
+        cacheProvider: cp
+      )
+      XCTAssertTrue(impactedRefs.count == 0) //first query so no 'others' are impacted
+      
+      let queryIdOneItem = "queryOneItem"
+      let (
+        _,
+        _,
+        impactedRefsOneItem
+      ) = try resultsProcessor.dehydrateResults(queryIdOneItem,
+        resultTreeOneItemJson,
+        cacheProvider: cp
+      )
+      XCTAssertTrue(impactedRefsOneItem.contains(queryIdList))
+      
+      let queryIdOneItemUpdate = "queryOneItemUpdate"
+      let (
+        _,
+        _,
+        impactedRefsOneItemUpdate
+      ) = try resultsProcessor.dehydrateResults("queryOneItemUpdate", resultTreeOneItemUpdateJson, cacheProvider: cp)
+      XCTAssertTrue(impactedRefsOneItemUpdate.contains(queryIdOneItem) && impactedRefsOneItemUpdate.contains(queryIdList))
+      
     }
   }
 }

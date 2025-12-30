@@ -33,22 +33,23 @@ class EntityDataObject: Codable {
   enum CodingKeys: String, CodingKey {
     case guid = "_id"
     case serverValues = "sval"
+    case referencedFrom = "refs"
   }
 
   // Updates the value received from server and returns a list of QueryRef operation ids
   // referenced from this EntityDataObject
   @discardableResult func updateServerValue(_ key: String,
                                             _ newValue: AnyCodableValue,
-                                            _ requestor: (any QueryRefInternal)? = nil)
+                                            _ requestorId: String? = nil)
     -> [String] {
     accessQueue.sync {
       self.serverValues[key] = newValue
       DataConnectLogger.debug("EDO updateServerValue: \(key) \(newValue) for \(guid)")
 
-      if let requestor {
-        referencedFrom.insert(requestor.operationId)
+      if let requestorId {
+        referencedFrom.insert(requestorId)
         DataConnectLogger
-          .debug("Inserted referencedFrom \(requestor). New count \(referencedFrom.count)")
+          .debug("Inserted referencedFrom \(requestorId). New count \(referencedFrom.count)")
       }
       let refs = [String](referencedFrom)
       return refs
