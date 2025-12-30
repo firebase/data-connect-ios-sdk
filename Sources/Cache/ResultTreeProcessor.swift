@@ -44,13 +44,8 @@ class ImpactedQueryRefsAccumulator {
   // operationIds of impacted QueryRefs
   private(set) var queryRefIds: Set<String> = []
 
-  // QueryRef requesting impacted
-  // let requestor: (any QueryRefInternal)?
+  // Requesting QueryRef id
   let requestorId: String?
-
-  init(requestor: (any QueryRefInternal)? = nil) {
-    requestorId = requestor?.operationId
-  }
 
   init(requestorId: String? = nil) {
     self.requestorId = requestorId

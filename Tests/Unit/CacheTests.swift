@@ -76,7 +76,7 @@ final class CacheTests: XCTestCase {
                                                                            resultTreeOneItemJson,
                                                                            cacheProvider: cp)
 
-      let (hydratedTree, do2) = try resultsProcessor.hydrateResults(
+      let (_, do2) = try resultsProcessor.hydrateResults(
         dehydratedTree,
         cacheProvider: cp
       )
@@ -97,7 +97,7 @@ final class CacheTests: XCTestCase {
         resultTreeJson,
         cacheProvider: cp
       )
-      XCTAssertTrue(impactedRefs.count == 0) // first query so no 'others' are impacted
+      XCTAssertTrue(impactedRefs.isEmpty) // first query so no 'others' are impacted
 
       let queryIdOneItem = "queryOneItem"
       let (
@@ -115,12 +115,12 @@ final class CacheTests: XCTestCase {
         _,
         impactedRefsOneItemUpdate
       ) = try resultsProcessor.dehydrateResults(
-        "queryOneItemUpdate",
+        queryIdOneItemUpdate,
         resultTreeOneItemUpdateJson,
         cacheProvider: cp
       )
-      XCTAssertTrue(impactedRefsOneItemUpdate.contains(queryIdOneItem) && impactedRefsOneItemUpdate
-        .contains(queryIdList))
+      XCTAssertTrue(impactedRefsOneItemUpdate.contains(queryIdOneItem))
+      XCTAssertTrue(impactedRefsOneItemUpdate.contains(queryIdList))
     }
   }
 }
