@@ -40,22 +40,16 @@ class ImpactedQueryRefsAccumulator {
   // operationIds of impacted QueryRefs
   private(set) var queryRefIds: Set<String> = []
 
-  // QueryRef requesting impacted
-  let requestor: (any QueryRefInternal)?
+  // Requesting QueryRef id
+  let requestorId: String?
 
-  init(requestor: (any QueryRefInternal)? = nil) {
-    self.requestor = requestor
+  init(requestorId: String? = nil) {
+    self.requestorId = requestorId
   }
 
   // appends the impacted operationId not matching requestor
   func append(_ queryRefId: String) {
-    guard requestor != nil else {
-      queryRefIds.insert(queryRefId)
-      return
-    }
-
-    if let requestor = requestor,
-       queryRefId != requestor.operationId {
+    if requestorId != queryRefId {
       queryRefIds.insert(queryRefId)
     }
   }
@@ -69,8 +63,8 @@ struct ResultTreeProcessor {
     Takes a JSON tree with data and normalizes the entities contained in it,
     creating a resultant JSON tree with references to entities.
    */
-  func dehydrateResults(_ hydratedTree: String, cacheProvider: CacheProvider,
-                        requestor: (any QueryRefInternal)? = nil) throws -> (
+  func dehydrateResults(_ queryId: String, _ hydratedTree: String,
+                        cacheProvider: CacheProvider) throws -> (
     dehydratedResults: String,
     rootObject: EntityNode,
     impactedRefIds: [String]
@@ -80,7 +74,7 @@ struct ResultTreeProcessor {
     }
 
     let jsonDecoder = JSONDecoder()
-    let impactedRefsAccumulator = ImpactedQueryRefsAccumulator(requestor: requestor)
+    let impactedRefsAccumulator = ImpactedQueryRefsAccumulator(requestorId: queryId)
 
     jsonDecoder.userInfo[CacheProviderUserInfoKey] = cacheProvider
     jsonDecoder.userInfo[ResultTreeKindCodingKey] = ResultTreeKind.hydrated

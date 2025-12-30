@@ -91,7 +91,7 @@ struct EntityNode {
             let impactedRefs = entityData.updateServerValue(
               key,
               value,
-              impactedRefsAccumulator?.requestor
+              impactedRefsAccumulator?.requestorId
             )
 
             // accumulate any impacted QueryRefs due to this change
@@ -105,7 +105,7 @@ struct EntityNode {
           let impactedRefs = entityData.updateServerValue(
             key,
             value,
-            impactedRefsAccumulator?.requestor
+            impactedRefsAccumulator?.requestorId
           )
 
           // accumulate any QueryRefs impacted by this change

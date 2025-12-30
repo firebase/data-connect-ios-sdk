@@ -135,11 +135,10 @@ actor Cache {
     }
     do {
       let processor = ResultTreeProcessor()
-      let (dehydratedResults, rootObj, impactedRefs) = try processor.dehydrateResults(
-        response.jsonResults,
-        cacheProvider: cacheProvider,
-        requestor: requestor
-      )
+      let (dehydratedResults, rootObj, impactedRefs) = try processor.dehydrateResults(queryId,
+                                                                                      response
+                                                                                        .jsonResults,
+                                                                                      cacheProvider: cacheProvider)
 
       cacheProvider
         .setResultTree(
