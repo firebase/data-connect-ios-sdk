@@ -75,7 +75,9 @@ class SQLiteCacheProvider: CacheProvider {
           try createTables()
         } else if curVersion.major != 1 {
           throw DataConnectInternalError
-            .sqliteError(message: "Invalid schema major version \(curVersion.major) detected")
+            .sqliteError(
+              message: "Unsupported schema major version \(curVersion.major) detected. Expected 1"
+            )
         }
       } catch {
         sqlite3_close(db)
