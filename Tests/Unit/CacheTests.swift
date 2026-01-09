@@ -125,19 +125,17 @@ final class CacheTests: XCTestCase {
   }
 
   func testSemanticVersionToInt() throws {
-    do {
-      let intVal = DBSemanticVersion("1.0.0")
-      XCTAssertEqual(intVal?.storageInt, Int32(001_000_000))
+    let intVal = DBSemanticVersion("1.0.0")
+    XCTAssertEqual(intVal?.storageInt, Int32(1_000_000))
 
-      let intVal2 = DBSemanticVersion("1.2.3")
-      XCTAssertEqual(intVal2?.storageInt, Int32(001_002_003))
+    let intVal2 = DBSemanticVersion("1.2.3")
+    XCTAssertEqual(intVal2?.storageInt, Int32(1_002_003))
 
-      let intVal3 = DBSemanticVersion("0.2.0")
-      XCTAssertEqual(intVal3?.storageInt, 000_002_000)
+    let intVal3 = DBSemanticVersion("0.2.0")
+    XCTAssertEqual(intVal3?.storageInt, 2000)
 
-      let intVal4 = DBSemanticVersion("0.0.030")
-      XCTAssertEqual(intVal4?.storageInt, 000_000_030)
-    }
+    let intVal4 = DBSemanticVersion("0.0.030")
+    XCTAssertEqual(intVal4?.storageInt, 30)
   }
 
   func testSemanticVersionToString() throws {

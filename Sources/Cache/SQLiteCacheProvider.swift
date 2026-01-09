@@ -115,8 +115,8 @@ class SQLiteCacheProvider: CacheProvider {
       throw DataConnectInternalError.sqliteError(message: "Could not create entity_data table")
     }
 
-    if setDatabaseVersion(DBSemanticVersion("1.0.0")!) != SQLITE_OK {
-      sqlite3_exec(db, "ROLLBACK", nil, nil, nil)
+    if let version = DBSemanticVersion("1.0.0"), setDatabaseVersion(version) != SQLITE_OK {
+      sqlite3_exec(db, "ROLLBACK;", nil, nil, nil)
       throw DataConnectInternalError
         .sqliteError(message: "Could not set database version to initial value")
     }
@@ -129,7 +129,7 @@ class SQLiteCacheProvider: CacheProvider {
 
     var statement: OpaquePointer?
     let query = "PRAGMA user_version;"
-    var version = DBSemanticVersion("0.0.0")!
+    var version = DBSemanticVersion(storageInt: 0)
 
     if sqlite3_prepare_v2(db, query, -1, &statement, nil) == SQLITE_OK {
       if sqlite3_step(statement) == SQLITE_ROW {
@@ -337,8 +337,10 @@ class SQLiteCacheProvider: CacheProvider {
 
 // MARK: DB Version Struct
 
-import Foundation
-
+// Represents the semantic version for the DB schema.
+// DB version only uses major.minor.patch, with each being 0 - 999
+// DB doesn't use suffixes like -beta, ...
+// For Googlers, see go/fdc-sdk-caching [tab: Schema Versioning]
 struct DBSemanticVersion: Comparable, CustomStringConvertible {
   let major: Int32
   let minor: Int32
@@ -354,7 +356,8 @@ struct DBSemanticVersion: Comparable, CustomStringConvertible {
   // Initialize from String: "1.2.3"
   init?(_ versionString: String) {
     let components = versionString.split(separator: ".").compactMap { Int32($0) }
-    guard components.count >= 2 else { return nil } // Require at least Major.Minor
+    guard components.count >= 2,
+          components.allSatisfy({ $0 >= 0 && $0 < Self.multiplier }) else { return nil }
 
     major = components[0]
     minor = components[1]
