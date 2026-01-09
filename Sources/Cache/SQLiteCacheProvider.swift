@@ -70,7 +70,10 @@ class SQLiteCacheProvider: CacheProvider {
           "Opened database with db path/id \(dbIdentifier) and cache identifier \(cacheIdentifier)"
         )
       do {
-        try createTables()
+        let curVersion = getDatabaseVersion()
+        if curVersion.isZero {
+          try createTables()
+        }
       } catch {
         sqlite3_close(db)
         db = nil
@@ -86,6 +89,8 @@ class SQLiteCacheProvider: CacheProvider {
   private func createTables() throws {
     dispatchPrecondition(condition: .onQueue(queue))
 
+    sqlite3_exec(db, "BEGIN TRANSACTION;", nil, nil, nil)
+
     let createResultTreeTable = """
     CREATE TABLE IF NOT EXISTS \(TableName.resultTree) (
         \(ColumnName.queryId) TEXT PRIMARY KEY NOT NULL,
@@ -94,6 +99,7 @@ class SQLiteCacheProvider: CacheProvider {
     );
     """
     if sqlite3_exec(db, createResultTreeTable, nil, nil, nil) != SQLITE_OK {
+      sqlite3_exec(db, "ROLLBACK;", nil, nil, nil)
       throw DataConnectInternalError
         .sqliteError(message: "Could not create \(TableName.resultTree) table")
     }
@@ -105,8 +111,49 @@ class SQLiteCacheProvider: CacheProvider {
     );
     """
     if sqlite3_exec(db, createEntityDataTable, nil, nil, nil) != SQLITE_OK {
+      sqlite3_exec(db, "ROLLBACK;", nil, nil, nil)
       throw DataConnectInternalError.sqliteError(message: "Could not create entity_data table")
     }
+
+    if setDatabaseVersion(DBSemanticVersion("1.0.0")!) != SQLITE_OK {
+      sqlite3_exec(db, "ROLLBACK", nil, nil, nil)
+      throw DataConnectInternalError
+        .sqliteError(message: "Could not set database version to initial value")
+    }
+
+    sqlite3_exec(db, "COMMIT;", nil, nil, nil)
+  }
+
+  private func getDatabaseVersion() -> DBSemanticVersion {
+    dispatchPrecondition(condition: .onQueue(queue))
+
+    var statement: OpaquePointer?
+    let query = "PRAGMA user_version;"
+    var version = DBSemanticVersion("0.0.0")!
+
+    if sqlite3_prepare_v2(db, query, -1, &statement, nil) == SQLITE_OK {
+      if sqlite3_step(statement) == SQLITE_ROW {
+        let intVal = Int32(sqlite3_column_int(statement, 0))
+        version = DBSemanticVersion(storageInt: intVal)
+      }
+    }
+
+    defer {
+      sqlite3_finalize(statement)
+    }
+
+    return version
+  }
+
+  private func setDatabaseVersion(_ version: DBSemanticVersion) -> Int32 {
+    dispatchPrecondition(condition: .onQueue(queue))
+
+    let sql = "PRAGMA user_version = \(version.storageInt);"
+    return sqlite3_exec(db, sql, nil, nil, nil)
+  }
+
+  func getSchemaVersion() -> DBSemanticVersion {
+    queue.sync { self.getDatabaseVersion() }
   }
 
   private func updateLastAccessedTime(forQueryId queryId: String) {
@@ -285,5 +332,53 @@ class SQLiteCacheProvider: CacheProvider {
     } catch {
       DataConnectLogger.error("Error encoding data object for entityGuid \(entityGuid): \(error)")
     }
+  }
+}
+
+// MARK: DB Version Struct
+
+import Foundation
+
+struct DBSemanticVersion: Comparable, CustomStringConvertible {
+  let major: Int32
+  let minor: Int32
+  let patch: Int32
+
+  // The multiplier used for SQLite storage
+  private static let multiplier: Int32 = 1000
+
+  var description: String {
+    return "\(major).\(minor).\(patch)"
+  }
+
+  // Initialize from String: "1.2.3"
+  init?(_ versionString: String) {
+    let components = versionString.split(separator: ".").compactMap { Int32($0) }
+    guard components.count >= 2 else { return nil } // Require at least Major.Minor
+
+    major = components[0]
+    minor = components[1]
+    patch = components.indices.contains(2) ? components[2] : 0
+  }
+
+  // Initialize from SQLite Int32: 1002003
+  init(storageInt: Int32) {
+    major = storageInt / (Self.multiplier * Self.multiplier)
+    minor = (storageInt % (Self.multiplier * Self.multiplier)) / Self.multiplier
+    patch = storageInt % Self.multiplier
+  }
+
+  // Convert to SQLite Int32
+  var storageInt: Int32 {
+    return (major * Self.multiplier * Self.multiplier) + (minor * Self.multiplier) + patch
+  }
+
+  var isZero: Bool {
+    return major == 0 && minor == 0 && patch == 0
+  }
+
+  // Implementation for Comparable
+  static func < (lhs: DBSemanticVersion, rhs: DBSemanticVersion) -> Bool {
+    return lhs.storageInt < rhs.storageInt
   }
 }
