@@ -118,7 +118,7 @@ class SQLiteCacheProvider: CacheProvider {
       throw DataConnectInternalError.sqliteError(message: "Could not create entity_data table")
     }
 
-    if let version = DBSemanticVersion(1,0,0), setDatabaseVersion(version) != SQLITE_OK {
+    if let version = DBSemanticVersion(1, 0, 0), setDatabaseVersion(version) != SQLITE_OK {
       sqlite3_exec(db, "ROLLBACK;", nil, nil, nil)
       throw DataConnectInternalError
         .sqliteError(message: "Could not set database version to initial value")
@@ -358,9 +358,8 @@ struct DBSemanticVersion: Comparable, CustomStringConvertible {
 
   // Initialize from String: "1.2.3"
   init?(_ major: Int32, _ minor: Int32, _ patch: Int32) {
-    
-    let range = 0..<Self.multiplier
-    
+    let range = 0 ..< Self.multiplier
+
     guard range.contains(major) && range.contains(minor) && range.contains(patch) else {
       return nil
     }

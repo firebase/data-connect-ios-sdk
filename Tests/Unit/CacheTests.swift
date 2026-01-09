@@ -125,22 +125,22 @@ final class CacheTests: XCTestCase {
   }
 
   func testSemanticVersionToInt() throws {
-    let intVal = DBSemanticVersion(1,0,0)
+    let intVal = DBSemanticVersion(1, 0, 0)
     XCTAssertEqual(intVal?.storageInt, Int32(1_000_000))
 
-    let intVal2 = DBSemanticVersion(1,2,3)
+    let intVal2 = DBSemanticVersion(1, 2, 3)
     XCTAssertEqual(intVal2?.storageInt, Int32(1_002_003))
 
-    let intVal3 = DBSemanticVersion(0,2,0)
+    let intVal3 = DBSemanticVersion(0, 2, 0)
     XCTAssertEqual(intVal3?.storageInt, 2000)
 
-    let intVal4 = DBSemanticVersion(0,0,30)
+    let intVal4 = DBSemanticVersion(0, 0, 30)
     XCTAssertEqual(intVal4?.storageInt, 30)
   }
-  
+
   func testInvalidVersionComponents() throws {
     let ver = DBSemanticVersion(1200, 0, 0)
-    
+
     XCTAssert(ver == nil)
   }
 
@@ -169,8 +169,7 @@ final class CacheTests: XCTestCase {
   func testInitializedSchemaVersion() throws {
     let cp = try SQLiteCacheProvider("123", ephemeral: true)
 
-    let initializedVersion = DBSemanticVersion(1,0,0)
+    let initializedVersion = DBSemanticVersion(1, 0, 0)
     XCTAssertEqual(initializedVersion, cp.getSchemaVersion())
   }
-  
 }
