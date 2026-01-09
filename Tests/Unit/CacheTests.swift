@@ -123,4 +123,53 @@ final class CacheTests: XCTestCase {
       XCTAssertTrue(impactedRefsOneItemUpdate.contains(queryIdList))
     }
   }
+
+  func testSemanticVersionToInt() throws {
+    let intVal = DBSemanticVersion(1, 0, 0)
+    XCTAssertEqual(intVal?.storageInt, Int32(1_000_000))
+
+    let intVal2 = DBSemanticVersion(1, 2, 3)
+    XCTAssertEqual(intVal2?.storageInt, Int32(1_002_003))
+
+    let intVal3 = DBSemanticVersion(0, 2, 0)
+    XCTAssertEqual(intVal3?.storageInt, 2000)
+
+    let intVal4 = DBSemanticVersion(0, 0, 30)
+    XCTAssertEqual(intVal4?.storageInt, 30)
+  }
+
+  func testInvalidVersionComponents() throws {
+    let ver = DBSemanticVersion(1200, 0, 0)
+
+    XCTAssert(ver == nil)
+  }
+
+  func testSemanticVersionToString() throws {
+    // Test exact major version
+    let version1 = DBSemanticVersion(storageInt: 1_000_000)
+    XCTAssertEqual(version1.description, "1.0.0")
+
+    // Test standard Major.Minor.Patch
+    let version2 = DBSemanticVersion(storageInt: 1_002_003)
+    XCTAssertEqual(version2.description, "1.2.3")
+
+    // Test leading zeros in components (Minor version only)
+    let version3 = DBSemanticVersion(storageInt: 2000)
+    XCTAssertEqual(version3.description, "0.2.0")
+
+    // Test Patch only with padding logic
+    let version4 = DBSemanticVersion(storageInt: 30)
+    XCTAssertEqual(version4.description, "0.0.30")
+
+    // Test maximum theoretical version for Int32 safety
+    let versionMax = DBSemanticVersion(storageInt: 2_147_483_647)
+    XCTAssertEqual(versionMax.description, "2147.483.647")
+  }
+
+  func testInitializedSchemaVersion() throws {
+    let cp = try SQLiteCacheProvider("123", ephemeral: true)
+
+    let initializedVersion = DBSemanticVersion(1, 0, 0)
+    XCTAssertEqual(initializedVersion, cp.getSchemaVersion())
+  }
 }
