@@ -35,7 +35,7 @@ struct QueryRequest<Variable: OperationVariable>: OperationRequest, Hashable, Eq
         let jsonData = try encoder.encode(variables)
         keyIdData.append(jsonData)
       } catch {
-        DataConnectLogger.logger
+        DataConnectLogger
           .warning("Error encoding variables to compute request identifier: \(error)")
       }
     }

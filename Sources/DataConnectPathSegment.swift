@@ -13,7 +13,7 @@
 // limitations under the License.
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public enum DataConnectPathSegment: Codable, Equatable, Sendable {
+public enum DataConnectPathSegment: Codable, Equatable, Sendable, Hashable {
   case field(String)
   case listIndex(Int)
 }
@@ -39,6 +39,18 @@ public extension DataConnectPathSegment {
       try container.encode(fieldVal)
     case let .listIndex(indexVal):
       try container.encode(indexVal)
+    }
+  }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension DataConnectPathSegment: CustomStringConvertible {
+  public var description: String {
+    switch self {
+    case let .field(fieldVal):
+      return "\(fieldVal)"
+    case let .listIndex(indexVal):
+      return "\(indexVal)"
     }
   }
 }

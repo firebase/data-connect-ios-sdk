@@ -38,19 +38,19 @@ struct EntityNode {
   }
 
   init?(value: AnyCodableValue,
+        path: DataConnectPath,
         cacheProvider: CacheProvider,
+        paths: [DataConnectPath: PathMetadata],
         impactedRefsAccumulator: ImpactedQueryRefsAccumulator? = nil) {
     guard case let .dictionary(objectValues) = value else {
       DataConnectLogger.error("EntityNode inited with a non-dictionary type")
       return nil
     }
 
-    if case let .string(guid) = objectValues[GlobalIDKey] {
-      entityData = cacheProvider.entityData(guid)
-    } else if case let .uuid(guid) = objectValues[GlobalIDKey] {
-      // underlying deserializer is detecting a uuid and converting it.
-      // TODO: Remove once server starts to send the real GlobalID
-      entityData = cacheProvider.entityData(guid.uuidString)
+    if let mdata = paths[path],
+       let entityId = mdata.entityId {
+      entityData = cacheProvider.entityData(entityId)
+      DataConnectLogger.debug("Got entityData for \(entityId) at \(path)")
     }
 
     for (key, value) in objectValues {
@@ -60,7 +60,9 @@ struct EntityNode {
         // and converted to another node
         if let st = EntityNode(
           value: value,
+          path: path.appending(.field(key)),
           cacheProvider: cacheProvider,
+          paths: paths,
           impactedRefsAccumulator: impactedRefsAccumulator
         ) {
           references[key] = st
@@ -70,10 +72,13 @@ struct EntityNode {
       case let .array(objs):
         var refArray = [EntityNode]()
         var scalarArray = [AnyCodableValue]()
-        for obj in objs {
+        for (index, obj) in objs.enumerated() {
           if let st = EntityNode(
             value: obj,
+            path: path.appending(.field(key)).appending(.listIndex(index)),
+            // path + key + index /movies/reviews/3
             cacheProvider: cacheProvider,
+            paths: paths,
             impactedRefsAccumulator: impactedRefsAccumulator
           ) {
             refArray.append(st)
@@ -151,9 +156,13 @@ extension EntityNode: Decodable {
           .debug("Got impactedRefs before dehydration \(String(describing: impactedRefsAcc))")
       }
 
+      let paths = decoder.userInfo[EntityPathsCodingKey] as? [DataConnectPath: PathMetadata] ?? [:]
+
       let enode = EntityNode(
         value: value,
+        path: DataConnectPath(),
         cacheProvider: cacheProvider,
+        paths: paths,
         impactedRefsAccumulator: impactedRefsAcc
       )
 

@@ -14,7 +14,61 @@
 
 import Foundation
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ServerResponse {
-  let jsonResults: String
+  let data: Data // json data
+  let extensions: ExtensionResponse?
+}
+
+// represents path element along with metadata associated with that path
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct PathMetadataResponse: Decodable {
+  let path: [DataConnectPathSegment]
+  let entityId: String?
+  let entityIds: [String]?
+}
+
+// Used to decode the server response contained in `extensions` field
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct ExtensionResponse: Decodable {
+  enum CodingKeys: String, CodingKey {
+    case maxAge = "ttl"
+    case dataConnect
+  }
+
   let maxAge: TimeInterval?
+  let dataConnect: [PathMetadataResponse]
+
+  func flattenPathMetadata() -> [DataConnectPath: PathMetadata] {
+    var result: [DataConnectPath: PathMetadata] = [:]
+    for pmr in dataConnect {
+      if let entityId = pmr.entityId {
+        let pm = PathMetadata(path: DataConnectPath(components: pmr.path), entityId: entityId)
+
+        if DataConnectLogger.isDebugEnabled && result[pm.path] != nil {
+          // testing only
+          DataConnectLogger.debug("ERR - anomaly - path already exists: \(pm.path)")
+        }
+
+        result[pm.path] = pm
+      }
+
+      if let entityIds = pmr.entityIds {
+        for (index, entityId) in entityIds.enumerated() {
+          let indexPath = DataConnectPath(components: pmr.path).appending(
+            .listIndex(index)
+          )
+          let pm = PathMetadata(path: indexPath, entityId: entityId)
+
+          if DataConnectLogger.isDebugEnabled && result[pm.path] != nil {
+            // testing only
+            DataConnectLogger.debug("ERR - anomaly - path already exists: \(pm.path)")
+          }
+
+          result[pm.path] = pm
+        }
+      }
+    }
+    return result
+  }
 }

@@ -24,7 +24,7 @@ public struct AnyValue {
       let data = try jsonEncoder.encode(anyCodableValue)
       return data
     } catch {
-      DataConnectLogger.logger.warning("Error encoding anyCodableValue \(error)")
+      DataConnectLogger.warning("Error encoding anyCodableValue \(error)")
       return Data()
     }
   }

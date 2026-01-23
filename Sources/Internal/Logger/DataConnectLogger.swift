@@ -19,7 +19,7 @@ let privateLogDisabledArgument = "-FIRPrivateLogDisabled"
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class DataConnectLogger {
-  static let logger = Logger(
+  private static let logger = Logger(
     subsystem: "com.google.firebase",
     category: "[FirebaseDataConnect]"
   )
@@ -39,6 +39,10 @@ class DataConnectLogger {
 
   static var logLevel: FirebaseLoggerLevel {
     return FirebaseConfiguration.shared.loggerLevel()
+  }
+
+  static var isDebugEnabled: Bool {
+    return logLevel == .debug
   }
 
   static func error(_ message: String, code: MessageCode = .placeHolder) {

@@ -141,15 +141,22 @@ actor GrpcClient: CustomStringConvertible {
       connectorName: connectorName,
       request: request
     )
-    let requestString = try grpcRequest.jsonString()
 
     do {
-      DataConnectLogger
-        .debug("executeQuery() sends grpc request: \(requestString, privacy: .private).")
+      if DataConnectLogger.isDebugEnabled {
+        let requestString = try grpcRequest.jsonString()
+        DataConnectLogger
+          .debug("executeQuery() sends grpc request: \(requestString, privacy: .private).")
+      }
+
       let results = try await client.executeQuery(grpcRequest, callOptions: createCallOptions())
-      let resultsString = try results.data.jsonString()
-      DataConnectLogger
-        .debug("executeQuery() receives response: \(resultsString, privacy: .private).")
+      let jsonData = try results.data.jsonUTF8Data()
+
+      if DataConnectLogger.isDebugEnabled {
+        let resultsString = try results.data.jsonString()
+        DataConnectLogger
+          .debug("executeQuery() receives response: \(resultsString, privacy: .private).")
+      }
 
       // lets decode partial errors. We need these whether we succeed or fail
       let errorInfoList = createErrorInfoList(errors: results.errors)
@@ -160,7 +167,7 @@ actor GrpcClient: CustomStringConvertible {
        */
       guard !errorInfoList.isEmpty else {
         // TODO: Extract ttl, server timestamp when available
-        return ServerResponse(jsonResults: resultsString, maxAge: nil)
+        return ServerResponse(data: jsonData, extensions: nil)
       }
 
       // We have partial errors returned
@@ -171,11 +178,11 @@ actor GrpcClient: CustomStringConvertible {
               - if errorList notEmpty -> throw OperationError with no decodedData
                 else -> throw decodeFailed with the inner error.
        */
+      let resultsString = try results.data.jsonString()
       do {
         let decodedResults = try codec.decode(result: results.data, asType: resultType)
 
         // even though decode succeeded, we may still have received partial errors
-
         let failureResponse = OperationFailureResponse(
           rawJsonData: resultsString, errors: errorInfoList,
           data: decodedResults
@@ -206,6 +213,7 @@ actor GrpcClient: CustomStringConvertible {
       }
     } catch {
       // we failed at executing the server call itself
+      let requestString = try grpcRequest.jsonString()
       DataConnectLogger.error(
         "executeQuery(): \(requestString, privacy: .private) grpc call FAILED with \(error)."
       )
