@@ -181,6 +181,41 @@ final class CacheTests: XCTestCase {
               ],
           }
   """
+  
+  let anyValueData = """
+    {"anyValueItems": [
+      { "name": "AnyItemA", 
+        "blob": {"values":[["A", "AA"], ["B"], ["C"]]}}, 
+      { "name": "AnyItem B", 
+        "blob": {"values":["A", 45, {"embedKey": "embedVal"}]}
+      }
+    ]}
+    """
+  
+  let anyValueSingleData = """
+        {"anyValueItem": 
+          { "name": "AnyItem B", 
+            "blob": {"values":["A", 45, {"embedKey": "embedVal"}, ["A", "AA"]]}
+          }
+        }
+    
+    """
+  
+  let anyValueExt = """
+    { "dataConnect": [
+      { "path": ["anyValueItems"], 
+        "entityIds": ["261f0505ae1927df18b9ee0cff6aff78c77e03516be978d0f83d8fb6ec8cbc07", "9e34d6e7635c90f088d0b92a5876258f5d2c72332c720549b5a71c35058af9c3"]
+      }
+    ]}
+    """
+  
+  let anyValueSingleExt = """
+        { "dataConnect": [
+          { "path": ["anyValueItem"], 
+            "entityId": "AnyValueItemSingle_ID"
+          }
+        ]}
+    """
 
   var cacheProvider: SQLiteCacheProvider?
 
@@ -378,6 +413,75 @@ final class CacheTests: XCTestCase {
       XCTAssertTrue(impactedRefsOneItemUpdate.contains(queryIdOneItem))
       XCTAssertTrue(impactedRefsOneItemUpdate.contains(queryIdList))
     }
+  }
+  
+  struct AnyValueBlob: Codable {
+    var values: [AnyCodableValue]
+  }
+  
+  struct AnyValueCached: Codable {
+    var name: String
+    var blob: AnyValueBlob
+  }
+  
+  struct AnyValueResponse: Codable {
+    var anyValueItem: AnyValueCached
+  }
+  
+  func testAnyValueCaching() throws {
+    
+    do {
+      let cp = try XCTUnwrap(cacheProvider)
+      let resultsProcessor = ResultTreeProcessor()
+      
+      let jsonDecoder = JSONDecoder()
+      
+      let resultTreeExt = try jsonDecoder.decode(
+        ExtensionResponse.self,
+        from: anyValueSingleExt.data(using: .utf8)!
+      )
+      let flattenedPaths = resultTreeExt.flattenPathMetadata()
+      
+      let (dehydratedTree, do1, _) = try resultsProcessor.dehydrateResults("queryAnyValue",
+                                                                           anyValueSingleData
+        .data(using: .utf8)!,
+                                                                           flattenedPaths,
+                                                                           cacheProvider: cp)
+      
+      let (hydratedData, do2) = try resultsProcessor.hydrateResults(
+        dehydratedTree,
+        cacheProvider: cp
+      )
+      
+      print("hydrated Data \(String(data: hydratedData, encoding: .utf8))")
+      
+      let cachedValue = try jsonDecoder.decode(AnyValueResponse.self, from: hydratedData)
+      print(cachedValue.anyValueItem.name)
+      XCTAssert(cachedValue.anyValueItem.name == "AnyItem B")
+      
+      XCTAssert(cachedValue.anyValueItem.blob.values.count  == 4)
+      
+      for (indx, val) in cachedValue.anyValueItem.blob.values.enumerated() {
+        
+        switch val {
+          case let .string(s):
+          XCTAssert(indx == 0 && s == "A")
+          case let .number(d):
+          XCTAssert(indx == 1 && d == 45.0)
+        case let .dictionary(d):
+          XCTAssert(indx == 2 && d.count == 1)
+        case let .array(a):
+          XCTAssert(indx == 3 && a.count == 2)
+        default:
+          XCTFail("Invalid type in internal blob")
+        }
+      }
+      
+    } catch {
+      print(error)
+      XCTFail()
+    }
+    
   }
 
   func testMaxAge() throws {

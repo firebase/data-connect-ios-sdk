@@ -21,10 +21,10 @@
 
 protoc_path="protoc"
 sdk_folder="/Users/aashishp/Code/data-connect-ios-sdk"
-plugin_folder="/Users/aashishp/dev/protoc-grpc-swift-plugins-1.23.0/bin"
+plugin_folder="/Users/aashishp/protoc-grpc-swift-plugins-1.24.2/bin"
 
 
-protoc graphql_error.proto connector_service.proto \
+protoc graphql_error.proto connector_service.proto graphql_response_extensions.proto \
     --proto_path=$sdk_folder/Protos/ \
     --plugin=$plugin_folder/protoc-gen-swift \
     --swift_opt=Visibility=Public \

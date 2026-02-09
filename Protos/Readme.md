@@ -13,12 +13,14 @@ The google protos are obtained from https://github.com/googleapis/googleapis/tre
 
 `third_party/firebase/dataconnect/emulator/server/api/graphql_error.proto`
 
+`third_party/firebase/dataconnect/emulator/server/api/graphql_response_extensions.proto`
+
 
 ## Step 2:
 If needed, adjust package name after discussion with server team.
 
 Make following changes if needed -
-- Follow same changes as specified by the copybara lines.
+- Follow (make) same changes as specified by the copybara lines.
 - Where it says strip, take that line out and follow any replace rules with a replace
 - If protos reference any internal packages, those are typically not needed by the SDKs or these are marked with copybara strip rules.
 
@@ -32,7 +34,7 @@ https://github.com/grpc/grpc-swift/releases
 
 Under the 'Assets' section of a release, download the protoc-grpc-swift-plugins file for macOS.
 Example:
-protoc-grpc-swift-plugins-1.23.1.zip
+protoc-grpc-swift-plugins-1.24.2.zip
 
 ## Step 5:
 Extract this in a location of your choice. You will need the folder path of the extracted folder.

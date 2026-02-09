@@ -89,7 +89,16 @@ struct EntityNode {
             // Not handling the case of Array of Arrays (matrices)
           }
         }
-        if refArray.count > 0 {
+        if refArray.count > 0 && scalarArray.count > 0 {
+          DataConnectLogger.debug("Mixed Array of Objects and Scalars found for key \(key)")
+          // mixed arrays could occur within Any value types since the content of this type is unpredictable
+          // we treat these as dynamic / json values and store the key as-is like scalars.
+          if entityData != nil {
+            entityData?.updateServerValue(key, value, impactedRefsAccumulator?.requestorId)
+          } else {
+            scalars[key] = value
+          }
+        } else if refArray.count > 0 {
           objectLists[key] = refArray
         } else if scalarArray.count > 0 {
           if let entityData {
@@ -104,6 +113,16 @@ struct EntityNode {
               impactedRefsAccumulator?.append(r)
             }
           }
+        } else {
+          // Since we don't know the type of an empty array
+          // we store it as a scalar with the Entity if present
+          // no point in keeping with query scalars
+          // since they get overwritten with every query update
+          DataConnectLogger.debug("Empty Array found for key \(key)")
+          if entityData != nil {
+            entityData?.updateServerValue(key, value, impactedRefsAccumulator?.requestorId)
+          }
+          
         }
       default:
         if let entityData {

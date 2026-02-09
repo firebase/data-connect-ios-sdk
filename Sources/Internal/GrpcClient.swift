@@ -151,11 +151,26 @@ actor GrpcClient: CustomStringConvertible {
 
       let results = try await client.executeQuery(grpcRequest, callOptions: createCallOptions())
       let jsonData = try results.data.jsonUTF8Data()
-
+      
+      let jsonDecoder = JSONDecoder()
+      
+      var extensions: ExtensionResponse?
+      do {
+        let extensionsData = try results.extensions.jsonUTF8Data()
+        extensions = try jsonDecoder.decode(ExtensionResponse.self, from: extensionsData)
+        print("Decoded Extensions \(extensions)")
+      } catch {
+        DataConnectLogger.error("Failed to decode extensions: \(error)")
+      }
+      
       if DataConnectLogger.isDebugEnabled {
         let resultsString = try results.data.jsonString()
         DataConnectLogger
           .debug("executeQuery() receives response: \(resultsString, privacy: .private).")
+        
+        let extensions = try results.extensions.jsonString()
+        DataConnectLogger
+          .debug("executeQuery() extensions: \(extensions, privacy: .private).")
       }
 
       // lets decode partial errors. We need these whether we succeed or fail
@@ -167,7 +182,7 @@ actor GrpcClient: CustomStringConvertible {
        */
       guard !errorInfoList.isEmpty else {
         // TODO: Extract ttl, server timestamp when available
-        return ServerResponse(data: jsonData, extensions: nil)
+        return ServerResponse(data: jsonData, extensions: extensions)
       }
 
       // We have partial errors returned

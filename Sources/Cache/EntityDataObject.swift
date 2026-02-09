@@ -67,12 +67,6 @@ class EntityDataObject: Codable {
   // Set of QueryRefs that reference this EDO
   private var referencedFrom = Set<String>()
 
-  func updateReferencedFrom(_ refs: Set<String>) {
-    accessQueue.sync {
-      self.referencedFrom = refs
-    }
-  }
-
   func referencedFromRefs() -> Set<String> {
     accessQueue.sync {
       self.referencedFrom
