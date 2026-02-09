@@ -82,7 +82,7 @@ final class CacheTests: XCTestCase {
               "entityId": "idForAuthorOfPost1",
             },
             {
-              "path": ["posts", 1, "author"], 
+              "path": ["posts", 1, "author"],
               "entityId": "idForAuthorOfPost2",
             },
             {
@@ -184,17 +184,17 @@ final class CacheTests: XCTestCase {
 
   let anyValueData = """
   {"anyValueItems": [
-    { "name": "AnyItemA", 
-      "blob": {"values":[["A", "AA"], ["B"], ["C"]]}}, 
-    { "name": "AnyItem B", 
+    { "name": "AnyItemA",
+      "blob": {"values":[["A", "AA"], ["B"], ["C"]]}},
+    { "name": "AnyItem B",
       "blob": {"values":["A", 45, {"embedKey": "embedVal"}]}
     }
   ]}
   """
 
   let anyValueSingleData = """
-      {"anyValueItem": 
-        { "name": "AnyItem B", 
+      {"anyValueItem":
+        { "name": "AnyItem B",
           "blob": {"values":["A", 45, {"embedKey": "embedVal"}, ["A", "AA"]]}
         }
       }
@@ -203,7 +203,7 @@ final class CacheTests: XCTestCase {
 
   let anyValueExt = """
   { "dataConnect": [
-    { "path": ["anyValueItems"], 
+    { "path": ["anyValueItems"],
       "entityIds": ["261f0505ae1927df18b9ee0cff6aff78c77e03516be978d0f83d8fb6ec8cbc07", "9e34d6e7635c90f088d0b92a5876258f5d2c72332c720549b5a71c35058af9c3"]
     }
   ]}
@@ -211,7 +211,7 @@ final class CacheTests: XCTestCase {
 
   let anyValueSingleExt = """
       { "dataConnect": [
-        { "path": ["anyValueItem"], 
+        { "path": ["anyValueItem"],
           "entityId": "AnyValueItemSingle_ID"
         }
       ]}
