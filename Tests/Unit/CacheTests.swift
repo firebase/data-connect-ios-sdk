@@ -441,18 +441,16 @@ final class CacheTests: XCTestCase {
       )
       let flattenedPaths = resultTreeExt.flattenPathMetadata()
 
-      let (dehydratedTree, do1, _) = try resultsProcessor.dehydrateResults("queryAnyValue",
-                                                                           anyValueSingleData
-                                                                             .data(using: .utf8)!,
-                                                                           flattenedPaths,
-                                                                           cacheProvider: cp)
+      let (dehydratedTree, _, _) = try resultsProcessor.dehydrateResults("queryAnyValue",
+                                                                         anyValueSingleData
+                                                                           .data(using: .utf8)!,
+                                                                         flattenedPaths,
+                                                                         cacheProvider: cp)
 
-      let (hydratedData, do2) = try resultsProcessor.hydrateResults(
+      let (hydratedData, _) = try resultsProcessor.hydrateResults(
         dehydratedTree,
         cacheProvider: cp
       )
-
-      print("hydrated Data \(String(data: hydratedData, encoding: .utf8))")
 
       let cachedValue = try jsonDecoder.decode(AnyValueResponse.self, from: hydratedData)
       print(cachedValue.anyValueItem.name)
@@ -476,7 +474,6 @@ final class CacheTests: XCTestCase {
       }
 
     } catch {
-      print(error)
       XCTFail()
     }
   }

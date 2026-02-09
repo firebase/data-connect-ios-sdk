@@ -158,7 +158,6 @@ actor GrpcClient: CustomStringConvertible {
       do {
         let extensionsData = try results.extensions.jsonUTF8Data()
         extensions = try jsonDecoder.decode(ExtensionResponse.self, from: extensionsData)
-        print("Decoded Extensions \(extensions)")
       } catch {
         DataConnectLogger.error("Failed to decode extensions: \(error)")
       }
