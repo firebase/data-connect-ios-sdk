@@ -23,7 +23,7 @@ public struct DataConnectSettings: Hashable, Equatable, Sendable {
 
   public init(host: String = "firebasedataconnect.googleapis.com", port: Int = 443,
               sslEnabled: Bool = true,
-              cacheSettings: CacheSettings? = CacheSettings()) {
+              cacheSettings: CacheSettings? = nil) {
     self.host = host
     self.port = port
     self.sslEnabled = sslEnabled
