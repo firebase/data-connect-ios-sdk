@@ -89,9 +89,10 @@ struct EntityNode {
             // Not handling the case of Array of Arrays (matrices)
           }
         }
-        if refArray.count > 0 && scalarArray.count > 0 {
+        if refArray.count > 0, scalarArray.count > 0 {
           DataConnectLogger.debug("Mixed Array of Objects and Scalars found for key \(key)")
-          // mixed arrays could occur within Any value types since the content of this type is unpredictable
+          // mixed arrays could occur within Any value types since the content of this type is
+          // unpredictable
           // we treat these as dynamic / json values and store the key as-is like scalars.
           if entityData != nil {
             entityData?.updateServerValue(key, value, impactedRefsAccumulator?.requestorId)
@@ -122,7 +123,6 @@ struct EntityNode {
           if entityData != nil {
             entityData?.updateServerValue(key, value, impactedRefsAccumulator?.requestorId)
           }
-          
         }
       default:
         if let entityData {

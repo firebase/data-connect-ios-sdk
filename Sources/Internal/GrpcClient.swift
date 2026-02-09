@@ -151,9 +151,9 @@ actor GrpcClient: CustomStringConvertible {
 
       let results = try await client.executeQuery(grpcRequest, callOptions: createCallOptions())
       let jsonData = try results.data.jsonUTF8Data()
-      
+
       let jsonDecoder = JSONDecoder()
-      
+
       var extensions: ExtensionResponse?
       do {
         let extensionsData = try results.extensions.jsonUTF8Data()
@@ -162,12 +162,12 @@ actor GrpcClient: CustomStringConvertible {
       } catch {
         DataConnectLogger.error("Failed to decode extensions: \(error)")
       }
-      
+
       if DataConnectLogger.isDebugEnabled {
         let resultsString = try results.data.jsonString()
         DataConnectLogger
           .debug("executeQuery() receives response: \(resultsString, privacy: .private).")
-        
+
         let extensions = try results.extensions.jsonString()
         DataConnectLogger
           .debug("executeQuery() extensions: \(extensions, privacy: .private).")
