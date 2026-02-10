@@ -48,7 +48,7 @@ actor Cache {
     // Create a cacheProvider if -
     // we don't have an existing cacheProvider
     // we have one but its identifier is different than new one (e.g. auth uid changed)
-    if cacheProvider != nil, cacheProvider?.cacheIdentifier == identifier {
+    if cacheProvider != nil, cacheProvider?.identifier == identifier {
       return
     }
 

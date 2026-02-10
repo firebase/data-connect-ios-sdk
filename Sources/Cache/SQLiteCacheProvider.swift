@@ -31,7 +31,7 @@ private enum ColumnName {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class SQLiteCacheProvider: CacheProvider {
-  let cacheIdentifier: String
+  let identifier: String
 
   private var db: OpaquePointer?
   private let queue = DispatchQueue(
@@ -40,7 +40,7 @@ class SQLiteCacheProvider: CacheProvider {
   )
 
   init(_ cacheIdentifier: String, ephemeral: Bool = false) throws {
-    self.cacheIdentifier = cacheIdentifier
+    identifier = cacheIdentifier
 
     try queue.sync {
       var dbIdentifier = ":memory:"
