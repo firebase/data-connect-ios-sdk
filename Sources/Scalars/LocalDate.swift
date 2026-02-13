@@ -23,7 +23,7 @@ import Foundation
 public struct LocalDate: Codable, Comparable, CustomStringConvertible, Equatable, Sendable {
   private var calendar = Calendar(identifier: .gregorian)
   private var dateFormatter = DateFormatter()
-  private var date = Date()
+  public private(set) var date = Date()
 
   private let components: Set<Calendar.Component> = [.year, .month, .day]
 
