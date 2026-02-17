@@ -22,7 +22,7 @@ struct DataConnectPath: Codable {
   let segments: [DataConnectPathSegment]
 
   init(components: [DataConnectPathSegment] = []) {
-    self.segments = components
+    segments = components
   }
 
   func appending(_ component: DataConnectPathSegment) -> DataConnectPath {
