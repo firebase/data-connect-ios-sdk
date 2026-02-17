@@ -16,17 +16,17 @@
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct DataConnectPath: Codable {
   enum CodingKeys: String, CodingKey {
-    case components = "path"
+    case segments = "path"
   }
 
-  let components: [DataConnectPathSegment]
+  let segments: [DataConnectPathSegment]
 
   init(components: [DataConnectPathSegment] = []) {
-    self.components = components
+    self.segments = components
   }
 
   func appending(_ component: DataConnectPathSegment) -> DataConnectPath {
-    var nc = components
+    var nc = segments
     nc.append(component)
     return DataConnectPath(components: nc)
   }
@@ -34,16 +34,16 @@ struct DataConnectPath: Codable {
 
 extension DataConnectPath: Hashable {
   public func hash(into hasher: inout Hasher) {
-    hasher.combine(components)
+    hasher.combine(segments)
   }
 
   public static func == (lhs: DataConnectPath, rhs: DataConnectPath) -> Bool {
-    return lhs.components == rhs.components
+    return lhs.segments == rhs.segments
   }
 }
 
 extension DataConnectPath: CustomStringConvertible {
   public var description: String {
-    return "DataConnectPath(\(components))"
+    return "DataConnectPath(\(segments))"
   }
 }
