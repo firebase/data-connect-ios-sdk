@@ -1,3 +1,7 @@
+# 11.11.0
+- [added] Support for client-side caching and offline reads.
+- [fixed] `LocalDate`s `date` value isn't accessible.  
+
 # 11.10.0
 - [added] Starting FDC Tools from Xcode sets up a template Firebase Data Connect project in the Xcode project folder. See the `README.md` for an updated `Getting Started` section.
 
