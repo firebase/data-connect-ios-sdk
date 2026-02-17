@@ -43,7 +43,7 @@ struct ExtensionResponse: Decodable {
     var result: [DataConnectPath: PathMetadata] = [:]
     for pmr in dataConnect {
       if let entityId = pmr.entityId {
-        let pm = PathMetadata(path: DataConnectPath(components: pmr.path), entityId: entityId)
+        let pm = PathMetadata(path: DataConnectPath(segments: pmr.path), entityId: entityId)
 
         if DataConnectLogger.isDebugEnabled && result[pm.path] != nil {
           // testing only
@@ -55,7 +55,7 @@ struct ExtensionResponse: Decodable {
 
       if let entityIds = pmr.entityIds {
         for (index, entityId) in entityIds.enumerated() {
-          let indexPath = DataConnectPath(components: pmr.path).appending(
+          let indexPath = DataConnectPath(segments: pmr.path).appending(
             .listIndex(index)
           )
           let pm = PathMetadata(path: indexPath, entityId: entityId)

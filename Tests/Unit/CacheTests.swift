@@ -240,21 +240,21 @@ final class CacheTests: XCTestCase {
 
       XCTAssertEqual(flattenedPaths.count, 12)
 
-      let path1 = DataConnectPath(components: [.field("posts"), .listIndex(1)])
+      let path1 = DataConnectPath(segments: [.field("posts"), .listIndex(1)])
       let entityId1 = "idForPost2GoesHere"
       XCTAssertEqual(flattenedPaths[path1]?.entityId, entityId1)
 
       let path2 = DataConnectPath(
-        components: [.field("posts"), .listIndex(0), .field("comments_on_post"), .listIndex(0)]
+        segments: [.field("posts"), .listIndex(0), .field("comments_on_post"), .listIndex(0)]
       )
       let entityId2 = "idForPost1Comment1"
       XCTAssertEqual(flattenedPaths[path2]?.entityId, entityId2)
 
-      let path3 = DataConnectPath(components: [.field("posts"), .listIndex(0), .field("author")])
+      let path3 = DataConnectPath(segments: [.field("posts"), .listIndex(0), .field("author")])
       let entityId3 = "idForAuthorOfPost1"
       XCTAssertEqual(flattenedPaths[path3]?.entityId, entityId3)
 
-      let path4 = DataConnectPath(components: [.field("posts"), .listIndex(1), .field("author")])
+      let path4 = DataConnectPath(segments: [.field("posts"), .listIndex(1), .field("author")])
       let entityId4 = "idForAuthorOfPost2"
       XCTAssertEqual(flattenedPaths[path4]?.entityId, entityId4)
     }

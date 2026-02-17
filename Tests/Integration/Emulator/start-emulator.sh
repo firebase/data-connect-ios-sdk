@@ -25,7 +25,7 @@ TEMP_DIR="$(mktemp -d -t firebase-data-connect)"
 echo "Starting Firebase Data Connect emulator in ${TEMP_DIR}"
 cd "${TEMP_DIR}"
 
-EMULATOR_VERSION="3.1.3"
+EMULATOR_VERSION="1.8.3"
 EMULATOR_FILENAME="dataconnect-emulator-macos-v${EMULATOR_VERSION}"
 EMULATOR_URL="https://storage.googleapis.com/firemat-preview-drop/emulator/${EMULATOR_FILENAME}"
 echo "Downloading emulator from ${EMULATOR_URL}"

@@ -21,14 +21,14 @@ struct DataConnectPath: Codable {
 
   let segments: [DataConnectPathSegment]
 
-  init(components: [DataConnectPathSegment] = []) {
-    segments = components
+  init(segments: [DataConnectPathSegment] = []) {
+    self.segments = segments
   }
 
-  func appending(_ component: DataConnectPathSegment) -> DataConnectPath {
+  func appending(_ segment: DataConnectPathSegment) -> DataConnectPath {
     var nc = segments
-    nc.append(component)
-    return DataConnectPath(components: nc)
+    nc.append(segment)
+    return DataConnectPath(segments: nc)
   }
 }
 
