@@ -38,19 +38,19 @@ struct EntityNode {
   }
 
   init?(value: AnyCodableValue,
+        path: DataConnectPath,
         cacheProvider: CacheProvider,
+        paths: [DataConnectPath: PathMetadata],
         impactedRefsAccumulator: ImpactedQueryRefsAccumulator? = nil) {
     guard case let .dictionary(objectValues) = value else {
       DataConnectLogger.error("EntityNode inited with a non-dictionary type")
       return nil
     }
 
-    if case let .string(guid) = objectValues[GlobalIDKey] {
-      entityData = cacheProvider.entityData(guid)
-    } else if case let .uuid(guid) = objectValues[GlobalIDKey] {
-      // underlying deserializer is detecting a uuid and converting it.
-      // TODO: Remove once server starts to send the real GlobalID
-      entityData = cacheProvider.entityData(guid.uuidString)
+    if let mdata = paths[path],
+       let entityId = mdata.entityId {
+      entityData = cacheProvider.entityData(entityId)
+      DataConnectLogger.debug("Got entityData for \(entityId) at \(path)")
     }
 
     for (key, value) in objectValues {
@@ -60,7 +60,9 @@ struct EntityNode {
         // and converted to another node
         if let st = EntityNode(
           value: value,
+          path: path.appending(.field(key)),
           cacheProvider: cacheProvider,
+          paths: paths,
           impactedRefsAccumulator: impactedRefsAccumulator
         ) {
           references[key] = st
@@ -70,10 +72,13 @@ struct EntityNode {
       case let .array(objs):
         var refArray = [EntityNode]()
         var scalarArray = [AnyCodableValue]()
-        for obj in objs {
+        for (index, obj) in objs.enumerated() {
           if let st = EntityNode(
             value: obj,
+            path: path.appending(.field(key)).appending(.listIndex(index)),
+            // path + key + index /movies/reviews/3
             cacheProvider: cacheProvider,
+            paths: paths,
             impactedRefsAccumulator: impactedRefsAccumulator
           ) {
             refArray.append(st)
@@ -84,7 +89,17 @@ struct EntityNode {
             // Not handling the case of Array of Arrays (matrices)
           }
         }
-        if refArray.count > 0 {
+        if refArray.count > 0, scalarArray.count > 0 {
+          DataConnectLogger.debug("Mixed Array of Objects and Scalars found for key \(key)")
+          // mixed arrays could occur within Any value types since the content of this type is
+          // unpredictable
+          // we treat these as dynamic / json values and store the key as-is like scalars.
+          if entityData != nil {
+            entityData?.updateServerValue(key, value, impactedRefsAccumulator?.requestorId)
+          } else {
+            scalars[key] = value
+          }
+        } else if refArray.count > 0 {
           objectLists[key] = refArray
         } else if scalarArray.count > 0 {
           if let entityData {
@@ -98,6 +113,15 @@ struct EntityNode {
             for r in impactedRefs {
               impactedRefsAccumulator?.append(r)
             }
+          }
+        } else {
+          // Since we don't know the type of an empty array
+          // we store it as a scalar with the Entity if present
+          // no point in keeping with query scalars
+          // since they get overwritten with every query update
+          DataConnectLogger.debug("Empty Array found for key \(key)")
+          if entityData != nil {
+            entityData?.updateServerValue(key, value, impactedRefsAccumulator?.requestorId)
           }
         }
       default:
@@ -151,9 +175,13 @@ extension EntityNode: Decodable {
           .debug("Got impactedRefs before dehydration \(String(describing: impactedRefsAcc))")
       }
 
+      let paths = decoder.userInfo[EntityPathsCodingKey] as? [DataConnectPath: PathMetadata] ?? [:]
+
       let enode = EntityNode(
         value: value,
+        path: DataConnectPath(),
         cacheProvider: cacheProvider,
+        paths: paths,
         impactedRefsAccumulator: impactedRefsAcc
       )
 

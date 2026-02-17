@@ -111,7 +111,7 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
 
     do {
       if let cache {
-        serverMaxAge = response.maxAge
+        serverMaxAge = response.extensions?.maxAge
         await cache.update(queryId: operationId, response: response, requestor: self)
       }
     }
@@ -119,7 +119,7 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
     let decoder = JSONDecoder()
     let decodedData = try decoder.decode(
       ResultData.self,
-      from: response.jsonResults.data(using: .utf8)!
+      from: response.data
     )
 
     let result = OperationResult(data: decodedData, source: .server)
@@ -141,7 +141,7 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
       let decoder = JSONDecoder()
       let decodedData = try decoder.decode(
         ResultData.self,
-        from: cacheEntry.data.data(using: .utf8)!
+        from: cacheEntry.data
       )
 
       let result = OperationResult(data: decodedData, source: .cache)

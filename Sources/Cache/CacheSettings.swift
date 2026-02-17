@@ -29,11 +29,6 @@ public struct CacheSettings: Sendable {
 
   /// The storage mechanism to be used for caching. The default is `.persistent`.
   public let storage: Storage
-  /// The maximum size of the cache in bytes.
-  ///
-  /// This size is not strictly enforced but is used as a guideline by the cache
-  /// to trigger cleanup procedures. The default is 100MB (100,000,000 bytes).
-  public let maxSizeBytes: UInt64
 
   /// Max time interval before a queries cache is considered stale and refreshed from the server
   /// This interval does not imply that cached data is evicted and it can still be accessed using
@@ -48,10 +43,9 @@ public struct CacheSettings: Sendable {
   ///   - maxAge: The max time interval before a queries cache is considered stale and refreshed
   /// from the server. Defaults to zero, implying queries results are always fetched from server and
   /// also cached. Results can be fetched from cache using the `cacheOnly` flag.
-  public init(storage: Storage = .persistent, maxSize: UInt64 = 100_000_000,
+  public init(storage: Storage = .persistent,
               maxAge: TimeInterval = 0) {
     self.storage = storage
-    maxSizeBytes = maxSize
     self.maxAge = maxAge
   }
 }

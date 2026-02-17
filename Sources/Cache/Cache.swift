@@ -14,9 +14,6 @@
 
 import FirebaseAuth
 
-// FDC field name in server response that identifies a GlobalID
-let GlobalIDKey: String = "_id"
-
 // Client cache that internally uses a CacheProvider to store content.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 actor Cache {
@@ -51,7 +48,7 @@ actor Cache {
     // Create a cacheProvider if -
     // we don't have an existing cacheProvider
     // we have one but its identifier is different than new one (e.g. auth uid changed)
-    if cacheProvider != nil, cacheProvider?.cacheIdentifier == identifier {
+    if cacheProvider != nil, cacheProvider?.identifier == identifier {
       return
     }
 
@@ -137,7 +134,12 @@ actor Cache {
       let processor = ResultTreeProcessor()
       let (dehydratedResults, rootObj, impactedRefs) = try processor.dehydrateResults(queryId,
                                                                                       response
-                                                                                        .jsonResults,
+                                                                                        .data,
+                                                                                      response
+                                                                                        .extensions?
+                                                                                        .flattenPathMetadata(
+                                                                                        ) ??
+                                                                                        [:],
                                                                                       cacheProvider: cacheProvider)
 
       cacheProvider

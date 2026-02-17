@@ -31,7 +31,7 @@ class EntityDataObject: Codable {
   private var serverValues = [String: AnyCodableValue]()
 
   enum CodingKeys: String, CodingKey {
-    case guid = "_id"
+    case guid
     case serverValues = "sval"
     case referencedFrom = "refs"
   }
@@ -67,12 +67,6 @@ class EntityDataObject: Codable {
   // Set of QueryRefs that reference this EDO
   private var referencedFrom = Set<String>()
 
-  func updateReferencedFrom(_ refs: Set<String>) {
-    accessQueue.sync {
-      self.referencedFrom = refs
-    }
-  }
-
   func referencedFromRefs() -> Set<String> {
     accessQueue.sync {
       self.referencedFrom
@@ -90,7 +84,6 @@ class EntityDataObject: Codable {
   func encodableData() throws -> [String: AnyCodableValue] {
     accessQueue.sync {
       var encodingValues = [String: AnyCodableValue]()
-      encodingValues[GlobalIDKey] = .string(guid)
       encodingValues.merge(serverValues) { _, new in new }
       return encodingValues
     }

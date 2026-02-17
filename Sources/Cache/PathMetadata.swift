@@ -14,27 +14,10 @@
 
 import Foundation
 
+// Represents a unique path (including indices)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct ResultTree: Codable {
-  // tree data - could be hydrated or dehydrated.
-  let data: Data
+struct PathMetadata {
+  let path: DataConnectPath
 
-  // Local time when the entry was cached / updated
-  let cachedAt: Date
-
-  // Local time when the entry was read or updated
-  var lastAccessed: Date
-
-  var rootObject: EntityNode?
-
-  func isStale(_ ttl: TimeInterval) -> Bool {
-    let now = Date()
-    return now.timeIntervalSince(cachedAt) > ttl
-  }
-
-  enum CodingKeys: String, CodingKey {
-    case cachedAt = "ca" // cached at
-    case lastAccessed = "la" // last accessed
-    case data = "d" // data cached
-  }
+  let entityId: String?
 }

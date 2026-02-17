@@ -26,6 +26,10 @@ let UpdatingQueryRefsCodingKey =
 let ImpactedRefsAccumulatorCodingKey =
   CodingUserInfoKey(rawValue: "com.google.firebase.dataconnect.impactedQueryRefs")!
 
+// Key point to entityPaths dictionary
+let EntityPathsCodingKey =
+  CodingUserInfoKey(rawValue: "com.google.firebase.dataconnect.entityPaths")!
+
 // Kind-of result data we are encoding from or decoding to
 enum ResultTreeKind {
   case hydrated // JSON data is full hydrated and contains full data in the tree
@@ -63,23 +67,22 @@ struct ResultTreeProcessor {
     Takes a JSON tree with data and normalizes the entities contained in it,
     creating a resultant JSON tree with references to entities.
    */
-  func dehydrateResults(_ queryId: String, _ hydratedTree: String,
+  func dehydrateResults(_ queryId: String,
+                        _ hydratedTree: Data,
+                        _ paths: [DataConnectPath: PathMetadata],
                         cacheProvider: CacheProvider) throws -> (
-    dehydratedResults: String,
+    dehydratedResults: Data,
     rootObject: EntityNode,
     impactedRefIds: [String]
   ) {
-    guard let hydratedData = hydratedTree.data(using: .utf8) else {
-      throw DataConnectCodecError.encodingFailed()
-    }
-
     let jsonDecoder = JSONDecoder()
     let impactedRefsAccumulator = ImpactedQueryRefsAccumulator(requestorId: queryId)
 
     jsonDecoder.userInfo[CacheProviderUserInfoKey] = cacheProvider
     jsonDecoder.userInfo[ResultTreeKindCodingKey] = ResultTreeKind.hydrated
     jsonDecoder.userInfo[ImpactedRefsAccumulatorCodingKey] = impactedRefsAccumulator
-    let enode = try jsonDecoder.decode(EntityNode.self, from: hydratedData)
+    jsonDecoder.userInfo[EntityPathsCodingKey] = paths
+    let enode = try jsonDecoder.decode(EntityNode.self, from: hydratedTree)
 
     DataConnectLogger
       .debug("Impacted QueryRefs count: \(impactedRefsAccumulator.queryRefIds.count)")
@@ -88,34 +91,28 @@ struct ResultTreeProcessor {
     let jsonEncoder = JSONEncoder()
     jsonEncoder.userInfo[CacheProviderUserInfoKey] = cacheProvider
     jsonEncoder.userInfo[ResultTreeKindCodingKey] = ResultTreeKind.dehydrated
-    let jsonData = try jsonEncoder.encode(enode)
+    let dehydratedData = try jsonEncoder.encode(enode)
 
-    guard let dehydratedResultsString = String(data: jsonData, encoding: .utf8) else {
-      throw DataConnectCodecError.encodingFailed()
+    if DataConnectLogger.isDebugEnabled {
+      let dehydratedResultsString = String(data: dehydratedData, encoding: .utf8)
+      DataConnectLogger
+        .debug(
+          "\(#function): \nHydrated \n \(hydratedTree) \n\nDehydrated \n \(dehydratedResultsString ?? "")"
+        )
     }
 
-    DataConnectLogger
-      .debug(
-        "\(#function): \nHydrated \n \(hydratedTree) \n\nDehydrated \n \(dehydratedResultsString)"
-      )
-
-    return (dehydratedResultsString, enode, impactedRefs)
+    return (dehydratedData, enode, impactedRefs)
   }
 
   /*
       Takes a dehydrated tree and fills it up with Entity data from referenced entities.
    */
-  func hydrateResults(_ dehydratedTree: String, cacheProvider: CacheProvider) throws ->
-    (hydratedResults: String, rootObject: EntityNode) {
-    guard let dehydratedData = dehydratedTree.data(using: .utf8) else {
-      throw DataConnectCodecError
-        .decodingFailed(message: "Failed to convert dehydratedTree to Data")
-    }
-
+  func hydrateResults(_ dehydratedTree: Data, cacheProvider: CacheProvider) throws ->
+    (hydratedResults: Data, rootObject: EntityNode) {
     let jsonDecoder = JSONDecoder()
     jsonDecoder.userInfo[CacheProviderUserInfoKey] = cacheProvider
     jsonDecoder.userInfo[ResultTreeKindCodingKey] = ResultTreeKind.dehydrated
-    let enode = try jsonDecoder.decode(EntityNode.self, from: dehydratedData)
+    let enode = try jsonDecoder.decode(EntityNode.self, from: dehydratedTree)
     DataConnectLogger.debug("Dehydrated Tree decoded to EDO: \(enode)")
 
     let jsonEncoder = JSONEncoder()
@@ -123,16 +120,15 @@ struct ResultTreeProcessor {
     jsonEncoder.userInfo[ResultTreeKindCodingKey] = ResultTreeKind.hydrated
 
     let hydratedResults = try jsonEncoder.encode(enode)
-    guard let hydratedResultsString = String(data: hydratedResults, encoding: .utf8) else {
-      throw DataConnectCodecError
-        .encodingFailed(message: "Failed to convert EDO to String")
+
+    if DataConnectLogger.isDebugEnabled {
+      let hydratedResultsString = String(data: hydratedResults, encoding: .utf8)
+      DataConnectLogger
+        .debug(
+          "\(#function) Dehydrated \n \(dehydratedTree) \n\nHydrated \n \(hydratedResultsString ?? "")"
+        )
     }
 
-    DataConnectLogger
-      .debug(
-        "\(#function) Dehydrated \n \(dehydratedTree) \n\nHydrated \n \(hydratedResultsString)"
-      )
-
-    return (hydratedResultsString, enode)
+    return (hydratedResults, enode)
   }
 }

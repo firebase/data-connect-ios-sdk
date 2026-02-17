@@ -21,7 +21,7 @@ let CacheProviderUserInfoKey = CodingUserInfoKey(rawValue: "fdc_cache_provider")
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 protocol CacheProvider {
-  var cacheIdentifier: String { get }
+  var identifier: String { get }
 
   func resultTree(queryId: String) -> ResultTree?
   func setResultTree(queryId: String, tree: ResultTree)

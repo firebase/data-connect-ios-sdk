@@ -25,6 +25,18 @@ import NIO
 import NIOConcurrencyHelpers
 import SwiftProtobuf
 
+/// Firebase Data Connect provides means to deploy a set of predefined GraphQL
+/// operations (queries and mutations) as a Connector.
+///
+/// Firebase developers can build mobile and web apps that uses Connectors
+/// to access Data Sources directly. Connectors allow operations without
+/// admin credentials and help Firebase customers control the API exposure.
+///
+/// Note: `ConnectorService` doesn't check IAM permissions and instead developers
+/// must define auth policies on each pre-defined operation to secure this
+/// connector. The auth policies typically define rules on the Firebase Auth
+/// token.
+///
 /// Usage: instantiate `Google_Firebase_Dataconnect_V1_ConnectorServiceClient`, then call methods of
 /// this protocol to make API calls.
 public protocol Google_Firebase_Dataconnect_V1_ConnectorServiceClientProtocol: GRPCClient {
@@ -143,6 +155,17 @@ public struct Google_Firebase_Dataconnect_V1_ConnectorServiceNIOClient: Google_F
   }
 }
 
+/// Firebase Data Connect provides means to deploy a set of predefined GraphQL
+/// operations (queries and mutations) as a Connector.
+///
+/// Firebase developers can build mobile and web apps that uses Connectors
+/// to access Data Sources directly. Connectors allow operations without
+/// admin credentials and help Firebase customers control the API exposure.
+///
+/// Note: `ConnectorService` doesn't check IAM permissions and instead developers
+/// must define auth policies on each pre-defined operation to secure this
+/// connector. The auth policies typically define rules on the Firebase Auth
+/// token.
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public protocol Google_Firebase_Dataconnect_V1_ConnectorServiceAsyncClientProtocol: GRPCClient {
   static var serviceDescriptor: GRPCServiceDescriptor { get }
@@ -278,6 +301,18 @@ public enum Google_Firebase_Dataconnect_V1_ConnectorServiceClientMetadata {
   }
 }
 
+/// Firebase Data Connect provides means to deploy a set of predefined GraphQL
+/// operations (queries and mutations) as a Connector.
+///
+/// Firebase developers can build mobile and web apps that uses Connectors
+/// to access Data Sources directly. Connectors allow operations without
+/// admin credentials and help Firebase customers control the API exposure.
+///
+/// Note: `ConnectorService` doesn't check IAM permissions and instead developers
+/// must define auth policies on each pre-defined operation to secure this
+/// connector. The auth policies typically define rules on the Firebase Auth
+/// token.
+///
 /// To build a server, implement a class that conforms to this protocol.
 public protocol Google_Firebase_Dataconnect_V1_ConnectorServiceProvider: CallHandlerProvider {
   var interceptors: Google_Firebase_Dataconnect_V1_ConnectorServiceServerInterceptorFactoryProtocol? {
@@ -338,6 +373,18 @@ public extension Google_Firebase_Dataconnect_V1_ConnectorServiceProvider {
   }
 }
 
+/// Firebase Data Connect provides means to deploy a set of predefined GraphQL
+/// operations (queries and mutations) as a Connector.
+///
+/// Firebase developers can build mobile and web apps that uses Connectors
+/// to access Data Sources directly. Connectors allow operations without
+/// admin credentials and help Firebase customers control the API exposure.
+///
+/// Note: `ConnectorService` doesn't check IAM permissions and instead developers
+/// must define auth policies on each pre-defined operation to secure this
+/// connector. The auth policies typically define rules on the Firebase Auth
+/// token.
+///
 /// To implement a server, implement an object which conforms to this protocol.
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public protocol Google_Firebase_Dataconnect_V1_ConnectorServiceAsyncProvider: CallHandlerProvider,
