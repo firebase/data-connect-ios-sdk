@@ -101,12 +101,6 @@ actor Cache {
       return nil
     }
 
-    /*
-     isStale = true, allowStale = false: false || false => return nil
-     isStale = true, allowStale = true: false || true => proceed
-     isStale = false, allowStale = false: true || false => proceed
-     isStale = false, allowStale = true: true || true => proceed
-     */
     guard !dehydratedTree.isStale || allowStale else {
       return nil
     }

@@ -30,25 +30,6 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
 
   private let cache: Cache?
 
-  // maxAge received from server in query response
-  private var serverMaxAge: TimeInterval? = nil
-
-  // maxAge computed based on server or cache settings
-  // server is given priority over cache settings
-  private var maxAge: TimeInterval {
-    if let serverMaxAge {
-      DataConnectLogger.debug("Using maxAge specified from server \(serverMaxAge)")
-      return serverMaxAge
-    }
-
-    if let ma = cache?.config.maxAge {
-      DataConnectLogger.debug("Using maxAge specified from cache settings \(ma)")
-      return ma
-    }
-
-    return 0
-  }
-
   // Ideally we would like this to be part of the QueryRef protocol
   // Not adding for now since the protocol is Public
   // This property is for now an internal property.
@@ -111,7 +92,6 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
 
     do {
       if let cache {
-        serverMaxAge = response.extensions?.maxAge
         await cache.update(queryId: operationId, response: response, requestor: self)
       }
     }
