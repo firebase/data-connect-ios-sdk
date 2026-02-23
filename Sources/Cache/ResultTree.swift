@@ -25,16 +25,20 @@ struct ResultTree: Codable {
   // Local time when the entry was read or updated
   var lastAccessed: Date
 
+  // Validity for the results
+  var maxAge: TimeInterval
+
   var rootObject: EntityNode?
 
-  func isStale(_ ttl: TimeInterval) -> Bool {
+  var isStale: Bool {
     let now = Date()
-    return now.timeIntervalSince(cachedAt) > ttl
+    return now.timeIntervalSince(cachedAt) > maxAge
   }
 
   enum CodingKeys: String, CodingKey {
     case cachedAt = "ca" // cached at
     case lastAccessed = "la" // last accessed
     case data = "d" // data cached
+    case maxAge = "ma" // max age
   }
 }

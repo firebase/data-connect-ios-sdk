@@ -483,16 +483,17 @@ final class CacheTests: XCTestCase {
     let resultTree = ResultTree(
       data: resultTreeData.data(using: .utf8)!,
       cachedAt: Date(),
-      lastAccessed: Date()
+      lastAccessed: Date(),
+      maxAge: ttl
     )
 
     // Within TTL
-    XCTAssertFalse(resultTree.isStale(ttl))
+    XCTAssertFalse(resultTree.isStale)
 
     // Outside TTL
     let expectation = XCTestExpectation(description: "Wait for TTL to expire")
     DispatchQueue.main.asyncAfter(deadline: .now() + ttl + 0.1) {
-      XCTAssertTrue(resultTree.isStale(ttl))
+      XCTAssertTrue(resultTree.isStale)
       expectation.fulfill()
     }
 
