@@ -89,7 +89,7 @@ actor Cache {
     return encoded
   }
 
-  func resultTree(queryId: String) -> ResultTree? {
+  func resultTree(queryId: String, allowStale: Bool = false) -> ResultTree? {
     // result trees are stored dehydrated in the cache
     // retrieve cache, hydrate it and then return
     guard let cacheProvider else {
@@ -98,6 +98,16 @@ actor Cache {
     }
 
     guard let dehydratedTree = cacheProvider.resultTree(queryId: queryId) else {
+      return nil
+    }
+
+    /*
+     isStale = true, allowStale = false: false || false => return nil
+     isStale = true, allowStale = true: false || true => proceed
+     isStale = false, allowStale = false: true || false => proceed
+     isStale = false, allowStale = true: true || true => proceed
+     */
+    guard !dehydratedTree.isStale || allowStale else {
       return nil
     }
 
@@ -112,6 +122,7 @@ actor Cache {
         data: hydratedResults,
         cachedAt: dehydratedTree.cachedAt,
         lastAccessed: dehydratedTree.lastAccessed,
+        maxAge: dehydratedTree.maxAge,
         rootObject: rootObj
       )
 
@@ -142,6 +153,7 @@ actor Cache {
                                                                                         [:],
                                                                                       cacheProvider: cacheProvider)
 
+      let maxAge = response.extensions?.maxAge ?? config.maxAge
       cacheProvider
         .setResultTree(
           queryId: queryId,
@@ -149,6 +161,7 @@ actor Cache {
             data: dehydratedResults,
             cachedAt: Date(),
             lastAccessed: Date(),
+            maxAge: maxAge,
             rootObject: rootObj
           )
         )

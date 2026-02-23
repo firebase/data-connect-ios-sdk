@@ -136,8 +136,7 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
       return OperationResult(data: nil, source: .cache)
     }
 
-    if let cacheEntry = await cache.resultTree(queryId: request.requestId),
-       (cacheEntry.isStale(maxAge) && allowStale) || !cacheEntry.isStale(maxAge) {
+    if let cacheEntry = await cache.resultTree(queryId: request.requestId, allowStale: allowStale) {
       let decoder = JSONDecoder()
       let decodedData = try decoder.decode(
         ResultData.self,
