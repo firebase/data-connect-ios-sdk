@@ -82,11 +82,20 @@ actor Cache {
       return ""
     }
 
-    let identifier =
-      "\(config.storage)-\(dataConnect.app.options.projectID!)-\(dataConnect.app.name)-\(dataConnect.connectorConfig.serviceId)-\(dataConnect.connectorConfig.connector)-\(dataConnect.connectorConfig.location)-\(Auth.auth(app: dataConnect.app).currentUser?.uid ?? "anon")-\(dataConnect.settings.host)"
-    let encoded = identifier.sha256
-    DataConnectLogger.debug("Created Encoded Cache Identifier \(encoded) for \(identifier)")
-    return encoded
+    let identifierPrefix =
+      "\(config.storage)-\(dataConnect.app.options.projectID!)-\(dataConnect.app.name)-\(dataConnect.connectorConfig.serviceId)-\(dataConnect.connectorConfig.connector)-\(dataConnect.connectorConfig.location)-\(dataConnect.settings.host)"
+    let encodedPrefix = identifierPrefix.sha256
+
+    let identifierSuffix = "\(Auth.auth(app: dataConnect.app).currentUser?.uid ?? "anon")"
+    let encodedSuffix = identifierSuffix.sha256
+
+    let identifier = "\(encodedPrefix)-\(encodedSuffix)"
+    DataConnectLogger
+      .debug(
+        "Created Encoded Cache Identifier \(identifier) for \(identifierPrefix)-\(encodedSuffix, privacy: .private)"
+      )
+
+    return identifier
   }
 
   func resultTree(queryId: String, allowStale: Bool = false) -> ResultTree? {
@@ -137,15 +146,15 @@ actor Cache {
     }
     do {
       let processor = ResultTreeProcessor()
-      let (dehydratedResults, rootObj, impactedRefs) = try processor.dehydrateResults(queryId,
-                                                                                      response
-                                                                                        .data,
-                                                                                      response
-                                                                                        .extensions?
-                                                                                        .flattenPathMetadata(
-                                                                                        ) ??
-                                                                                        [:],
-                                                                                      cacheProvider: cacheProvider)
+      let (dehydratedResults, rootObj, impactedRefs) = try processor.dehydrateResults(
+        queryId,
+        response
+          .data,
+        response
+          .extensions?
+          .flattenPathMetadata() ?? [:],
+        cacheProvider: cacheProvider
+      )
 
       let maxAge = response.extensions?.maxAge ?? config.maxAge
       cacheProvider
