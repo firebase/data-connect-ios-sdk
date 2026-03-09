@@ -83,7 +83,7 @@ actor Cache {
     }
 
     let identifierPrefix =
-      "\(config.storage)-\(dataConnect.app.options.projectID!)-\(dataConnect.app.name)-\(dataConnect.connectorConfig.serviceId)-\(dataConnect.connectorConfig.connector)-\(dataConnect.connectorConfig.location)--\(dataConnect.settings.host)"
+      "\(config.storage)-\(dataConnect.app.options.projectID!)-\(dataConnect.app.name)-\(dataConnect.connectorConfig.serviceId)-\(dataConnect.connectorConfig.connector)-\(dataConnect.connectorConfig.location)-\(dataConnect.settings.host)"
     let encodedPrefix = identifierPrefix.sha256
 
     let identifierSuffix = "\(Auth.auth(app: dataConnect.app).currentUser?.uid ?? "anon")"
@@ -92,7 +92,7 @@ actor Cache {
     let identifier = "\(encodedPrefix)-\(encodedSuffix)"
     DataConnectLogger
       .debug(
-        "Created Encoded Cache Identifier \(identifier) for \(identifierPrefix)-\(identifierSuffix)"
+        "Created Encoded Cache Identifier \(identifier) for \(identifierPrefix)-\(encodedSuffix, privacy: .private)"
       )
 
     return identifier
