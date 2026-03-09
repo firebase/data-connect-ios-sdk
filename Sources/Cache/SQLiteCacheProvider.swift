@@ -45,16 +45,20 @@ class SQLiteCacheProvider: CacheProvider {
     try queue.sync {
       var dbIdentifier = ":memory:"
       if !ephemeral {
-        guard let path = FileManager.default.urls(
-          for: .documentDirectory,
-          in: .userDomainMask
-        )
-        .first else {
+        guard
+          let path = FileManager.default.urls(
+            for: .documentDirectory,
+            in: .userDomainMask
+          )
+          .first
+        else {
           throw DataConnectInternalError.sqliteError(
             message: "Could not find document directory."
           )
         }
-        let dbURL = path.appendingPathComponent("\(cacheIdentifier).sqlite3")
+        let dirPath = path.appendingPathComponent("com.google.firebase.dataconnect")
+        try FileManager.default.createDirectory(at: dirPath, withIntermediateDirectories: true)
+        let dbURL = dirPath.appendingPathComponent("\(identifier).sqlite3")
         dbIdentifier = dbURL.path
       }
       if sqlite3_open(dbIdentifier, &db) != SQLITE_OK {
@@ -74,7 +78,8 @@ class SQLiteCacheProvider: CacheProvider {
         if curVersion.isZero {
           try createTables()
         } else if curVersion.major != 1 {
-          throw DataConnectInternalError
+          throw
+            DataConnectInternalError
             .sqliteError(
               message: "Unsupported schema major version \(curVersion.major) detected. Expected 1"
             )
@@ -97,24 +102,25 @@ class SQLiteCacheProvider: CacheProvider {
     sqlite3_exec(db, "BEGIN TRANSACTION;", nil, nil, nil)
 
     let createResultTreeTable = """
-    CREATE TABLE IF NOT EXISTS \(TableName.resultTree) (
-        \(ColumnName.queryId) TEXT PRIMARY KEY NOT NULL,
-        \(ColumnName.lastAccessed) REAL NOT NULL,
-        \(ColumnName.data) BLOB NOT NULL
-    );
-    """
+      CREATE TABLE IF NOT EXISTS \(TableName.resultTree) (
+          \(ColumnName.queryId) TEXT PRIMARY KEY NOT NULL,
+          \(ColumnName.lastAccessed) REAL NOT NULL,
+          \(ColumnName.data) BLOB NOT NULL
+      );
+      """
     if sqlite3_exec(db, createResultTreeTable, nil, nil, nil) != SQLITE_OK {
       sqlite3_exec(db, "ROLLBACK;", nil, nil, nil)
-      throw DataConnectInternalError
+      throw
+        DataConnectInternalError
         .sqliteError(message: "Could not create \(TableName.resultTree) table")
     }
 
     let createEntityDataTable = """
-    CREATE TABLE IF NOT EXISTS \(TableName.entityDataObjects) (
-        \(ColumnName.entityId) TEXT PRIMARY KEY NOT NULL,
-        \(ColumnName.data) BLOB NOT NULL
-    );
-    """
+      CREATE TABLE IF NOT EXISTS \(TableName.entityDataObjects) (
+          \(ColumnName.entityId) TEXT PRIMARY KEY NOT NULL,
+          \(ColumnName.data) BLOB NOT NULL
+      );
+      """
     if sqlite3_exec(db, createEntityDataTable, nil, nil, nil) != SQLITE_OK {
       sqlite3_exec(db, "ROLLBACK;", nil, nil, nil)
       throw DataConnectInternalError.sqliteError(message: "Could not create entity_data table")
@@ -122,7 +128,8 @@ class SQLiteCacheProvider: CacheProvider {
 
     if let version = DBSemanticVersion(1, 0, 0), setDatabaseVersion(version) != SQLITE_OK {
       sqlite3_exec(db, "ROLLBACK;", nil, nil, nil)
-      throw DataConnectInternalError
+      throw
+        DataConnectInternalError
         .sqliteError(message: "Could not set database version to initial value")
     }
 
@@ -360,7 +367,7 @@ struct DBSemanticVersion: Comparable, CustomStringConvertible {
 
   // Initialize from String: "1.2.3"
   init?(_ major: Int32, _ minor: Int32, _ patch: Int32) {
-    let range = 0 ..< Self.multiplier
+    let range = 0..<Self.multiplier
 
     guard range.contains(major) && range.contains(minor) && range.contains(patch) else {
       return nil
