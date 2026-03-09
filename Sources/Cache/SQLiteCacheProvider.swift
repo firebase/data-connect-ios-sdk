@@ -102,12 +102,12 @@ class SQLiteCacheProvider: CacheProvider {
     sqlite3_exec(db, "BEGIN TRANSACTION;", nil, nil, nil)
 
     let createResultTreeTable = """
-      CREATE TABLE IF NOT EXISTS \(TableName.resultTree) (
-          \(ColumnName.queryId) TEXT PRIMARY KEY NOT NULL,
-          \(ColumnName.lastAccessed) REAL NOT NULL,
-          \(ColumnName.data) BLOB NOT NULL
-      );
-      """
+    CREATE TABLE IF NOT EXISTS \(TableName.resultTree) (
+        \(ColumnName.queryId) TEXT PRIMARY KEY NOT NULL,
+        \(ColumnName.lastAccessed) REAL NOT NULL,
+        \(ColumnName.data) BLOB NOT NULL
+    );
+    """
     if sqlite3_exec(db, createResultTreeTable, nil, nil, nil) != SQLITE_OK {
       sqlite3_exec(db, "ROLLBACK;", nil, nil, nil)
       throw
@@ -116,11 +116,11 @@ class SQLiteCacheProvider: CacheProvider {
     }
 
     let createEntityDataTable = """
-      CREATE TABLE IF NOT EXISTS \(TableName.entityDataObjects) (
-          \(ColumnName.entityId) TEXT PRIMARY KEY NOT NULL,
-          \(ColumnName.data) BLOB NOT NULL
-      );
-      """
+    CREATE TABLE IF NOT EXISTS \(TableName.entityDataObjects) (
+        \(ColumnName.entityId) TEXT PRIMARY KEY NOT NULL,
+        \(ColumnName.data) BLOB NOT NULL
+    );
+    """
     if sqlite3_exec(db, createEntityDataTable, nil, nil, nil) != SQLITE_OK {
       sqlite3_exec(db, "ROLLBACK;", nil, nil, nil)
       throw DataConnectInternalError.sqliteError(message: "Could not create entity_data table")
@@ -367,7 +367,7 @@ struct DBSemanticVersion: Comparable, CustomStringConvertible {
 
   // Initialize from String: "1.2.3"
   init?(_ major: Int32, _ minor: Int32, _ patch: Int32) {
-    let range = 0..<Self.multiplier
+    let range = 0 ..< Self.multiplier
 
     guard range.contains(major) && range.contains(minor) && range.contains(patch) else {
       return nil

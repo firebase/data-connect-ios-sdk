@@ -96,7 +96,6 @@ actor Cache {
       )
 
     return identifier
-
   }
 
   func resultTree(queryId: String, allowStale: Bool = false) -> ResultTree? {
