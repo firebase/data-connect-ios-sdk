@@ -26,9 +26,20 @@ import NIOPosix
 import SwiftProtobuf
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-typealias FirebaseDataConnectAsyncClient =
+typealias FirebaseDataConnectUnaryClient =
   Google_Firebase_Dataconnect_V1_ConnectorServiceAsyncClient
+typealias FirebaseDataConnectExecuteMutationRequest =
+  Google_Firebase_Dataconnect_V1_ExecuteMutationRequest
+typealias FirebaseDataConnectExecuteQueryRequest =
+  Google_Firebase_Dataconnect_V1_ExecuteQueryRequest
+
+
 typealias FirebaseDataConnectGraphqlError = Google_Firebase_Dataconnect_V1_GraphqlError
+
+typealias FirebaseDataConnectStreamingClient = Google_Firebase_Dataconnect_V1_ConnectorStreamServiceAsyncClient
+typealias FirebaseDataConnectStreamingCall = GRPCAsyncBidirectionalStreamingCall<Google_Firebase_Dataconnect_V1_StreamRequest, Google_Firebase_Dataconnect_V1_StreamResponse>
+typealias FirebaseDataConnectStreamResponse = Google_Firebase_Dataconnect_V1_StreamResponse
+typealias FirebaseDataConnectStreamRequest = Google_Firebase_Dataconnect_V1_StreamRequest
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 actor GrpcClient: CustomStringConvertible {
@@ -51,7 +62,11 @@ actor GrpcClient: CustomStringConvertible {
   private let appCheck: AppCheckInterop?
 
   private let callerSDKType: CallerSDKType
-
+  
+  private var streamingCall: FirebaseDataConnectStreamingCall?
+  
+  private var responseDemuxer = ResponseDemuxer()
+  
   enum RequestHeaders {
     static let googRequestParamsHeader = "x-goog-request-params"
     static let authorizationHeader = "x-firebase-auth-token"
@@ -61,25 +76,43 @@ actor GrpcClient: CustomStringConvertible {
   }
 
   private let googRequestHeaderValue: String
+  
+  private func grpcChannel() throws -> any GRPCChannel {
+    let group = PlatformSupport.makeEventLoopGroup(loopCount: threadPoolSize)
+    let channel = try GRPCChannelPool.with(
+      target: .host(serverSettings.host, port: serverSettings.port),
+      transportSecurity: serverSettings
+        .sslEnabled ? .tls(GRPCTLSConfiguration.makeClientDefault(compatibleWith: group)) :
+        .plaintext,
+      eventLoopGroup: group
+    )
+    return channel
+  }
 
-  private lazy var client: FirebaseDataConnectAsyncClient? = {
+  private lazy var unaryClient: FirebaseDataConnectUnaryClient? = {
     do {
       DataConnectLogger
         .debug("GrpcClient: \(self.description, privacy: .private) initialization starts.")
-      let group = PlatformSupport.makeEventLoopGroup(loopCount: threadPoolSize)
-      let channel = try GRPCChannelPool.with(
-        target: .host(serverSettings.host, port: serverSettings.port),
-        transportSecurity: serverSettings
-          .sslEnabled ? .tls(GRPCTLSConfiguration.makeClientDefault(compatibleWith: group)) :
-          .plaintext,
-        eventLoopGroup: group
-      )
+      let channel = try grpcChannel()
       DataConnectLogger
         .debug("GrpcClient: \(self.description, privacy: .private) has been created.")
-      return FirebaseDataConnectAsyncClient(channel: channel)
+      return FirebaseDataConnectUnaryClient(channel: channel)
     } catch {
       DataConnectLogger
         .debug("Error:\(error) when creating GrpcClient: \(self.description, privacy: .private).")
+      return nil
+    }
+  }()
+
+  private lazy var streamingClient: FirebaseDataConnectStreamingClient? = {
+    do {
+      DataConnectLogger.debug("GrpcClient: \(self.description, privacy: .private) streaming initialization starts")
+      let channel = try grpcChannel()
+      DataConnectLogger.debug("GrpcClient: \(self.description, privacy: .private) streaming has been created.")
+      return FirebaseDataConnectStreamingClient(channel: channel)
+    } catch {
+      DataConnectLogger
+        .debug("Error: \(error) when creating streaming GrpcClient: \(self.description, privacy: .private)")
       return nil
     }
   }()
@@ -124,14 +157,121 @@ actor GrpcClient: CustomStringConvertible {
         port=\(serverSettings.port) \
         ssl=\(serverSettings.sslEnabled)
     """
+    
+    Task {
+      await connectStream()
+    }
+  }
+  
+  // setup stream
+  func connectStream() async {
+    do {
+      
+      guard streamingCall == nil else {
+        DataConnectLogger.debug("connectStream() is called again, ignoring.")
+        return
+      }
+      
+      guard let streamingClient else {
+        DataConnectLogger.error("When calling connectStream(), grpc client has not been configured.")
+        return
+      }
+      
+      let callOptions = await createCallOptions()
+      print(callOptions)
+      streamingCall = streamingClient.makeConnectCall(callOptions: callOptions)
+      
+      guard let streamingCall else {
+        DataConnectLogger.error("Error: Failed to setup a streaming call")
+        return
+      }
+      
+      var firstRequest = FirebaseDataConnectStreamRequest()
+      firstRequest.requestID = "1+\(UUID().uuidString)"
+      firstRequest.name = connectorName
+      try await streamingCall.requestStream.send(firstRequest)
+      
+      print("Created streaming call")
+      Task {
+        do {
+          for try await response in streamingCall.responseStream {
+            DataConnectLogger.debug("Received stream response from the server: \(response)")
+            // handle response
+            await responseDemuxer.handleResponse(response)
+            
+          }
+        } catch {
+          DataConnectLogger.error("Error in stream response \(error)")
+        }
+      }
+      
+    } catch {
+      DataConnectLogger.error("Error setting up stream: \(error)")
+      //TODO: Handle stream connect failure
+      
+    }
+    
   }
 
   func executeQuery<ResultType: Decodable,
     VariableType: OperationVariable>(request: QueryRequest<VariableType>,
                                      resultType: ResultType
                                        .Type)
+  async throws -> ServerResponse {
+    
+    do {
+      return try await executeQueryStream(request: request, resultType: resultType)
+    } catch {
+      // TODO: Distinguish network errors from stream errors.
+      DataConnectLogger.error("Error executing on stream mode, falling back to unary mode ")
+      return try await executeQueryUnary(request: request, resultType: resultType)
+    }
+  }
+  
+  func executeQueryStream<ResultType: Decodable,
+    VariableType: OperationVariable>(request: QueryRequest<VariableType>,
+                                     resultType: ResultType
+                                       .Type)
+  async throws -> ServerResponse {
+    guard let streamingCall else {
+      DataConnectLogger.error("When calling executeQueryStream(), grpc client has not been configured.")
+      throw DataConnectInternalError.internalError(message:"Streaming call not configured")
+    }
+    
+    do {
+      var streamRequest = Google_Firebase_Dataconnect_V1_StreamRequest()
+      streamRequest.requestID = "\(request.operationName)+\(Int.random(in: 1...1000))"
+      streamRequest.execute = Google_Firebase_Dataconnect_V1_ExecuteRequest.with({ req in
+        req.operationName = request.operationName
+        // TODO: Variables
+      })
+      
+      DataConnectLogger
+        .debug(
+          "Making streaming call with request \(streamRequest.requestID), \(streamRequest.name), \(streamRequest.execute.operationName)"
+        )
+      
+      let requestID = streamRequest.requestID // copy to avoid capture
+      async let response = responseDemuxer.waitForResponse(for: requestID)
+      DataConnectLogger.debug("Sending streaming request \(try streamRequest.jsonString())")
+      try await streamingCall.requestStream.send(streamRequest)
+      DataConnectLogger.debug("Done sending request")
+      
+      return ServerResponse(data: try await response.data.jsonUTF8Data(), extensions: nil)
+    } catch {
+      DataConnectLogger.error("Error sending request to the server: \(error)")
+      throw error
+    }
+    
+    //return ServerResponse(data: Data(), extensions: nil)
+  }
+  
+  func executeQueryUnary<ResultType: Decodable,
+    VariableType: OperationVariable>(request: QueryRequest<VariableType>,
+                                     resultType: ResultType
+                                       .Type)
     async throws -> ServerResponse {
-    guard let client else {
+    guard let unaryClient else {
       DataConnectLogger.error("When calling executeQuery(), grpc client has not been configured.")
       throw DataConnectInitError.grpcNotConfigured()
     }
@@ -149,7 +289,7 @@ actor GrpcClient: CustomStringConvertible {
           .debug("executeQuery() sends grpc request: \(requestString, privacy: .private).")
       }
 
-      let results = try await client.executeQuery(grpcRequest, callOptions: createCallOptions())
+      let results = try await unaryClient.executeQuery(grpcRequest, callOptions: createCallOptions())
       let jsonData = try results.data.jsonUTF8Data()
 
       let jsonDecoder = JSONDecoder()
@@ -234,13 +374,18 @@ actor GrpcClient: CustomStringConvertible {
       throw DataConnectOperationError.executionFailed(cause: error)
     }
   }
+  
+  func subscribe<ResultType: Decodable,
+                 VariableType: OperationVariable>(request: QueryRequest<VariableType>, resultType: ResultType.Type) async throws -> AsyncStream<OperationResult<ResultType>> {
+    
+  }
 
   func executeMutation<ResultType: Decodable,
     VariableType: OperationVariable>(request: MutationRequest<VariableType>,
                                      resultType: ResultType
                                        .Type)
     async throws -> OperationResult<ResultType> {
-    guard let client else {
+    guard let unaryClient else {
       DataConnectLogger
         .error("When calling executeMutation(), grpc client has not been configured.")
       throw DataConnectInitError.grpcNotConfigured()
@@ -257,7 +402,7 @@ actor GrpcClient: CustomStringConvertible {
     do {
       DataConnectLogger
         .debug("executeMutation() sends grpc request: \(requestString, privacy: .private).")
-      let results = try await client.executeMutation(grpcRequest, callOptions: createCallOptions())
+      let results = try await unaryClient.executeMutation(grpcRequest, callOptions: createCallOptions())
       let resultsString = try results.jsonString()
       DataConnectLogger
         .debug("executeMutation() receives response: \(resultsString, privacy: .private).")
@@ -392,5 +537,36 @@ actor GrpcClient: CustomStringConvertible {
     }
 
     return options
+  }
+}
+
+
+fileprivate actor ResponseDemuxer {
+  private var pendingRequests: [String: CheckedContinuation<FirebaseDataConnectStreamResponse, Error>] = [:]
+    
+  func waitForResponse(for requestID: String) async throws -> FirebaseDataConnectStreamResponse {
+        try await withCheckedThrowingContinuation { continuation in
+            pendingRequests[requestID] = continuation
+        }
+    }
+
+  
+  func handleResponse(_ response: FirebaseDataConnectStreamResponse) {
+    if let continuation = pendingRequests.removeValue(forKey: response.requestID) {
+            continuation.resume(returning: response)
+        }
+    }
+
+  // handle failure for a particular request
+  func handleError(_ error: Error, for requestID: String) {
+        if let continuation = pendingRequests.removeValue(forKey: requestID) {
+            continuation.resume(throwing: error)
+        }
+    }
+
+  // global failure. throw all
+  func handleStreamFailure(_ error: Error) {
+    pendingRequests.values.forEach { $0.resume(throwing: error) }
+    pendingRequests.removeAll()
   }
 }
