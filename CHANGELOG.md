@@ -1,3 +1,6 @@
+# 11.11.1
+- [fixed] Update cache identifier format to match Dart.
+
 # 11.11.0
 - [added] Support for client-side caching and offline reads.
 - [fixed] `LocalDate`'s `date` value isn't accessible.
