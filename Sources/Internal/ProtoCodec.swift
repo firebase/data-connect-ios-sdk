@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import Foundation
-
 import SwiftProtobuf
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -42,11 +41,28 @@ class ProtoCodec {
     }
   }
 
-  func createQueryRequestProto<VariableType: OperationVariable>(connectorName: String,
-                                                                request: QueryRequest<
-                                                                  VariableType
-                                                                >) throws
-    -> FirebaseDataConnectExecuteQueryRequest {
+  // Generic ExecuteRequest object used for different stream messages - subscribe, execute, ...
+  func createStreamExecuteRequest<VariableType: OperationVariable>(
+    request: QueryRequest<VariableType>
+  ) throws -> Google_Firebase_Dataconnect_V1_ExecuteRequest {
+
+    var protoReq = Google_Firebase_Dataconnect_V1_ExecuteRequest()
+    protoReq.operationName = request.operationName
+    if let variables = request.variables {
+      let varStruct = try encode(args: variables)
+      protoReq.variables = varStruct
+    }
+    return protoReq
+  }
+
+  func createQueryRequestProto<VariableType: OperationVariable>(
+    connectorName: String,
+    request: QueryRequest<
+      VariableType
+    >
+  ) throws
+    -> FirebaseDataConnectExecuteQueryRequest
+  {
     do {
       var varStruct: Google_Protobuf_Struct? = nil
       if let variables = request.variables {
@@ -69,18 +85,22 @@ class ProtoCodec {
     }
   }
 
-  func createMutationRequestProto<VariableType: OperationVariable>(connectorName: String,
-                                                                   request: MutationRequest<
-                                                                     VariableType
-                                                                   >) throws
-    -> FirebaseDataConnectExecuteMutationRequest {
+  func createMutationRequestProto<VariableType: OperationVariable>(
+    connectorName: String,
+    request: MutationRequest<
+      VariableType
+    >
+  ) throws
+    -> FirebaseDataConnectExecuteMutationRequest
+  {
     do {
       var varStruct: Google_Protobuf_Struct? = nil
       if let variables = request.variables {
         varStruct = try encode(args: variables)
       }
 
-      let internalRequest = FirebaseDataConnectExecuteMutationRequest
+      let internalRequest =
+        FirebaseDataConnectExecuteMutationRequest
         .with { ireq in
           ireq.operationName = request.operationName
 
