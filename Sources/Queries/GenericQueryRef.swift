@@ -29,7 +29,7 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
   private let grpcClient: GrpcClient
 
   private let cache: Cache?
-  
+
   private var subscriptionStream: AsyncStream<ServerResponse>?
 
   // Ideally we would like this to be part of the QueryRef protocol
@@ -51,17 +51,17 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
     Task {
       do {
         _ = try await fetchCachedResults(allowStale: true)
-        //_ = try await fetchServerResults()
-        
+        // _ = try await fetchServerResults()
+
         // if we already have a stream return
         guard self.subscriptionStream == nil else { return }
-        
-        //TODO: Save this stream so we don't keep calling subscribe
+
+        // TODO: Save this stream so we don't keep calling subscribe
         subscriptionStream = try await grpcClient
           .subscribe(request: self.request, resultType: ResultData.self)
-        
+
         guard let subscriptionStream else { return }
-        
+
         for await response in subscriptionStream {
           do {
             DataConnectLogger.debug("Received response in sub stream in GenericQueryRef")
@@ -76,7 +76,7 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
                   ))))
           }
         }
-        
+
       } catch {
         // stream failures
         resultsPublisher
@@ -120,8 +120,9 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
 
     return try await handleServerResponse(response: response)
   }
-  
-  private func handleServerResponse(response: ServerResponse) async throws -> OperationResult<ResultData> {
+
+  private func handleServerResponse(response: ServerResponse) async throws
+    -> OperationResult<ResultData> {
     do {
       if let cache {
         await cache.update(queryId: operationId, response: response, requestor: self)

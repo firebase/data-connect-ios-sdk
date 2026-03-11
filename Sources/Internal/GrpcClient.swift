@@ -56,7 +56,7 @@ actor GrpcClient: CustomStringConvertible {
 
   private let connectorConfig: ConnectorConfig
 
-  private let connectorName: String  // Fully qualified connector name
+  private let connectorName: String // Fully qualified connector name
 
   private let auth: Auth
 
@@ -67,6 +67,13 @@ actor GrpcClient: CustomStringConvertible {
   private var streamingCall: FirebaseDataConnectStreamingCall?
 
   private var subManager = StreamSubscriptionManager()
+
+  private var requestIdSequence: UInt64 = 0
+
+  private var nextRequestIdSequence: UInt64 {
+    requestIdSequence += 1
+    return requestIdSequence
+  }
 
   // Creates a new GRPC channel
   // Each client type (Unary vs Stream) creates its own Channel
@@ -82,12 +89,10 @@ actor GrpcClient: CustomStringConvertible {
     return channel
   }
 
-  init(
-    app: FirebaseApp,
-    settings: DataConnectSettings,
-    connectorConfig: ConnectorConfig,
-    callerSDKType: CallerSDKType
-  ) {
+  init(app: FirebaseApp,
+       settings: DataConnectSettings,
+       connectorConfig: ConnectorConfig,
+       callerSDKType: CallerSDKType) {
     self.app = app
 
     guard let projectId = app.options.projectID else {
@@ -107,12 +112,12 @@ actor GrpcClient: CustomStringConvertible {
     googRequestHeaderValue = "location=\(self.connectorConfig.location)&frontend=data"
 
     description = """
-          projectId=\(projectId) \
-          connector=\(connectorConfig.connector) \
-          host=\(serverSettings.host) \
-          port=\(serverSettings.port) \
-          ssl=\(serverSettings.sslEnabled)
-      """
+        projectId=\(projectId) \
+        connector=\(connectorConfig.connector) \
+        host=\(serverSettings.host) \
+        port=\(serverSettings.port) \
+        ssl=\(serverSettings.sslEnabled)
+    """
 
     Task {
       await connectStream()
@@ -122,13 +127,9 @@ actor GrpcClient: CustomStringConvertible {
   func executeQuery<
     ResultType: Decodable,
     VariableType: OperationVariable
-  >(
-    request: QueryRequest<VariableType>,
-    resultType: ResultType.Type
-  )
-    async throws -> ServerResponse
-  {
-
+  >(request: QueryRequest<VariableType>,
+    resultType: ResultType.Type)
+    async throws -> ServerResponse {
     do {
       return try await executeQueryStream(request: request, resultType: resultType)
     } catch {
@@ -139,6 +140,7 @@ actor GrpcClient: CustomStringConvertible {
   }
 
   // MARK: Streaming
+
   private lazy var streamingClient: FirebaseDataConnectStreamingClient? = {
     do {
       DataConnectLogger.debug(
@@ -161,7 +163,6 @@ actor GrpcClient: CustomStringConvertible {
   // setup stream
   func connectStream() async {
     do {
-
       guard streamingCall == nil else {
         DataConnectLogger.debug("connectStream() is called again, ignoring.")
         return
@@ -185,8 +186,13 @@ actor GrpcClient: CustomStringConvertible {
 
       // send first message
       // TODO: Perhaps move this to a separate function
+      requestIdSequence = 0 // reset sequence
+      let firstRequestId = RequestIdentifier(
+        operationId: UUID().uuidString,
+        sequenceNumber: nextRequestIdSequence
+      )
       var firstRequest = FirebaseDataConnectStreamRequest()
-      firstRequest.requestID = "1+\(UUID().uuidString)"
+      firstRequest.requestID = firstRequestId.stringValue
       firstRequest.name = connectorName
       try await streamingCall.requestStream.send(firstRequest)
 
@@ -197,7 +203,6 @@ actor GrpcClient: CustomStringConvertible {
             DataConnectLogger.debug("Received stream response from the server: \(response)")
             // handle response
             await subManager.handleResponse(response)
-
           }
         } catch {
           DataConnectLogger.error("Error in stream response \(error)")
@@ -206,22 +211,17 @@ actor GrpcClient: CustomStringConvertible {
 
     } catch {
       DataConnectLogger.error("Error setting up stream: \(error)")
-      //TODO: Handle stream connect failure
-
+      // TODO: Handle stream connect failure
     }
-
   }
 
   // Sends Execute over the stream. Requires a stream to exist.
   func executeQueryStream<
     ResultType: Decodable,
     VariableType: OperationVariable
-  >(
-    request: QueryRequest<VariableType>,
-    resultType: ResultType.Type
-  )
-    async throws -> ServerResponse
-  {
+  >(request: QueryRequest<VariableType>,
+    resultType: ResultType.Type)
+    async throws -> ServerResponse {
     guard let streamingCall else {
       DataConnectLogger.error(
         "When calling executeQueryStream(), grpc client has not been configured."
@@ -231,9 +231,15 @@ actor GrpcClient: CustomStringConvertible {
 
     do {
       var fdcRequest = request // assigning since requestId is calculated lazily
+
+      let seqRequestId = RequestIdentifier(
+        operationId: fdcRequest.requestId,
+        sequenceNumber: nextRequestIdSequence
+      )
+
       let protoCodec = ProtoCodec()
       var streamRequest = Google_Firebase_Dataconnect_V1_StreamRequest()
-      streamRequest.requestID = "\(fdcRequest.requestId)"
+      streamRequest.requestID = "\(seqRequestId)"
       streamRequest.execute = try protoCodec.createStreamExecuteRequest(request: fdcRequest)
 
       DataConnectLogger
@@ -241,9 +247,8 @@ actor GrpcClient: CustomStringConvertible {
           "Making streaming call with request \(streamRequest.requestID), \(streamRequest.name), \(streamRequest.execute.operationName)"
         )
 
-      let requestID = streamRequest.requestID  // copy to avoid capture
-      async let response = subManager.waitForResponse(for: requestID)
-      DataConnectLogger.debug("Sending streaming request \(try streamRequest.jsonString())")
+      async let response = subManager.waitForResponse(for: seqRequestId)
+      try DataConnectLogger.debug("Sending streaming request \(streamRequest.jsonString())")
       try await streamingCall.requestStream.send(streamRequest)
       DataConnectLogger.debug("Done sending request")
 
@@ -253,52 +258,53 @@ actor GrpcClient: CustomStringConvertible {
       throw error
     }
 
-    //return ServerResponse(data: Data(), extensions: nil)
+    // return ServerResponse(data: Data(), extensions: nil)
   }
 
   func subscribe<
     ResultType: Decodable,
     VariableType: OperationVariable
-  >(request: QueryRequest<VariableType>, resultType: ResultType.Type) async throws -> AsyncStream<ServerResponse>
-  {
+  >(request: QueryRequest<VariableType>,
+    resultType: ResultType.Type) async throws -> AsyncStream<ServerResponse> {
     guard let streamingCall else {
       DataConnectLogger.error(
         "When calling subscribe(), grpc streaming client has not been configured."
       )
       throw DataConnectInitError.appNotConfigured(message: "GRPC Streaming failed to setup")
     }
-    
-    
+
     var fdcRequest = request
     let hasSubscription = await subManager.hasSubscription(for: fdcRequest.requestId)
-    
+
     // first create a stream so we have something to handle the response after sending subscribe
     // otherwise there could be a race after sending subscribe and creating a stream handler
-    let stream = try await subManager.createStream(for: fdcRequest.requestId)
-    
+    let requestID = RequestIdentifier(
+      operationId: fdcRequest.requestId,
+      sequenceNumber: nextRequestIdSequence
+    )
+    let stream = try await subManager.createStream(for: requestID)
+
     if !hasSubscription {
       // send a Subscribe request on the stream
       let protoCodec = ProtoCodec()
       var streamRequest = Google_Firebase_Dataconnect_V1_StreamRequest()
-      streamRequest.requestID = fdcRequest.requestId
+      streamRequest.requestID = requestID.stringValue
       streamRequest.subscribe = try protoCodec.createStreamExecuteRequest(request: request)
-      
+
       do {
         try await streamingCall.requestStream.send(streamRequest)
       } catch {
         // subscribe failed. Cleanup stream before rethrowing
-        await subManager.removeSubscription(for: fdcRequest.requestId)
+        await subManager.removeSubscription(for: requestID)
         throw error
       }
     }
-    
+
     return stream
-    
   }
 
-  
-
   // MARK: Unary Grpc
+
   private lazy var unaryClient: FirebaseDataConnectUnaryClient? = {
     do {
       DataConnectLogger
@@ -317,12 +323,9 @@ actor GrpcClient: CustomStringConvertible {
   func executeQueryUnary<
     ResultType: Decodable,
     VariableType: OperationVariable
-  >(
-    request: QueryRequest<VariableType>,
-    resultType: ResultType.Type
-  )
-    async throws -> ServerResponse
-  {
+  >(request: QueryRequest<VariableType>,
+    resultType: ResultType.Type)
+    async throws -> ServerResponse {
     guard let unaryClient else {
       DataConnectLogger.error("When calling executeQuery(), grpc client has not been configured.")
       throw DataConnectInitError.grpcNotConfigured()
@@ -435,12 +438,9 @@ actor GrpcClient: CustomStringConvertible {
   func executeMutation<
     ResultType: Decodable,
     VariableType: OperationVariable
-  >(
-    request: MutationRequest<VariableType>,
-    resultType: ResultType.Type
-  )
-    async throws -> OperationResult<ResultType>
-  {
+  >(request: MutationRequest<VariableType>,
+    resultType: ResultType.Type)
+    async throws -> OperationResult<ResultType> {
     guard let unaryClient else {
       DataConnectLogger
         .error("When calling executeMutation(), grpc client has not been configured.")
@@ -523,6 +523,7 @@ actor GrpcClient: CustomStringConvertible {
   }
 
   // MARK: Response Data Handling
+
   private func createErrorJson(errors: [FirebaseDataConnectGraphqlError]) -> String? {
     var errorMessages = [String]()
     for err in errors {
@@ -540,8 +541,7 @@ actor GrpcClient: CustomStringConvertible {
   }
 
   private func createErrorInfoList(errors: [FirebaseDataConnectGraphqlError])
-    -> [OperationFailureResponse.ErrorInfo]
-  {
+    -> [OperationFailureResponse.ErrorInfo] {
     let errorList = errors.compactMap { errorProto in
       do {
         let errorJsonData = try errorProto.jsonUTF8Data()
@@ -618,8 +618,7 @@ actor GrpcClient: CustomStringConvertible {
 
     // Enable GRPC tracing
     if DataConnectLogger.logLevel.rawValue >= FirebaseLoggerLevel.debug.rawValue,
-      DataConnectLogger.privateLoggingEnabled == false
-    {
+       DataConnectLogger.privateLoggingEnabled == false {
       var logger = Logger(label: "com.google.firebase.dataconnect.grpc")
       logger.logLevel = .trace
       options.logger = logger
@@ -629,53 +628,96 @@ actor GrpcClient: CustomStringConvertible {
   }
 }
 
-fileprivate actor StreamSubscriptionManager {
-  private var pendingRequests: [String: CheckedContinuation<ServerResponse, Error>] = [:]
-  private var subscriptionRequests = [String: AsyncStream<ServerResponse>.Continuation]()
+// operationId|seq no
+// operationId = SHA(Name+Variable=VariableValue) - returned by OperationRequest.requestId
+// seq no exists for the duration of the streaming session
+private struct RequestIdentifier: CustomStringConvertible, Hashable, Equatable {
+  let operationId: String
+  let sequenceNumber: UInt64
 
-  func waitForResponse(for requestID: String) async throws -> ServerResponse {
+  var stringValue: String {
+    "\(operationId)|\(sequenceNumber)"
+  }
+
+  var description: String {
+    stringValue
+  }
+
+  init(operationId: String, sequenceNumber: UInt64) {
+    self.operationId = operationId
+    self.sequenceNumber = sequenceNumber
+  }
+
+  init?(stringValue: String) {
+    let components = stringValue.split(separator: "|")
+    guard components.count == 2, let sequenceNumber = UInt64(components[1]),
+          let operationId = String(components[0]) as String? else {
+      return nil
+    }
+
+    self.operationId = operationId
+    self.sequenceNumber = sequenceNumber
+  }
+}
+
+private actor StreamSubscriptionManager {
+  private var pendingRequests: [RequestIdentifier: CheckedContinuation<ServerResponse, Error>] = [:]
+
+  private var subscriptionRequests = [RequestIdentifier: AsyncStream<ServerResponse>.Continuation]()
+  private var operationSubs = [String: RequestIdentifier]()
+
+  func waitForResponse(for requestID: RequestIdentifier) async throws -> ServerResponse {
     try await withCheckedThrowingContinuation { continuation in
       pendingRequests[requestID] = continuation
     }
   }
-  
-  func createStream(for requestID: String) throws -> AsyncStream<ServerResponse> {
-    
-    if let existingContinuation = subscriptionRequests[requestID] {
-      // first cleanup existing - a stream is not multiplex
-      removeSubscription(for: requestID)
+
+  // Creates a stream for the particular request ID
+  // A stream has a 1:1 relation with a QueryRef, which is uniqued by the operationName + Variables
+  func createStream(for requestID: RequestIdentifier) throws -> AsyncStream<ServerResponse> {
+    if let existingReq = operationSubs[requestID.operationId] {
+      // first cleanup existing - a stream cannot have multiple consumers
+      removeSubscription(for: existingReq)
     }
-    
+
     let stream = AsyncStream<ServerResponse> { continuation in
       subscriptionRequests[requestID] = continuation
-      
+      operationSubs[requestID.operationId] = requestID
+
       continuation.onTermination = { _ in
         Task { await self.removeSubscription(for: requestID) }
       }
     }
     return stream
   }
-  
-  func hasSubscription(for requestID: String) -> Bool {
-    subscriptionRequests[requestID] != nil
+
+  func hasSubscription(for operationId: String) -> Bool {
+    operationSubs[operationId] != nil
   }
-  
-  func removeSubscription(for requestID: String) {
+
+  func removeSubscription(for requestID: RequestIdentifier) {
     if let continuation = subscriptionRequests[requestID] {
       continuation.finish()
     }
     subscriptionRequests.removeValue(forKey: requestID)
+    operationSubs.removeValue(forKey: requestID.operationId)
   }
 
   func handleResponse(_ response: FirebaseDataConnectStreamResponse) {
     do {
-      if let continuation = pendingRequests.removeValue(forKey: response.requestID) {
+      guard let reqId = RequestIdentifier(stringValue: response.requestID) else {
+        return
+      }
+
+      if let continuation = pendingRequests.removeValue(
+        forKey: reqId
+      ) {
         let serverResponse = try serverResponse(for: response)
         continuation.resume(returning: serverResponse)
         return
       }
-      
-      if let continuation = subscriptionRequests[response.requestID] {
+
+      if let continuation = subscriptionRequests[reqId] {
         let serverResponse = try serverResponse(for: response)
         continuation.yield(serverResponse)
       }
@@ -685,7 +727,7 @@ fileprivate actor StreamSubscriptionManager {
   }
 
   // handle failure for a particular request
-  func handleError(_ error: Error, for requestID: String) {
+  func handleError(_ error: Error, for requestID: RequestIdentifier) {
     if let continuation = pendingRequests.removeValue(forKey: requestID) {
       continuation.resume(throwing: error)
     }
@@ -698,14 +740,13 @@ fileprivate actor StreamSubscriptionManager {
   }
 
   private func serverResponse(for response: FirebaseDataConnectStreamResponse) throws
-    -> ServerResponse
-  {
+    -> ServerResponse {
     let jsonDecoder = JSONDecoder()
     let extensionResponse = try? jsonDecoder.decode(
       ExtensionResponse.self,
       from: response.extensions.jsonUTF8Data()
     )
 
-    return ServerResponse(data: try response.data.jsonUTF8Data(), extensions: extensionResponse)
+    return try ServerResponse(data: response.data.jsonUTF8Data(), extensions: extensionResponse)
   }
 }

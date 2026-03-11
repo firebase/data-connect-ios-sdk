@@ -42,10 +42,9 @@ class ProtoCodec {
   }
 
   // Generic ExecuteRequest object used for different stream messages - subscribe, execute, ...
-  func createStreamExecuteRequest<VariableType: OperationVariable>(
-    request: QueryRequest<VariableType>
-  ) throws -> Google_Firebase_Dataconnect_V1_ExecuteRequest {
-
+  func createStreamExecuteRequest<VariableType: OperationVariable>(request: QueryRequest<
+    VariableType
+  >) throws -> Google_Firebase_Dataconnect_V1_ExecuteRequest {
     var protoReq = Google_Firebase_Dataconnect_V1_ExecuteRequest()
     protoReq.operationName = request.operationName
     if let variables = request.variables {
@@ -55,14 +54,11 @@ class ProtoCodec {
     return protoReq
   }
 
-  func createQueryRequestProto<VariableType: OperationVariable>(
-    connectorName: String,
-    request: QueryRequest<
-      VariableType
-    >
-  ) throws
-    -> FirebaseDataConnectExecuteQueryRequest
-  {
+  func createQueryRequestProto<VariableType: OperationVariable>(connectorName: String,
+                                                                request: QueryRequest<
+                                                                  VariableType
+                                                                >) throws
+    -> FirebaseDataConnectExecuteQueryRequest {
     do {
       var varStruct: Google_Protobuf_Struct? = nil
       if let variables = request.variables {
@@ -85,14 +81,11 @@ class ProtoCodec {
     }
   }
 
-  func createMutationRequestProto<VariableType: OperationVariable>(
-    connectorName: String,
-    request: MutationRequest<
-      VariableType
-    >
-  ) throws
-    -> FirebaseDataConnectExecuteMutationRequest
-  {
+  func createMutationRequestProto<VariableType: OperationVariable>(connectorName: String,
+                                                                   request: MutationRequest<
+                                                                     VariableType
+                                                                   >) throws
+    -> FirebaseDataConnectExecuteMutationRequest {
     do {
       var varStruct: Google_Protobuf_Struct? = nil
       if let variables = request.variables {
@@ -101,18 +94,18 @@ class ProtoCodec {
 
       let internalRequest =
         FirebaseDataConnectExecuteMutationRequest
-        .with { ireq in
-          ireq.operationName = request.operationName
+          .with { ireq in
+            ireq.operationName = request.operationName
 
-          if let varStruct {
-            ireq.variables = varStruct
-          } else {
-            // always provide an empty struct otherwise request fails.
-            ireq.variables = Google_Protobuf_Struct()
+            if let varStruct {
+              ireq.variables = varStruct
+            } else {
+              // always provide an empty struct otherwise request fails.
+              ireq.variables = Google_Protobuf_Struct()
+            }
+
+            ireq.name = connectorName
           }
-
-          ireq.name = connectorName
-        }
 
       return internalRequest
     }
