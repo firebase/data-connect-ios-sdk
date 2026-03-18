@@ -114,7 +114,10 @@ actor DataConnectGrpcClient: GrpcClient, CustomStringConvertible {
     }
 
     let auth = Auth.auth(app: app)
-    let appCheck = ComponentType<AppCheckInterop>.instance(for: AppCheckInterop.self, in: app.container)
+    let appCheck = ComponentType<AppCheckInterop>.instance(
+      for: AppCheckInterop.self,
+      in: app.container
+    )
 
     description = """
         projectId=\(projectId) \
@@ -204,17 +207,18 @@ actor DataConnectGrpcClient: GrpcClient, CustomStringConvertible {
     return errorList
   }
 
-  static func createCallOptions(
-    app: FirebaseApp,
-    auth: Auth,
-    appCheck: AppCheckInterop?,
-    googRequestHeaderValue: String,
-    googApiClientHeaderValue: String
-  ) async -> CallOptions {
+  static func createCallOptions(app: FirebaseApp,
+                                auth: Auth,
+                                appCheck: AppCheckInterop?,
+                                googRequestHeaderValue: String,
+                                googApiClientHeaderValue: String) async -> CallOptions {
     var headers = HPACKHeaders()
 
     if app.isDataCollectionDefaultEnabled {
-      headers.add(name: GrpcClientRequestHeaders.googRequestParamsHeader, value: googRequestHeaderValue)
+      headers.add(
+        name: GrpcClientRequestHeaders.googRequestParamsHeader,
+        value: googRequestHeaderValue
+      )
       headers.add(name: GrpcClientRequestHeaders.firebaseAppId, value: app.options.googleAppID)
       headers.add(name: GrpcClientRequestHeaders.googApiClient, value: googApiClientHeaderValue)
     }

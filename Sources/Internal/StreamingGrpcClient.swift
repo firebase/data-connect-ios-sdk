@@ -194,7 +194,8 @@ actor StreamingGrpcClient: GrpcClient {
   >(request: MutationRequest<VariableType>,
     resultType: ResultType.Type)
     async throws -> OperationResult<ResultType> {
-    throw DataConnectInternalError.internalError(message: "Mutation not supported in StreamingGrpcClient")
+    throw DataConnectInternalError
+      .internalError(message: "Mutation not supported in StreamingGrpcClient")
   }
 
   func subscribe<

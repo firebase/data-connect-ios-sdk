@@ -256,7 +256,8 @@ actor UnaryGrpcClient: GrpcClient {
     VariableType: OperationVariable
   >(request: QueryRequest<VariableType>,
     resultType: ResultType.Type) async throws -> AsyncStream<ServerResponse> {
-    throw DataConnectInternalError.internalError(message: "Subscribe not supported in UnaryGrpcClient")
+    throw DataConnectInternalError
+      .internalError(message: "Subscribe not supported in UnaryGrpcClient")
   }
 
   func createCallOptions() async -> CallOptions {
