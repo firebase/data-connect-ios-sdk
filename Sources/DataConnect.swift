@@ -84,7 +84,7 @@ public class DataConnect {
         fatalError("Firebase DataConnect requires the projectID to be set in the app options")
       }
 
-      grpcClient = GrpcClient(
+      grpcClient = DataConnectGrpcClient(
         app: app,
         settings: settings,
         connectorConfig: connectorConfig,
@@ -115,7 +115,7 @@ public class DataConnect {
     self.connectorConfig = connectorConfig
     self.callerSDKType = callerSDKType
 
-    grpcClient = GrpcClient(
+    grpcClient = DataConnectGrpcClient(
       app: self.app,
       settings: settings,
       connectorConfig: connectorConfig,

@@ -52,7 +52,7 @@ final class HeaderTests: XCTestCase {
     let dcOne = DataConnect.dataConnect(connectorConfig: fakeConnectorConfigOne)
     let callOptions = await dcOne.grpcClient.createCallOptions()
     let values = callOptions.customMetadata.values(
-      forHeader: GrpcClient.RequestHeaders.firebaseAppId, canonicalForm: false
+      forHeader: GrpcClientRequestHeaders.firebaseAppId, canonicalForm: false
     )
     let contains = values.contains { $0 == HeaderTests.defaultApp!.options.googleAppID }
     XCTAssertTrue(contains)
@@ -62,7 +62,7 @@ final class HeaderTests: XCTestCase {
     let dcOne = DataConnect.dataConnect(connectorConfig: fakeConnectorConfigOne)
     let callOptions = await dcOne.grpcClient.createCallOptions()
     let values = callOptions.customMetadata.values(
-      forHeader: GrpcClient.RequestHeaders.googApiClient, canonicalForm: false
+      forHeader: GrpcClientRequestHeaders.googApiClient, canonicalForm: false
     )
     let contains = values
       .contains {
@@ -79,7 +79,7 @@ final class HeaderTests: XCTestCase {
     )
     let callOptions = await dcOne.grpcClient.createCallOptions()
     let values = callOptions.customMetadata.values(
-      forHeader: GrpcClient.RequestHeaders.googApiClient, canonicalForm: false
+      forHeader: GrpcClientRequestHeaders.googApiClient, canonicalForm: false
     )
     let contains = values
       .contains {
