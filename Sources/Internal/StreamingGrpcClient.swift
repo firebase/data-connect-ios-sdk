@@ -78,6 +78,7 @@ actor StreamingGrpcClient: GrpcClient {
     self.googApiClientHeaderValue = googApiClientHeaderValue
 
     Task {
+      // TODO: Handle failures here.
       await connectStream()
     }
   }
@@ -113,8 +114,8 @@ actor StreamingGrpcClient: GrpcClient {
       firstRequest.requestID = firstRequestId.stringValue
       firstRequest.name = connectorName
       try await streamingCall.requestStream.send(firstRequest)
-
       DataConnectLogger.debug("Created streaming call")
+
       Task {
         do {
           for try await response in streamingCall.responseStream {
@@ -307,6 +308,7 @@ private actor StreamSubscriptionManager {
   func handleResponse(_ response: FirebaseDataConnectStreamResponse) {
     do {
       guard let reqId = RequestIdentifier(stringValue: response.requestID) else {
+        DataConnectLogger.error("Error obtaining requestID from response")
         return
       }
 
@@ -341,11 +343,13 @@ private actor StreamSubscriptionManager {
   private func serverResponse(for response: FirebaseDataConnectStreamResponse) throws
     -> ServerResponse {
     let jsonDecoder = JSONDecoder()
-    let extensionResponse = try? jsonDecoder.decode(
-      ExtensionResponse.self,
-      from: response.extensions.jsonUTF8Data()
-    )
-
+    var extensionResponse: ExtensionResponse?
+    do {
+      extensionResponse = try jsonDecoder
+        .decode(ExtensionResponse.self, from: response.extensions.jsonUTF8Data())
+    } catch {
+      DataConnectLogger.error("Failed to decode extensions: \(error)")
+    }
     return try ServerResponse(data: response.data.jsonUTF8Data(), extensions: extensionResponse)
   }
 }
