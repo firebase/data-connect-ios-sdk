@@ -31,13 +31,11 @@ actor UnaryGrpcClient: GrpcClient {
   private let googRequestHeaderValue: String
   private let googApiClientHeaderValue: String
 
-  private let threadPoolSize = 1
-
   private lazy var unaryClient: FirebaseDataConnectUnaryClient? = {
     do {
       DataConnectLogger
         .debug("UnaryGrpcClient: initialization starts.")
-      let channel = try grpcChannel()
+      let channel = try DataConnectGrpcClient.grpcChannel(serverSettings: serverSettings)
       DataConnectLogger
         .debug("UnaryGrpcClient: has been created.")
       return FirebaseDataConnectUnaryClient(channel: channel)
@@ -64,18 +62,6 @@ actor UnaryGrpcClient: GrpcClient {
     self.callerSDKType = callerSDKType
     self.googRequestHeaderValue = googRequestHeaderValue
     self.googApiClientHeaderValue = googApiClientHeaderValue
-  }
-
-  private func grpcChannel() throws -> any GRPCChannel {
-    let group = PlatformSupport.makeEventLoopGroup(loopCount: threadPoolSize)
-    let channel = try GRPCChannelPool.with(
-      target: .host(serverSettings.host, port: serverSettings.port),
-      transportSecurity: serverSettings
-        .sslEnabled
-        ? .tls(GRPCTLSConfiguration.makeClientDefault(compatibleWith: group)) : .plaintext,
-      eventLoopGroup: group
-    )
-    return channel
   }
 
   func executeQuery<

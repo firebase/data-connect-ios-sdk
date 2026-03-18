@@ -45,15 +45,15 @@ typealias FirebaseDataConnectStreamingCall = GRPCAsyncBidirectionalStreamingCall
   Google_Firebase_Dataconnect_V1_StreamRequest, Google_Firebase_Dataconnect_V1_StreamResponse
 >
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-typealias FirebaseDataConnectStreamResponse = Google_Firebase_Dataconnect_V1_StreamResponse
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 typealias FirebaseDataConnectStreamRequest = Google_Firebase_Dataconnect_V1_StreamRequest
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+typealias FirebaseDataConnectStreamResponse = Google_Firebase_Dataconnect_V1_StreamResponse
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum GrpcClientRequestHeaders {
-  static let googRequestParamsHeader = "x-goog-request-params"
-  static let authorizationHeader = "x-firebase-auth-token"
-  static let appCheckHeader = "X-Firebase-AppCheck"
+  static let googRequestParams = "x-goog-request-params"
+  static let firebaseAuthToken = "x-firebase-auth-token"
+  static let firebaseAppCheckToken = "x-firebase-appcheck"
   static let firebaseAppId = "x-firebase-gmpid"
   static let googApiClient = "x-goog-api-client"
 }
@@ -89,6 +89,8 @@ actor DataConnectGrpcClient: GrpcClient, CustomStringConvertible {
 
   private let unaryClient: UnaryGrpcClient
   private let streamingClient: StreamingGrpcClient
+
+  static let threadPoolSize = 1
 
   init(app: FirebaseApp,
        settings: DataConnectSettings,
@@ -171,6 +173,7 @@ actor DataConnectGrpcClient: GrpcClient, CustomStringConvertible {
   >(request: MutationRequest<VariableType>,
     resultType: ResultType.Type)
     async throws -> OperationResult<ResultType> {
+    // TODO: Support executing mutations on the stream.
     return try await unaryClient.executeMutation(request: request, resultType: resultType)
   }
 
@@ -183,10 +186,24 @@ actor DataConnectGrpcClient: GrpcClient, CustomStringConvertible {
   }
 
   func createCallOptions() async -> CallOptions {
+    // unaryClient.createCallOptions and streamingClient.createCallOptions both just call through to
+    // DataConnectGrpcClient.createCallOptions.
     return await unaryClient.createCallOptions()
   }
 
   // MARK: Shared Helpers
+
+  static func grpcChannel(serverSettings: DataConnectSettings) throws -> any GRPCChannel {
+    let group = PlatformSupport.makeEventLoopGroup(loopCount: threadPoolSize)
+    let channel = try GRPCChannelPool.with(
+      target: .host(serverSettings.host, port: serverSettings.port),
+      transportSecurity: serverSettings
+        .sslEnabled
+        ? .tls(GRPCTLSConfiguration.makeClientDefault(compatibleWith: group)) : .plaintext,
+      eventLoopGroup: group
+    )
+    return channel
+  }
 
   static func createErrorInfoList(errors: [FirebaseDataConnectGraphqlError])
     -> [OperationFailureResponse.ErrorInfo] {
@@ -216,7 +233,7 @@ actor DataConnectGrpcClient: GrpcClient, CustomStringConvertible {
 
     if app.isDataCollectionDefaultEnabled {
       headers.add(
-        name: GrpcClientRequestHeaders.googRequestParamsHeader,
+        name: GrpcClientRequestHeaders.googRequestParams,
         value: googRequestHeaderValue
       )
       headers.add(name: GrpcClientRequestHeaders.firebaseAppId, value: app.options.googleAppID)
@@ -226,7 +243,7 @@ actor DataConnectGrpcClient: GrpcClient, CustomStringConvertible {
     // Add Auth token if available
     do {
       if let token = try await auth.currentUser?.getIDToken() {
-        headers.add(name: GrpcClientRequestHeaders.authorizationHeader, value: "\(token)")
+        headers.add(name: GrpcClientRequestHeaders.firebaseAuthToken, value: "\(token)")
         DataConnectLogger.debug("Auth token added.")
       } else {
         DataConnectLogger.debug("No auth token available. Not adding auth header.")
@@ -238,7 +255,7 @@ actor DataConnectGrpcClient: GrpcClient, CustomStringConvertible {
 
     // Add AppCheck token if available
     if let token = await appCheck?.getToken(forcingRefresh: false) {
-      headers.add(name: GrpcClientRequestHeaders.appCheckHeader, value: token.token)
+      headers.add(name: GrpcClientRequestHeaders.firebaseAppCheckToken, value: token.token)
       DataConnectLogger.debug("App Check token added.")
     } else {
       DataConnectLogger.debug("App Check token unavailable. Not adding App Check header.")

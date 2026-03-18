@@ -31,8 +31,6 @@ actor StreamingGrpcClient: GrpcClient {
   private let googRequestHeaderValue: String
   private let googApiClientHeaderValue: String
 
-  private let threadPoolSize = 1
-
   private var streamingCall: FirebaseDataConnectStreamingCall?
   private var subManager = StreamSubscriptionManager()
 
@@ -48,7 +46,7 @@ actor StreamingGrpcClient: GrpcClient {
       DataConnectLogger.debug(
         "StreamingGrpcClient: streaming client initialization starting."
       )
-      let channel = try grpcChannel()
+      let channel = try DataConnectGrpcClient.grpcChannel(serverSettings: serverSettings)
       DataConnectLogger.debug(
         "StreamingGrpcClient: streaming client created."
       )
@@ -82,18 +80,6 @@ actor StreamingGrpcClient: GrpcClient {
     Task {
       await connectStream()
     }
-  }
-
-  private func grpcChannel() throws -> any GRPCChannel {
-    let group = PlatformSupport.makeEventLoopGroup(loopCount: threadPoolSize)
-    let channel = try GRPCChannelPool.with(
-      target: .host(serverSettings.host, port: serverSettings.port),
-      transportSecurity: serverSettings
-        .sslEnabled
-        ? .tls(GRPCTLSConfiguration.makeClientDefault(compatibleWith: group)) : .plaintext,
-      eventLoopGroup: group
-    )
-    return channel
   }
 
   func connectStream() async {
