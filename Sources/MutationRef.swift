@@ -19,6 +19,28 @@ struct MutationRequest<Variable: OperationVariable>: OperationRequest {
   private(set) var operationName: String
   private(set) var variables: Variable?
 
+  // Computed requestId
+  lazy var requestId: String = {
+    var keyIdData = Data()
+    if let nameData = operationName.data(using: .utf8) {
+      keyIdData.append(nameData)
+    }
+
+    if let variables {
+      let encoder = JSONEncoder()
+      encoder.outputFormatting = .sortedKeys
+      do {
+        let jsonData = try encoder.encode(variables)
+        keyIdData.append(jsonData)
+      } catch {
+        DataConnectLogger
+          .warning("Error encoding variables to compute request identifier: \(error)")
+      }
+    }
+
+    return keyIdData.sha256String
+  }()
+
   init(operationName: String, variables: Variable? = nil) {
     self.operationName = operationName
     self.variables = variables

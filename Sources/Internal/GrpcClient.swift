@@ -173,8 +173,11 @@ actor DataConnectGrpcClient: GrpcClient, CustomStringConvertible {
   >(request: MutationRequest<VariableType>,
     resultType: ResultType.Type)
     async throws -> OperationResult<ResultType> {
-    // TODO: Support executing mutations on the stream.
-    return try await unaryClient.executeMutation(request: request, resultType: resultType)
+    if await streamingClient.hasActiveSubscriptions() {
+      return try await streamingClient.executeMutation(request: request, resultType: resultType)
+    } else {
+      return try await unaryClient.executeMutation(request: request, resultType: resultType)
+    }
   }
 
   func subscribe<
