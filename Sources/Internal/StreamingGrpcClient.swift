@@ -128,6 +128,7 @@ actor StreamingGrpcClient: GrpcClient {
       }
 
     } catch {
+      // TODO: Handle stream connect failure. Retries?
       DataConnectLogger.error("Error setting up stream: \(error)")
     }
   }
@@ -266,14 +267,13 @@ private struct RequestIdentifier: CustomStringConvertible, Hashable, Equatable {
 }
 
 private actor StreamSubscriptionManager {
-  private var pendingRequests: [RequestIdentifier: CheckedContinuation<ServerResponse, Error>] = [:]
-
+  private var pendingExecuteRequests: [RequestIdentifier: CheckedContinuation<ServerResponse, Error>] = [:]
   private var subscriptionRequests = [RequestIdentifier: AsyncStream<ServerResponse>.Continuation]()
   private var operationSubs = [String: RequestIdentifier]()
 
   func waitForResponse(for requestID: RequestIdentifier) async throws -> ServerResponse {
     try await withCheckedThrowingContinuation { continuation in
-      pendingRequests[requestID] = continuation
+      pendingExecuteRequests[requestID] = continuation
     }
   }
 
@@ -312,7 +312,7 @@ private actor StreamSubscriptionManager {
         return
       }
 
-      if let continuation = pendingRequests.removeValue(
+      if let continuation = pendingExecuteRequests.removeValue(
         forKey: reqId
       ) {
         let serverResponse = try serverResponse(for: response)
@@ -330,14 +330,14 @@ private actor StreamSubscriptionManager {
   }
 
   func handleError(_ error: Error, for requestID: RequestIdentifier) {
-    if let continuation = pendingRequests.removeValue(forKey: requestID) {
+    if let continuation = pendingExecuteRequests.removeValue(forKey: requestID) {
       continuation.resume(throwing: error)
     }
   }
 
   func handleStreamFailure(_ error: Error) {
-    pendingRequests.values.forEach { $0.resume(throwing: error) }
-    pendingRequests.removeAll()
+    pendingExecuteRequests.values.forEach { $0.resume(throwing: error) }
+    pendingExecuteRequests.removeAll()
   }
 
   private func serverResponse(for response: FirebaseDataConnectStreamResponse) throws

@@ -51,7 +51,6 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
     Task {
       do {
         _ = try await fetchCachedResults(allowStale: true)
-        // _ = try await fetchServerResults()
 
         // if we already have a stream return
         guard self.subscriptionStream == nil else { return }
