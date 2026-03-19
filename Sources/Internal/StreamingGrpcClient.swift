@@ -267,7 +267,10 @@ private struct RequestIdentifier: CustomStringConvertible, Hashable, Equatable {
 }
 
 private actor StreamSubscriptionManager {
-  private var pendingExecuteRequests: [RequestIdentifier: CheckedContinuation<ServerResponse, Error>] = [:]
+  private var pendingExecuteRequests: [RequestIdentifier: CheckedContinuation<
+    ServerResponse,
+    Error
+  >] = [:]
   private var subscriptionRequests = [RequestIdentifier: AsyncStream<ServerResponse>.Continuation]()
   private var operationSubs = [String: RequestIdentifier]()
 
