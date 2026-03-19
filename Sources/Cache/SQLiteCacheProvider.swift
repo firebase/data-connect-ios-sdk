@@ -45,16 +45,20 @@ class SQLiteCacheProvider: CacheProvider {
     try queue.sync {
       var dbIdentifier = ":memory:"
       if !ephemeral {
-        guard let path = FileManager.default.urls(
-          for: .documentDirectory,
-          in: .userDomainMask
-        )
-        .first else {
+        guard
+          let path = FileManager.default.urls(
+            for: .documentDirectory,
+            in: .userDomainMask
+          )
+          .first
+        else {
           throw DataConnectInternalError.sqliteError(
             message: "Could not find document directory."
           )
         }
-        let dbURL = path.appendingPathComponent("\(cacheIdentifier).sqlite3")
+        let dirPath = path.appendingPathComponent("com.google.firebase.dataconnect")
+        try FileManager.default.createDirectory(at: dirPath, withIntermediateDirectories: true)
+        let dbURL = dirPath.appendingPathComponent("\(identifier).sqlite3")
         dbIdentifier = dbURL.path
       }
       if sqlite3_open(dbIdentifier, &db) != SQLITE_OK {
@@ -74,7 +78,8 @@ class SQLiteCacheProvider: CacheProvider {
         if curVersion.isZero {
           try createTables()
         } else if curVersion.major != 1 {
-          throw DataConnectInternalError
+          throw
+            DataConnectInternalError
             .sqliteError(
               message: "Unsupported schema major version \(curVersion.major) detected. Expected 1"
             )
@@ -105,7 +110,8 @@ class SQLiteCacheProvider: CacheProvider {
     """
     if sqlite3_exec(db, createResultTreeTable, nil, nil, nil) != SQLITE_OK {
       sqlite3_exec(db, "ROLLBACK;", nil, nil, nil)
-      throw DataConnectInternalError
+      throw
+        DataConnectInternalError
         .sqliteError(message: "Could not create \(TableName.resultTree) table")
     }
 
@@ -122,7 +128,8 @@ class SQLiteCacheProvider: CacheProvider {
 
     if let version = DBSemanticVersion(1, 0, 0), setDatabaseVersion(version) != SQLITE_OK {
       sqlite3_exec(db, "ROLLBACK;", nil, nil, nil)
-      throw DataConnectInternalError
+      throw
+        DataConnectInternalError
         .sqliteError(message: "Could not set database version to initial value")
     }
 
