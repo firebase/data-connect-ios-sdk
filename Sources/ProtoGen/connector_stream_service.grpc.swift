@@ -10,25 +10,23 @@ import NIO
 import NIOConcurrencyHelpers
 import SwiftProtobuf
 
+
 /// ConnectorStreamService provides bi-directional streaming APIs to use with
 /// Firebase Data Connect connectors.
 ///
-/// Usage: instantiate `Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClient`, then call
-/// methods of this protocol to make API calls.
+/// Usage: instantiate `Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClient`, then call methods of this protocol to make API calls.
 public protocol Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClientProtocol: GRPCClient {
   var serviceName: String { get }
-  var interceptors: Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClientInterceptorFactoryProtocol? {
-    get
-  }
+  var interceptors: Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClientInterceptorFactoryProtocol? { get }
 
-  func connect(callOptions: CallOptions?,
-               handler: @escaping (Google_Firebase_Dataconnect_V1_StreamResponse) -> Void)
-    -> BidirectionalStreamingCall<Google_Firebase_Dataconnect_V1_StreamRequest,
-      Google_Firebase_Dataconnect_V1_StreamResponse>
+  func connect(
+    callOptions: CallOptions?,
+    handler: @escaping (Google_Firebase_Dataconnect_V1_StreamResponse) -> Void
+  ) -> BidirectionalStreamingCall<Google_Firebase_Dataconnect_V1_StreamRequest, Google_Firebase_Dataconnect_V1_StreamResponse>
 }
 
-public extension Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClientProtocol {
-  var serviceName: String {
+extension Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClientProtocol {
+  public var serviceName: String {
     return "google.firebase.dataconnect.v1.ConnectorStreamService"
   }
 
@@ -49,15 +47,14 @@ public extension Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClientProt
   ///   - callOptions: Call options.
   ///   - handler: A closure called when each response is received from the server.
   /// - Returns: A `ClientStreamingCall` with futures for the metadata and status.
-  func connect(callOptions: CallOptions? = nil,
-               handler: @escaping (Google_Firebase_Dataconnect_V1_StreamResponse) -> Void)
-    -> BidirectionalStreamingCall<Google_Firebase_Dataconnect_V1_StreamRequest,
-      Google_Firebase_Dataconnect_V1_StreamResponse> {
-    return makeBidirectionalStreamingCall(
-      path: Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClientMetadata.Methods.connect
-        .path,
-      callOptions: callOptions ?? defaultCallOptions,
-      interceptors: interceptors?.makeConnectInterceptors() ?? [],
+  public func connect(
+    callOptions: CallOptions? = nil,
+    handler: @escaping (Google_Firebase_Dataconnect_V1_StreamResponse) -> Void
+  ) -> BidirectionalStreamingCall<Google_Firebase_Dataconnect_V1_StreamRequest, Google_Firebase_Dataconnect_V1_StreamResponse> {
+    return self.makeBidirectionalStreamingCall(
+      path: Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClientMetadata.Methods.connect.path,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeConnectInterceptors() ?? [],
       handler: handler
     )
   }
@@ -73,13 +70,12 @@ public final class Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClient: 
   private var _interceptors: Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClientInterceptorFactoryProtocol?
   public let channel: GRPCChannel
   public var defaultCallOptions: CallOptions {
-    get { lock.withLock { self._defaultCallOptions } }
-    set { lock.withLockVoid { self._defaultCallOptions = newValue } }
+    get { self.lock.withLock { return self._defaultCallOptions } }
+    set { self.lock.withLockVoid { self._defaultCallOptions = newValue } }
   }
-
   public var interceptors: Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClientInterceptorFactoryProtocol? {
-    get { lock.withLock { self._interceptors } }
-    set { lock.withLockVoid { self._interceptors = newValue } }
+    get { self.lock.withLock { return self._interceptors } }
+    set { self.lock.withLockVoid { self._interceptors = newValue } }
   }
 
   /// Creates a client for the google.firebase.dataconnect.v1.ConnectorStreamService service.
@@ -88,13 +84,14 @@ public final class Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClient: 
   ///   - channel: `GRPCChannel` to the service host.
   ///   - defaultCallOptions: Options to use for each service call if the user doesn't provide them.
   ///   - interceptors: A factory providing interceptors for each RPC.
-  public init(channel: GRPCChannel,
-              defaultCallOptions: CallOptions = CallOptions(),
-              interceptors: Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClientInterceptorFactoryProtocol? =
-                nil) {
+  public init(
+    channel: GRPCChannel,
+    defaultCallOptions: CallOptions = CallOptions(),
+    interceptors: Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClientInterceptorFactoryProtocol? = nil
+  ) {
     self.channel = channel
-    _defaultCallOptions = defaultCallOptions
-    _interceptors = interceptors
+    self._defaultCallOptions = defaultCallOptions
+    self._interceptors = interceptors
   }
 }
 
@@ -109,10 +106,11 @@ public struct Google_Firebase_Dataconnect_V1_ConnectorStreamServiceNIOClient: Go
   ///   - channel: `GRPCChannel` to the service host.
   ///   - defaultCallOptions: Options to use for each service call if the user doesn't provide them.
   ///   - interceptors: A factory providing interceptors for each RPC.
-  public init(channel: GRPCChannel,
-              defaultCallOptions: CallOptions = CallOptions(),
-              interceptors: Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClientInterceptorFactoryProtocol? =
-                nil) {
+  public init(
+    channel: GRPCChannel,
+    defaultCallOptions: CallOptions = CallOptions(),
+    interceptors: Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClientInterceptorFactoryProtocol? = nil
+  ) {
     self.channel = channel
     self.defaultCallOptions = defaultCallOptions
     self.interceptors = interceptors
@@ -124,64 +122,57 @@ public struct Google_Firebase_Dataconnect_V1_ConnectorStreamServiceNIOClient: Go
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public protocol Google_Firebase_Dataconnect_V1_ConnectorStreamServiceAsyncClientProtocol: GRPCClient {
   static var serviceDescriptor: GRPCServiceDescriptor { get }
-  var interceptors: Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClientInterceptorFactoryProtocol? {
-    get
-  }
+  var interceptors: Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClientInterceptorFactoryProtocol? { get }
 
-  func makeConnectCall(callOptions: CallOptions?)
-    -> GRPCAsyncBidirectionalStreamingCall<Google_Firebase_Dataconnect_V1_StreamRequest,
-      Google_Firebase_Dataconnect_V1_StreamResponse>
+  func makeConnectCall(
+    callOptions: CallOptions?
+  ) -> GRPCAsyncBidirectionalStreamingCall<Google_Firebase_Dataconnect_V1_StreamRequest, Google_Firebase_Dataconnect_V1_StreamResponse>
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
-public extension Google_Firebase_Dataconnect_V1_ConnectorStreamServiceAsyncClientProtocol {
-  static var serviceDescriptor: GRPCServiceDescriptor {
+extension Google_Firebase_Dataconnect_V1_ConnectorStreamServiceAsyncClientProtocol {
+  public static var serviceDescriptor: GRPCServiceDescriptor {
     return Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClientMetadata.serviceDescriptor
   }
 
-  var interceptors: Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClientInterceptorFactoryProtocol? {
+  public var interceptors: Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClientInterceptorFactoryProtocol? {
     return nil
   }
 
-  func makeConnectCall(callOptions: CallOptions? = nil)
-    -> GRPCAsyncBidirectionalStreamingCall<Google_Firebase_Dataconnect_V1_StreamRequest,
-      Google_Firebase_Dataconnect_V1_StreamResponse> {
-    return makeAsyncBidirectionalStreamingCall(
-      path: Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClientMetadata.Methods.connect
-        .path,
-      callOptions: callOptions ?? defaultCallOptions,
-      interceptors: interceptors?.makeConnectInterceptors() ?? []
+  public func makeConnectCall(
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncBidirectionalStreamingCall<Google_Firebase_Dataconnect_V1_StreamRequest, Google_Firebase_Dataconnect_V1_StreamResponse> {
+    return self.makeAsyncBidirectionalStreamingCall(
+      path: Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClientMetadata.Methods.connect.path,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeConnectInterceptors() ?? []
     )
   }
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
-public extension Google_Firebase_Dataconnect_V1_ConnectorStreamServiceAsyncClientProtocol {
-  func connect<RequestStream>(_ requests: RequestStream,
-                              callOptions: CallOptions? = nil)
-    -> GRPCAsyncResponseStream<Google_Firebase_Dataconnect_V1_StreamResponse>
-    where RequestStream: Sequence,
-    RequestStream.Element == Google_Firebase_Dataconnect_V1_StreamRequest {
-    return performAsyncBidirectionalStreamingCall(
-      path: Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClientMetadata.Methods.connect
-        .path,
+extension Google_Firebase_Dataconnect_V1_ConnectorStreamServiceAsyncClientProtocol {
+  public func connect<RequestStream>(
+    _ requests: RequestStream,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncResponseStream<Google_Firebase_Dataconnect_V1_StreamResponse> where RequestStream: Sequence, RequestStream.Element == Google_Firebase_Dataconnect_V1_StreamRequest {
+    return self.performAsyncBidirectionalStreamingCall(
+      path: Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClientMetadata.Methods.connect.path,
       requests: requests,
-      callOptions: callOptions ?? defaultCallOptions,
-      interceptors: interceptors?.makeConnectInterceptors() ?? []
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeConnectInterceptors() ?? []
     )
   }
 
-  func connect<RequestStream>(_ requests: RequestStream,
-                              callOptions: CallOptions? = nil)
-    -> GRPCAsyncResponseStream<Google_Firebase_Dataconnect_V1_StreamResponse>
-    where RequestStream: AsyncSequence & Sendable,
-    RequestStream.Element == Google_Firebase_Dataconnect_V1_StreamRequest {
-    return performAsyncBidirectionalStreamingCall(
-      path: Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClientMetadata.Methods.connect
-        .path,
+  public func connect<RequestStream>(
+    _ requests: RequestStream,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncResponseStream<Google_Firebase_Dataconnect_V1_StreamResponse> where RequestStream: AsyncSequence & Sendable, RequestStream.Element == Google_Firebase_Dataconnect_V1_StreamRequest {
+    return self.performAsyncBidirectionalStreamingCall(
+      path: Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClientMetadata.Methods.connect.path,
       requests: requests,
-      callOptions: callOptions ?? defaultCallOptions,
-      interceptors: interceptors?.makeConnectInterceptors() ?? []
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeConnectInterceptors() ?? []
     )
   }
 }
@@ -192,10 +183,11 @@ public struct Google_Firebase_Dataconnect_V1_ConnectorStreamServiceAsyncClient: 
   public var defaultCallOptions: CallOptions
   public var interceptors: Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClientInterceptorFactoryProtocol?
 
-  public init(channel: GRPCChannel,
-              defaultCallOptions: CallOptions = CallOptions(),
-              interceptors: Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClientInterceptorFactoryProtocol? =
-                nil) {
+  public init(
+    channel: GRPCChannel,
+    defaultCallOptions: CallOptions = CallOptions(),
+    interceptors: Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClientInterceptorFactoryProtocol? = nil
+  ) {
     self.channel = channel
     self.defaultCallOptions = defaultCallOptions
     self.interceptors = interceptors
@@ -203,11 +195,9 @@ public struct Google_Firebase_Dataconnect_V1_ConnectorStreamServiceAsyncClient: 
 }
 
 public protocol Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClientInterceptorFactoryProtocol: Sendable {
+
   /// - Returns: Interceptors to use when invoking 'connect'.
-  func makeConnectInterceptors() -> [ClientInterceptor<
-    Google_Firebase_Dataconnect_V1_StreamRequest,
-    Google_Firebase_Dataconnect_V1_StreamResponse
-  >]
+  func makeConnectInterceptors() -> [ClientInterceptor<Google_Firebase_Dataconnect_V1_StreamRequest, Google_Firebase_Dataconnect_V1_StreamResponse>]
 }
 
 public enum Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClientMetadata {
@@ -233,9 +223,7 @@ public enum Google_Firebase_Dataconnect_V1_ConnectorStreamServiceClientMetadata 
 ///
 /// To build a server, implement a class that conforms to this protocol.
 public protocol Google_Firebase_Dataconnect_V1_ConnectorStreamServiceProvider: CallHandlerProvider {
-  var interceptors: Google_Firebase_Dataconnect_V1_ConnectorStreamServiceServerInterceptorFactoryProtocol? {
-    get
-  }
+  var interceptors: Google_Firebase_Dataconnect_V1_ConnectorStreamServiceServerInterceptorFactoryProtocol? { get }
 
   /// Connect establishes a bi-directional connection to the server.
   /// The client can send new requests, resume requests, and receive realtime
@@ -246,29 +234,28 @@ public protocol Google_Firebase_Dataconnect_V1_ConnectorStreamServiceProvider: C
   ///
   /// (-- api-linter: core::0136::verb-noun=disabled
   ///     aip.dev/not-precedent: Connect is a general purpose streaming API. --)
-  func connect(context: StreamingResponseCallContext<Google_Firebase_Dataconnect_V1_StreamResponse>)
-    -> EventLoopFuture<(StreamEvent<Google_Firebase_Dataconnect_V1_StreamRequest>) -> Void>
+  func connect(context: StreamingResponseCallContext<Google_Firebase_Dataconnect_V1_StreamResponse>) -> EventLoopFuture<(StreamEvent<Google_Firebase_Dataconnect_V1_StreamRequest>) -> Void>
 }
 
-public extension Google_Firebase_Dataconnect_V1_ConnectorStreamServiceProvider {
-  var serviceName: Substring {
-    return Google_Firebase_Dataconnect_V1_ConnectorStreamServiceServerMetadata.serviceDescriptor
-      .fullName[...]
+extension Google_Firebase_Dataconnect_V1_ConnectorStreamServiceProvider {
+  public var serviceName: Substring {
+    return Google_Firebase_Dataconnect_V1_ConnectorStreamServiceServerMetadata.serviceDescriptor.fullName[...]
   }
 
-  /// Determines, calls and returns the appropriate request handler, depending on the request's
-  /// method.
+  /// Determines, calls and returns the appropriate request handler, depending on the request's method.
   /// Returns nil for methods not handled by this service.
-  func handle(method name: Substring,
-              context: CallHandlerContext) -> GRPCServerHandlerProtocol? {
+  public func handle(
+    method name: Substring,
+    context: CallHandlerContext
+  ) -> GRPCServerHandlerProtocol? {
     switch name {
     case "Connect":
       return BidirectionalStreamingServerHandler(
         context: context,
         requestDeserializer: ProtobufDeserializer<Google_Firebase_Dataconnect_V1_StreamRequest>(),
         responseSerializer: ProtobufSerializer<Google_Firebase_Dataconnect_V1_StreamResponse>(),
-        interceptors: interceptors?.makeConnectInterceptors() ?? [],
-        observerFactory: connect(context:)
+        interceptors: self.interceptors?.makeConnectInterceptors() ?? [],
+        observerFactory: self.connect(context:)
       )
 
     default:
@@ -282,12 +269,9 @@ public extension Google_Firebase_Dataconnect_V1_ConnectorStreamServiceProvider {
 ///
 /// To implement a server, implement an object which conforms to this protocol.
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
-public protocol Google_Firebase_Dataconnect_V1_ConnectorStreamServiceAsyncProvider: CallHandlerProvider,
-  Sendable {
+public protocol Google_Firebase_Dataconnect_V1_ConnectorStreamServiceAsyncProvider: CallHandlerProvider, Sendable {
   static var serviceDescriptor: GRPCServiceDescriptor { get }
-  var interceptors: Google_Firebase_Dataconnect_V1_ConnectorStreamServiceServerInterceptorFactoryProtocol? {
-    get
-  }
+  var interceptors: Google_Firebase_Dataconnect_V1_ConnectorStreamServiceServerInterceptorFactoryProtocol? { get }
 
   /// Connect establishes a bi-directional connection to the server.
   /// The client can send new requests, resume requests, and receive realtime
@@ -298,37 +282,38 @@ public protocol Google_Firebase_Dataconnect_V1_ConnectorStreamServiceAsyncProvid
   ///
   /// (-- api-linter: core::0136::verb-noun=disabled
   ///     aip.dev/not-precedent: Connect is a general purpose streaming API. --)
-  func connect(requestStream: GRPCAsyncRequestStream<Google_Firebase_Dataconnect_V1_StreamRequest>,
-               responseStream: GRPCAsyncResponseStreamWriter<
-                 Google_Firebase_Dataconnect_V1_StreamResponse
-               >,
-               context: GRPCAsyncServerCallContext) async throws
+  func connect(
+    requestStream: GRPCAsyncRequestStream<Google_Firebase_Dataconnect_V1_StreamRequest>,
+    responseStream: GRPCAsyncResponseStreamWriter<Google_Firebase_Dataconnect_V1_StreamResponse>,
+    context: GRPCAsyncServerCallContext
+  ) async throws
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
-public extension Google_Firebase_Dataconnect_V1_ConnectorStreamServiceAsyncProvider {
-  static var serviceDescriptor: GRPCServiceDescriptor {
+extension Google_Firebase_Dataconnect_V1_ConnectorStreamServiceAsyncProvider {
+  public static var serviceDescriptor: GRPCServiceDescriptor {
     return Google_Firebase_Dataconnect_V1_ConnectorStreamServiceServerMetadata.serviceDescriptor
   }
 
-  var serviceName: Substring {
-    return Google_Firebase_Dataconnect_V1_ConnectorStreamServiceServerMetadata.serviceDescriptor
-      .fullName[...]
+  public var serviceName: Substring {
+    return Google_Firebase_Dataconnect_V1_ConnectorStreamServiceServerMetadata.serviceDescriptor.fullName[...]
   }
 
-  var interceptors: Google_Firebase_Dataconnect_V1_ConnectorStreamServiceServerInterceptorFactoryProtocol? {
+  public var interceptors: Google_Firebase_Dataconnect_V1_ConnectorStreamServiceServerInterceptorFactoryProtocol? {
     return nil
   }
 
-  func handle(method name: Substring,
-              context: CallHandlerContext) -> GRPCServerHandlerProtocol? {
+  public func handle(
+    method name: Substring,
+    context: CallHandlerContext
+  ) -> GRPCServerHandlerProtocol? {
     switch name {
     case "Connect":
       return GRPCAsyncServerHandler(
         context: context,
         requestDeserializer: ProtobufDeserializer<Google_Firebase_Dataconnect_V1_StreamRequest>(),
         responseSerializer: ProtobufSerializer<Google_Firebase_Dataconnect_V1_StreamResponse>(),
-        interceptors: interceptors?.makeConnectInterceptors() ?? [],
+        interceptors: self.interceptors?.makeConnectInterceptors() ?? [],
         wrapping: { try await self.connect(requestStream: $0, responseStream: $1, context: $2) }
       )
 
@@ -339,12 +324,10 @@ public extension Google_Firebase_Dataconnect_V1_ConnectorStreamServiceAsyncProvi
 }
 
 public protocol Google_Firebase_Dataconnect_V1_ConnectorStreamServiceServerInterceptorFactoryProtocol: Sendable {
+
   /// - Returns: Interceptors to use when handling 'connect'.
   ///   Defaults to calling `self.makeInterceptors()`.
-  func makeConnectInterceptors() -> [ServerInterceptor<
-    Google_Firebase_Dataconnect_V1_StreamRequest,
-    Google_Firebase_Dataconnect_V1_StreamResponse
-  >]
+  func makeConnectInterceptors() -> [ServerInterceptor<Google_Firebase_Dataconnect_V1_StreamRequest, Google_Firebase_Dataconnect_V1_StreamResponse>]
 }
 
 public enum Google_Firebase_Dataconnect_V1_ConnectorStreamServiceServerMetadata {
