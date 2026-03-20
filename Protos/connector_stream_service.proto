@@ -65,9 +65,8 @@ message StreamRequest {
   // header. Either would work. Each stream cannot alter `auth.uid`.
   string auth_token = 7 [(google.api.field_behavior) = OPTIONAL];
 
-  // SDK can pass the app check token via this field or the X-Firebase-AppCheck
-  // header. Either would work. It is only expected on initial StreamRequest.
-  string app_check_token = 9 [(google.api.field_behavior) = OPTIONAL];
+  // The HTTP headers to use for the request.
+  map<string, string> headers = 10 [(google.api.field_behavior) = OPTIONAL];
 
   // The request id used to identify a request within the stream.
   // It only needs to be unique within the stream, commonly a monotonically
@@ -133,7 +132,7 @@ message StreamResponse {
   string request_id = 1 [(google.api.field_behavior) = OPTIONAL];
 
   // The result of executing the requested operation.
-  google.protobuf.Value data = 2;
+  google.protobuf.Struct data = 2;
 
   // The backend may return a data_etag, computed based on the data JSON
   // payload.
@@ -153,4 +152,3 @@ message StreamResponse {
   // Additional response information.
   GraphqlResponseExtensions extensions = 6;
 }
-
