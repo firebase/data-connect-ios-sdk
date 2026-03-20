@@ -62,9 +62,8 @@ public struct Google_Firebase_Dataconnect_V1_StreamRequest: Sendable {
   /// header. Either would work. Each stream cannot alter `auth.uid`.
   public var authToken: String = String()
 
-  /// SDK can pass the app check token via this field or the X-Firebase-AppCheck
-  /// header. Either would work. It is only expected on initial StreamRequest.
-  public var appCheckToken: String = String()
+  /// The HTTP headers to use for the request.
+  public var headers: Dictionary<String,String> = [:]
 
   /// The request id used to identify a request within the stream.
   /// It only needs to be unique within the stream, commonly a monotonically
@@ -210,8 +209,8 @@ public struct Google_Firebase_Dataconnect_V1_StreamResponse: Sendable {
   public var requestID: String = String()
 
   /// The result of executing the requested operation.
-  public var data: SwiftProtobuf.Google_Protobuf_Value {
-    get {return _data ?? SwiftProtobuf.Google_Protobuf_Value()}
+  public var data: SwiftProtobuf.Google_Protobuf_Struct {
+    get {return _data ?? SwiftProtobuf.Google_Protobuf_Struct()}
     set {_data = newValue}
   }
   /// Returns true if `data` has been explicitly set.
@@ -248,7 +247,7 @@ public struct Google_Firebase_Dataconnect_V1_StreamResponse: Sendable {
 
   public init() {}
 
-  fileprivate var _data: SwiftProtobuf.Google_Protobuf_Value? = nil
+  fileprivate var _data: SwiftProtobuf.Google_Protobuf_Struct? = nil
   fileprivate var _extensions: Google_Firebase_Dataconnect_V1_GraphqlResponseExtensions? = nil
 }
 
@@ -261,7 +260,7 @@ extension Google_Firebase_Dataconnect_V1_StreamRequest: SwiftProtobuf.Message, S
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "name"),
     7: .standard(proto: "auth_token"),
-    9: .standard(proto: "app_check_token"),
+    10: .same(proto: "headers"),
     2: .standard(proto: "request_id"),
     3: .same(proto: "subscribe"),
     4: .same(proto: "execute"),
@@ -332,7 +331,7 @@ extension Google_Firebase_Dataconnect_V1_StreamRequest: SwiftProtobuf.Message, S
       }()
       case 7: try { try decoder.decodeSingularStringField(value: &self.authToken) }()
       case 8: try { try decoder.decodeSingularStringField(value: &self.dataEtag) }()
-      case 9: try { try decoder.decodeSingularStringField(value: &self.appCheckToken) }()
+      case 10: try { try decoder.decodeMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufString,SwiftProtobuf.ProtobufString>.self, value: &self.headers) }()
       default: break
       }
     }
@@ -374,8 +373,8 @@ extension Google_Firebase_Dataconnect_V1_StreamRequest: SwiftProtobuf.Message, S
     if !self.dataEtag.isEmpty {
       try visitor.visitSingularStringField(value: self.dataEtag, fieldNumber: 8)
     }
-    if !self.appCheckToken.isEmpty {
-      try visitor.visitSingularStringField(value: self.appCheckToken, fieldNumber: 9)
+    if !self.headers.isEmpty {
+      try visitor.visitMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufString,SwiftProtobuf.ProtobufString>.self, value: self.headers, fieldNumber: 10)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -383,7 +382,7 @@ extension Google_Firebase_Dataconnect_V1_StreamRequest: SwiftProtobuf.Message, S
   public static func ==(lhs: Google_Firebase_Dataconnect_V1_StreamRequest, rhs: Google_Firebase_Dataconnect_V1_StreamRequest) -> Bool {
     if lhs.name != rhs.name {return false}
     if lhs.authToken != rhs.authToken {return false}
-    if lhs.appCheckToken != rhs.appCheckToken {return false}
+    if lhs.headers != rhs.headers {return false}
     if lhs.requestID != rhs.requestID {return false}
     if lhs.requestKind != rhs.requestKind {return false}
     if lhs.dataEtag != rhs.dataEtag {return false}
