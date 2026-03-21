@@ -158,11 +158,15 @@ actor DataConnectGrpcClient: GrpcClient, CustomStringConvertible {
   >(request: QueryRequest<VariableType>,
     resultType: ResultType.Type)
     async throws -> ServerResponse {
-    do {
-      return try await streamingClient.executeQuery(request: request, resultType: resultType)
-    } catch {
-      // TODO: Distinguish network errors from stream errors.
-      DataConnectLogger.error("Error executing on stream mode, falling back to unary mode ")
+    if await streamingClient.hasActiveSubscriptions() {
+      do {
+        return try await streamingClient.executeQuery(request: request, resultType: resultType)
+      } catch {
+        // TODO: Distinguish network errors from stream errors.
+        DataConnectLogger.error("Error executing queries on stream mode, falling back to unary mode")
+        return try await unaryClient.executeQuery(request: request, resultType: resultType)
+      }
+    } else {
       return try await unaryClient.executeQuery(request: request, resultType: resultType)
     }
   }
@@ -174,7 +178,13 @@ actor DataConnectGrpcClient: GrpcClient, CustomStringConvertible {
     resultType: ResultType.Type)
     async throws -> OperationResult<ResultType> {
     if await streamingClient.hasActiveSubscriptions() {
-      return try await streamingClient.executeMutation(request: request, resultType: resultType)
+      do {
+        return try await streamingClient.executeMutation(request: request, resultType: resultType)
+      } catch {
+        // TODO: Distinguish network errors from stream errors.
+        DataConnectLogger.error("Error executing mutations on stream mode, falling back to unary mode")
+        return try await unaryClient.executeMutation(request: request, resultType: resultType)
+      }
     } else {
       return try await unaryClient.executeMutation(request: request, resultType: resultType)
     }
