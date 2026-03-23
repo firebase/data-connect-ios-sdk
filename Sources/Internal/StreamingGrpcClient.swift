@@ -94,7 +94,7 @@ actor StreamingGrpcClient: GrpcClient {
       do {
         guard let streamingClient else {
           DataConnectLogger.error(
-            "When calling connectStream(), grpc client has not been configured."
+            "When calling connectStream(), gRPC client has not been configured."
           )
           return
         }
@@ -163,7 +163,7 @@ actor StreamingGrpcClient: GrpcClient {
     -> ServerResponse {
     guard let streamingCall else {
       DataConnectLogger.error(
-        "When calling executeOperationStream(), grpc client has not been configured."
+        "When calling executeOperation(), gRPC client has not been configured."
       )
       throw DataConnectInternalError.internalError(message: "Streaming call not configured")
     }
@@ -205,7 +205,7 @@ actor StreamingGrpcClient: GrpcClient {
 
     guard let streamingCall else {
       DataConnectLogger.error(
-        "When calling subscribe(), grpc streaming client has not been configured."
+        "When calling subscribe(), gRPC streaming client has not been configured."
       )
       throw DataConnectInitError.appNotConfigured(message: "GRPC Streaming failed to setup")
     }
