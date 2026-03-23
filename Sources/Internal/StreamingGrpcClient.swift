@@ -139,25 +139,45 @@ actor StreamingGrpcClient: GrpcClient {
   >(request: QueryRequest<VariableType>,
     resultType: ResultType.Type)
     async throws -> ServerResponse {
+    var fdcRequest = request
+    let requestId = fdcRequest.requestId
+    return try await executeOperation(request: fdcRequest, requestId: requestId)
+  }
+
+  func executeMutation<
+    ResultType: Decodable,
+    VariableType: OperationVariable
+  >(request: MutationRequest<VariableType>,
+    resultType: ResultType.Type)
+    async throws -> OperationResult<ResultType> {
+    var fdcRequest = request
+    let requestId = fdcRequest.requestId
+    let serverResponse = try await executeOperation(request: fdcRequest, requestId: requestId)
+    let jsonDecoder = JSONDecoder()
+    let decodedResults = try jsonDecoder.decode(ResultType.self, from: serverResponse.data)
+    return OperationResult(data: decodedResults, source: .server)
+  }
+
+  private func executeOperation<Req: OperationRequest>(request: Req,
+                                                       requestId: String) async throws
+    -> ServerResponse {
     guard let streamingCall else {
       DataConnectLogger.error(
-        "When calling executeQueryStream(), grpc client has not been configured."
+        "When calling executeOperationStream(), grpc client has not been configured."
       )
       throw DataConnectInternalError.internalError(message: "Streaming call not configured")
     }
 
     do {
-      var fdcRequest = request
-
       let seqRequestId = RequestIdentifier(
-        operationId: fdcRequest.requestId,
+        operationId: requestId,
         sequenceNumber: nextRequestIdSequence
       )
 
       let protoCodec = ProtoCodec()
       var streamRequest = FirebaseDataConnectStreamRequest()
       streamRequest.requestID = "\(seqRequestId)"
-      streamRequest.execute = try protoCodec.createStreamExecuteRequest(request: fdcRequest)
+      streamRequest.execute = try protoCodec.createStreamExecuteRequest(request: request)
 
       DataConnectLogger
         .debug(
@@ -170,52 +190,6 @@ actor StreamingGrpcClient: GrpcClient {
       DataConnectLogger.debug("Done sending request")
 
       return try await response
-    } catch {
-      DataConnectLogger.error("Error sending request to the server: \(error)")
-      throw error
-    }
-  }
-
-  func executeMutation<
-    ResultType: Decodable,
-    VariableType: OperationVariable
-  >(request: MutationRequest<VariableType>,
-    resultType: ResultType.Type)
-    async throws -> OperationResult<ResultType> {
-    guard let streamingCall else {
-      DataConnectLogger.error(
-        "When calling executeMutationStream(), grpc client has not been configured."
-      )
-      throw DataConnectInternalError.internalError(message: "Streaming call not configured")
-    }
-
-    do {
-      var fdcRequest = request
-
-      let seqRequestId = RequestIdentifier(
-        operationId: fdcRequest.requestId,
-        sequenceNumber: nextRequestIdSequence
-      )
-
-      let protoCodec = ProtoCodec()
-      var streamRequest = FirebaseDataConnectStreamRequest()
-      streamRequest.requestID = "\(seqRequestId)"
-      streamRequest.execute = try protoCodec.createStreamExecuteRequest(request: fdcRequest)
-
-      DataConnectLogger
-        .debug(
-          "Making streaming call with request \(streamRequest.requestID), \(streamRequest.name), \(streamRequest.execute.operationName)"
-        )
-
-      async let response = subManager.waitForResponse(for: seqRequestId)
-      try DataConnectLogger.debug("Sending streaming request \(streamRequest.jsonString())")
-      try await streamingCall.requestStream.send(streamRequest)
-      DataConnectLogger.debug("Done sending request")
-
-      let serverResponse = try await response
-      let jsonDecoder = JSONDecoder()
-      let decodedResults = try jsonDecoder.decode(ResultType.self, from: serverResponse.data)
-      return OperationResult(data: decodedResults, source: .server)
     } catch {
       DataConnectLogger.error("Error sending request to the server: \(error)")
       throw error
