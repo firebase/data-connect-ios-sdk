@@ -33,6 +33,7 @@ actor StreamingGrpcClient: GrpcClient {
 
   private var streamingCall: FirebaseDataConnectStreamingCall?
   private var subManager = StreamSubscriptionManager()
+  private var connectionTask: Task<Void, Never>?
 
   private var requestIdSequence: UInt64 = 0
 
@@ -76,61 +77,60 @@ actor StreamingGrpcClient: GrpcClient {
     self.callerSDKType = callerSDKType
     self.googRequestHeaderValue = googRequestHeaderValue
     self.googApiClientHeaderValue = googApiClientHeaderValue
-
-    Task {
-      // TODO: Handle failures here.
-      await connectStream()
-    }
   }
 
   func connectStream() async {
-    do {
-      guard streamingCall == nil else {
-        DataConnectLogger.debug("connectStream() called multiple times, ignoring.")
-        return
-      }
-
-      guard let streamingClient else {
-        DataConnectLogger.error(
-          "When calling connectStream(), grpc client has not been configured."
-        )
-        return
-      }
-
-      let callOptions = await createCallOptions()
-      streamingCall = streamingClient.makeConnectCall(callOptions: callOptions)
-
-      guard let streamingCall else {
-        DataConnectLogger.error("Error: Failed to setup a streaming call")
-        return
-      }
-
-      requestIdSequence = 0 // reset sequence
-      let firstRequestId = RequestIdentifier(
-        operationId: UUID().uuidString,
-        sequenceNumber: nextRequestIdSequence
-      )
-      var firstRequest = FirebaseDataConnectStreamRequest()
-      firstRequest.requestID = firstRequestId.stringValue
-      firstRequest.name = connectorName
-      try await streamingCall.requestStream.send(firstRequest)
-      DataConnectLogger.debug("Created streaming call")
-
-      Task {
-        do {
-          for try await response in streamingCall.responseStream {
-            DataConnectLogger.debug("Received stream response from the server: \(response)")
-            await subManager.handleResponse(response)
-          }
-        } catch {
-          DataConnectLogger.error("Error in stream response \(error)")
-        }
-      }
-
-    } catch {
-      // TODO: Handle stream connect failure. Retries?
-      DataConnectLogger.error("Error setting up stream: \(error)")
+    if streamingCall != nil {
+      return
     }
+
+    if let existingTask = connectionTask {
+      _ = await existingTask.result
+      return
+    }
+
+    connectionTask = Task {
+      defer { connectionTask = nil }
+      do {
+        guard let streamingClient else {
+          DataConnectLogger.error(
+            "When calling connectStream(), grpc client has not been configured."
+          )
+          return
+        }
+
+        let callOptions = await createCallOptions()
+        let call = streamingClient.makeConnectCall(callOptions: callOptions)
+
+        requestIdSequence = 0 // reset sequence
+        let firstRequestId = RequestIdentifier(
+          operationId: UUID().uuidString,
+          sequenceNumber: nextRequestIdSequence
+        )
+        var firstRequest = FirebaseDataConnectStreamRequest()
+        firstRequest.requestID = firstRequestId.stringValue
+        firstRequest.name = connectorName
+        try await call.requestStream.send(firstRequest)
+        DataConnectLogger.debug("Created streaming call")
+
+        let subManager = self.subManager
+        Task {
+          do {
+            for try await response in call.responseStream {
+              DataConnectLogger.debug("Received stream response from the server: \(response)")
+              await subManager.handleResponse(response)
+            }
+          } catch {
+            DataConnectLogger.error("Error in stream response \(error)")
+          }
+        }
+
+        self.streamingCall = call
+      } catch {
+        DataConnectLogger.error("Error setting up stream: \(error)")
+      }
+    }
+    _ = await connectionTask?.result
   }
 
   func executeQuery<
@@ -227,6 +227,8 @@ actor StreamingGrpcClient: GrpcClient {
     VariableType: OperationVariable
   >(request: QueryRequest<VariableType>,
     resultType: ResultType.Type) async throws -> AsyncStream<ServerResponse> {
+    await connectStream()
+
     guard let streamingCall else {
       DataConnectLogger.error(
         "When calling subscribe(), grpc streaming client has not been configured."
