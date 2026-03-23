@@ -66,24 +66,6 @@ public class QueryRefObservableObject<
       grpcClient: grpcClient,
       cache: cache
     )
-    setupSubscription()
-  }
-
-  private func setupSubscription() {
-    Task {
-      resultsCancellable = await baseRef.subscribe()
-        .receive(on: DispatchQueue.main)
-        .sink(receiveValue: { result in
-          switch result {
-          case let .success(operationResult):
-            self.data = operationResult.data
-            self.source = operationResult.source
-            self.lastError = nil
-          case let .failure(dcerror):
-            self.lastError = dcerror.dataConnectError
-          }
-        })
-    }
   }
 
   // ObservableQueryRef implementation
@@ -104,8 +86,16 @@ public class QueryRefObservableObject<
   /// variable
   public func execute(fetchPolicy: QueryFetchPolicy = .preferCache) async throws
     -> OperationResult<ResultData> {
-    let result = try await baseRef.execute(fetchPolicy: fetchPolicy)
-    return result
+    do {
+      let result = try await baseRef.execute(fetchPolicy: fetchPolicy)
+      data = result.data
+      source = result.source
+      lastError = nil
+      return result
+    } catch let error as AnyDataConnectError {
+      self.lastError = error.dataConnectError
+      throw error
+    }
   }
 
   /// Returns the underlying results publisher.
@@ -113,7 +103,20 @@ public class QueryRefObservableObject<
   /// background updates,...)
   public func subscribe() async throws
     -> AnyPublisher<Result<OperationResult<ResultData>, AnyDataConnectError>, Never> {
-    return await baseRef.subscribe()
+    let resultsSub = await baseRef.subscribe()
+    resultsCancellable = resultsSub
+      .receive(on: DispatchQueue.main)
+      .sink(receiveValue: { result in
+        switch result {
+        case let .success(resultData):
+          self.data = resultData.data
+          self.source = resultData.source
+          self.lastError = nil
+        case let .failure(dcerror):
+          self.lastError = dcerror.dataConnectError
+        }
+      })
+    return resultsSub
   }
 }
 
@@ -178,24 +181,6 @@ public class QueryRefObservation<
       grpcClient: grpcClient,
       cache: cache
     )
-    setupSubscription()
-  }
-
-  private func setupSubscription() {
-    Task {
-      resultsCancellable = await baseRef.subscribe()
-        .receive(on: DispatchQueue.main)
-        .sink(receiveValue: { result in
-          switch result {
-          case let .success(resultData):
-            self.data = resultData.data
-            self.source = resultData.source
-            self.lastError = nil
-          case let .failure(dcerror):
-            self.lastError = dcerror.dataConnectError
-          }
-        })
-    }
   }
 
   // ObservableQueryRef implementation
@@ -216,8 +201,16 @@ public class QueryRefObservation<
   /// variable
   public func execute(fetchPolicy: QueryFetchPolicy = .preferCache) async throws
     -> OperationResult<ResultData> {
-    let result = try await baseRef.execute(fetchPolicy: fetchPolicy)
-    return result
+    do {
+      let result = try await baseRef.execute(fetchPolicy: fetchPolicy)
+      data = result.data
+      source = result.source
+      lastError = nil
+      return result
+    } catch let error as AnyDataConnectError {
+      self.lastError = error.dataConnectError
+      throw error
+    }
   }
 
   /// Returns the underlying results publisher.
@@ -225,7 +218,20 @@ public class QueryRefObservation<
   /// background updates,...)
   public func subscribe() async throws
     -> AnyPublisher<Result<OperationResult<ResultData>, AnyDataConnectError>, Never> {
-    return await baseRef.subscribe()
+    let resultsSub = await baseRef.subscribe()
+    resultsCancellable = resultsSub
+      .receive(on: DispatchQueue.main)
+      .sink(receiveValue: { result in
+        switch result {
+        case let .success(resultData):
+          self.data = resultData.data
+          self.source = resultData.source
+          self.lastError = nil
+        case let .failure(dcerror):
+          self.lastError = dcerror.dataConnectError
+        }
+      })
+    return resultsSub
   }
 }
 
