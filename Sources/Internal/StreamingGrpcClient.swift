@@ -80,7 +80,10 @@ actor StreamingGrpcClient: GrpcClient {
   }
 
   func connectStream() async {
-    if streamingCall != nil {
+    guard streamingCall == nil else {
+      DataConnectLogger.debug(
+        "gRPC stream already set up. Ignoring connectStream() call."
+      )
       return
     }
 
