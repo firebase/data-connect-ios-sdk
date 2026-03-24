@@ -42,9 +42,8 @@ class ProtoCodec {
   }
 
   // Generic ExecuteRequest object used for different stream messages - subscribe, execute, ...
-  func createStreamExecuteRequest<VariableType: OperationVariable>(request: QueryRequest<
-    VariableType
-  >) throws -> Google_Firebase_Dataconnect_V1_ExecuteRequest {
+  func createStreamExecuteRequest<Req: OperationRequest>(request: Req) throws
+    -> Google_Firebase_Dataconnect_V1_ExecuteRequest {
     var protoReq = Google_Firebase_Dataconnect_V1_ExecuteRequest()
     protoReq.operationName = request.operationName
     if let variables = request.variables {

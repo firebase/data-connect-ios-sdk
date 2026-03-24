@@ -158,13 +158,16 @@ actor DataConnectGrpcClient: GrpcClient, CustomStringConvertible {
   >(request: QueryRequest<VariableType>,
     resultType: ResultType.Type)
     async throws -> ServerResponse {
-    do {
-      return try await streamingClient.executeQuery(request: request, resultType: resultType)
-    } catch {
-      // TODO: Distinguish network errors from stream errors.
-      DataConnectLogger.error("Error executing on stream mode, falling back to unary mode ")
-      return try await unaryClient.executeQuery(request: request, resultType: resultType)
+    if await streamingClient.hasActiveSubscriptions() {
+      do {
+        return try await streamingClient.executeQuery(request: request, resultType: resultType)
+      } catch {
+        // TODO: Distinguish network errors from stream errors.
+        DataConnectLogger
+          .error("Error executing queries with streaming gRPC, falling back to non-streaming.")
+      }
     }
+    return try await unaryClient.executeQuery(request: request, resultType: resultType)
   }
 
   func executeMutation<
@@ -173,7 +176,15 @@ actor DataConnectGrpcClient: GrpcClient, CustomStringConvertible {
   >(request: MutationRequest<VariableType>,
     resultType: ResultType.Type)
     async throws -> OperationResult<ResultType> {
-    // TODO: Support executing mutations on the stream.
+    if await streamingClient.hasActiveSubscriptions() {
+      do {
+        return try await streamingClient.executeMutation(request: request, resultType: resultType)
+      } catch {
+        // TODO: Distinguish network errors from stream errors.
+        DataConnectLogger
+          .error("Error executing mutations with streaming gRPC, falling back to non-streaming.")
+      }
+    }
     return try await unaryClient.executeMutation(request: request, resultType: resultType)
   }
 

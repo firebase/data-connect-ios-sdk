@@ -19,6 +19,10 @@ struct MutationRequest<Variable: OperationVariable>: OperationRequest {
   private(set) var operationName: String
   private(set) var variables: Variable?
 
+  // Computed requestId
+  lazy var requestId: String = OperationUtils
+    .computeRequestId(operationName: operationName, variables: variables)
+
   init(operationName: String, variables: Variable? = nil) {
     self.operationName = operationName
     self.variables = variables
