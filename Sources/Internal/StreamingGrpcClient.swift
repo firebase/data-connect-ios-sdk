@@ -34,6 +34,7 @@ actor StreamingGrpcClient: GrpcClient {
   private var streamingCall: FirebaseDataConnectStreamingCall?
   private var subManager = StreamSubscriptionManager()
   private var connectionTask: Task<Void, Never>?
+  private var reconnectTask: Task<Void, Never>?
 
   private var requestIdSequence: UInt64 = 0
 
@@ -80,7 +81,7 @@ actor StreamingGrpcClient: GrpcClient {
   }
 
   func connectStream() async {
-    guard streamingCall == nil else {
+    if streamingCall != nil {
       DataConnectLogger.debug(
         "gRPC stream already set up. Ignoring connectStream() call."
       )
@@ -95,45 +96,102 @@ actor StreamingGrpcClient: GrpcClient {
     connectionTask = Task {
       defer { connectionTask = nil }
       do {
-        guard let streamingClient else {
-          DataConnectLogger.error(
-            "When calling connectStream(), gRPC client has not been configured."
-          )
-          return
-        }
-
-        let callOptions = await createCallOptions()
-        let call = streamingClient.makeConnectCall(callOptions: callOptions)
-
-        requestIdSequence = 0 // reset sequence
-        let firstRequestId = RequestIdentifier(
-          operationId: UUID().uuidString,
-          sequenceNumber: nextRequestIdSequence
-        )
-        var firstRequest = FirebaseDataConnectStreamRequest()
-        firstRequest.requestID = firstRequestId.stringValue
-        firstRequest.name = connectorName
-        try await call.requestStream.send(firstRequest)
-        DataConnectLogger.debug("Created streaming call")
-
-        let subManager = self.subManager
-        Task {
-          do {
-            for try await response in call.responseStream {
-              DataConnectLogger.debug("Received stream response from the server: \(response)")
-              await subManager.handleResponse(response)
-            }
-          } catch {
-            DataConnectLogger.error("Error in stream response \(error)")
-          }
-        }
-
-        self.streamingCall = call
+        try await internalConnectStream()
       } catch {
-        DataConnectLogger.error("Error setting up stream: \(error)")
+        DataConnectLogger.error("Explicit connectStream failed: \(error)")
       }
     }
     _ = await connectionTask?.result
+  }
+
+  private func internalConnectStream() async throws {
+    guard let streamingClient else {
+      DataConnectLogger.error(
+        "When calling internalConnectStream(), gRPC client has not been configured."
+      )
+      throw DataConnectInternalError.internalError(message: "Streaming client not configured")
+    }
+
+    let callOptions = await createCallOptions()
+    let call = streamingClient.makeConnectCall(callOptions: callOptions)
+
+    requestIdSequence = 0 // reset sequence
+    let firstRequestId = RequestIdentifier(
+      operationId: UUID().uuidString,
+      sequenceNumber: nextRequestIdSequence
+    )
+    var firstRequest = FirebaseDataConnectStreamRequest()
+    firstRequest.requestID = firstRequestId.stringValue
+    firstRequest.name = connectorName
+    try await call.requestStream.send(firstRequest)
+    DataConnectLogger.debug("Created streaming call")
+
+    let subManager = self.subManager
+    Task {
+      do {
+        for try await response in call.responseStream {
+          DataConnectLogger.debug("Received stream response from the server: \(response)")
+          await subManager.handleResponse(response)
+        }
+        await self.handleStreamDisconnect()
+      } catch {
+        DataConnectLogger.error("Error in stream response \(error)")
+        await self.handleStreamDisconnect()
+      }
+    }
+
+    streamingCall = call
+  }
+
+  private func handleStreamDisconnect() async {
+    streamingCall = nil
+
+    let hasSubs = await subManager.hasAnySubscription()
+    let hasPending = await subManager.hasPendingExecutes()
+    if hasSubs || hasPending {
+      await startReconnectLoop()
+    }
+  }
+
+  private func startReconnectLoop() async {
+    guard reconnectTask == nil else { return }
+
+    reconnectTask = Task {
+      defer { reconnectTask = nil }
+
+      var backoffSeconds = 1.0
+      let maxBackoffSeconds = 30.0
+      let backoffMultiplier = 1.3
+
+      while true {
+        do {
+          try await Task.sleep(nanoseconds: UInt64(backoffSeconds * 1_000_000_000))
+
+          DataConnectLogger.debug("Attempting to reconnect stream...")
+          try await internalConnectStream()
+
+          if let call = self.streamingCall {
+            let requests = await subManager.getAllActiveRequests()
+            for req in requests {
+              try await call.requestStream.send(req)
+            }
+          }
+          break
+        } catch {
+          DataConnectLogger.error("Reconnect failed: \(error)")
+
+          let randomFactor = Double.random(in: 0.9 ... 1.1)
+          let nextBackoff = backoffSeconds * backoffMultiplier
+          backoffSeconds = min(nextBackoff * randomFactor, maxBackoffSeconds)
+
+          let hasSubs = await subManager.hasAnySubscription()
+          let hasPending = await subManager.hasPendingExecutes()
+          if !hasSubs && !hasPending {
+            break
+          }
+        }
+      }
+    }
   }
 
   func executeQuery<
@@ -189,6 +247,7 @@ actor StreamingGrpcClient: GrpcClient {
 
       async let response = subManager.waitForResponse(for: seqRequestId)
       try DataConnectLogger.debug("Sending streaming request \(streamRequest.jsonString())")
+      await subManager.saveExecuteRequest(streamRequest, for: seqRequestId)
       try await streamingCall.requestStream.send(streamRequest)
       DataConnectLogger.debug("Done sending request")
 
@@ -229,6 +288,7 @@ actor StreamingGrpcClient: GrpcClient {
       streamRequest.subscribe = try protoCodec.createStreamExecuteRequest(request: request)
 
       do {
+        await subManager.saveSubscriptionRequest(streamRequest, for: requestID)
         try await streamingCall.requestStream.send(streamRequest)
       } catch {
         await subManager.removeSubscription(for: requestID)
@@ -293,6 +353,27 @@ private actor StreamSubscriptionManager {
   private var subscriptionRequests = [RequestIdentifier: AsyncStream<ServerResponse>.Continuation]()
   private var operationSubs = [String: RequestIdentifier]()
 
+  private var activeSubscriptionRequestsData: [
+    RequestIdentifier: FirebaseDataConnectStreamRequest
+  ] =
+    [:]
+  private var pendingExecuteRequestsData: [RequestIdentifier: FirebaseDataConnectStreamRequest] =
+    [:]
+
+  func saveSubscriptionRequest(_ request: FirebaseDataConnectStreamRequest,
+                               for requestID: RequestIdentifier) {
+    activeSubscriptionRequestsData[requestID] = request
+  }
+
+  func saveExecuteRequest(_ request: FirebaseDataConnectStreamRequest,
+                          for requestID: RequestIdentifier) {
+    pendingExecuteRequestsData[requestID] = request
+  }
+
+  func getAllActiveRequests() -> [FirebaseDataConnectStreamRequest] {
+    Array(activeSubscriptionRequestsData.values) + Array(pendingExecuteRequestsData.values)
+  }
+
   func waitForResponse(for requestID: RequestIdentifier) async throws -> ServerResponse {
     try await withCheckedThrowingContinuation { continuation in
       pendingExecuteRequests[requestID] = continuation
@@ -323,12 +404,17 @@ private actor StreamSubscriptionManager {
     !operationSubs.isEmpty
   }
 
+  func hasPendingExecutes() -> Bool {
+    !pendingExecuteRequests.isEmpty
+  }
+
   func removeSubscription(for requestID: RequestIdentifier) {
     if let continuation = subscriptionRequests[requestID] {
       continuation.finish()
     }
     subscriptionRequests.removeValue(forKey: requestID)
     operationSubs.removeValue(forKey: requestID.operationId)
+    activeSubscriptionRequestsData.removeValue(forKey: requestID)
   }
 
   func handleResponse(_ response: FirebaseDataConnectStreamResponse) {
@@ -341,6 +427,7 @@ private actor StreamSubscriptionManager {
       if let continuation = pendingExecuteRequests.removeValue(
         forKey: reqId
       ) {
+        pendingExecuteRequestsData.removeValue(forKey: reqId)
         let serverResponse = try serverResponse(for: response)
         continuation.resume(returning: serverResponse)
         return
@@ -357,6 +444,7 @@ private actor StreamSubscriptionManager {
 
   func handleError(_ error: Error, for requestID: RequestIdentifier) {
     if let continuation = pendingExecuteRequests.removeValue(forKey: requestID) {
+      pendingExecuteRequestsData.removeValue(forKey: requestID)
       continuation.resume(throwing: error)
     }
   }
@@ -364,6 +452,11 @@ private actor StreamSubscriptionManager {
   func handleStreamFailure(_ error: Error) {
     pendingExecuteRequests.values.forEach { $0.resume(throwing: error) }
     pendingExecuteRequests.removeAll()
+    pendingExecuteRequestsData.removeAll()
+    subscriptionRequests.values.forEach { $0.finish() }
+    subscriptionRequests.removeAll()
+    operationSubs.removeAll()
+    activeSubscriptionRequestsData.removeAll()
   }
 
   private func serverResponse(for response: FirebaseDataConnectStreamResponse) throws
