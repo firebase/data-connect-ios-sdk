@@ -81,7 +81,7 @@ actor StreamingGrpcClient: GrpcClient {
   }
 
   func connectStream() async {
-    if streamingCall != nil {
+    guard streamingCall == nil else {
       DataConnectLogger.debug(
         "gRPC stream already set up. Ignoring connectStream() call."
       )
@@ -126,17 +126,17 @@ actor StreamingGrpcClient: GrpcClient {
     try await call.requestStream.send(firstRequest)
     DataConnectLogger.debug("Created streaming call")
 
-    let subManager = self.subManager
     Task {
       do {
         for try await response in call.responseStream {
           DataConnectLogger.debug("Received stream response from the server: \(response)")
           await subManager.handleResponse(response)
         }
-        await self.handleStreamDisconnect()
+        DataConnectLogger.error("Server closed stream while client is still expecting responses.")
+        await handleStreamDisconnect()
       } catch {
-        DataConnectLogger.error("Error in stream response \(error)")
-        await self.handleStreamDisconnect()
+        DataConnectLogger.error("Stream terminated with error: \(error)")
+        await handleStreamDisconnect()
       }
     }
 
@@ -170,13 +170,15 @@ actor StreamingGrpcClient: GrpcClient {
           DataConnectLogger.debug("Attempting to reconnect stream...")
           try await internalConnectStream()
 
-          if let call = self.streamingCall {
+          if let call = streamingCall {
+            // TODO: Error out any pending mutation requests.
             let requests = await subManager.getAllActiveRequests()
             for req in requests {
               try await call.requestStream.send(req)
             }
+            break
           }
-          break
+          DataConnectLogger.debug("Stream closed before active requests could be re-sent.")
         } catch {
           DataConnectLogger.error("Reconnect failed: \(error)")
 
@@ -247,7 +249,12 @@ actor StreamingGrpcClient: GrpcClient {
 
       async let response = subManager.waitForResponse(for: seqRequestId)
       try DataConnectLogger.debug("Sending streaming request \(streamRequest.jsonString())")
-      await subManager.saveExecuteRequest(streamRequest, for: seqRequestId)
+      if request is MutationRequest<Req.Variable> {
+        await subManager
+          .saveRequest(streamRequest, for: seqRequestId, type: RequestType.mutation)
+      } else {
+        await subManager.saveRequest(streamRequest, for: seqRequestId, type: RequestType.query)
+      }
       try await streamingCall.requestStream.send(streamRequest)
       DataConnectLogger.debug("Done sending request")
 
@@ -288,7 +295,7 @@ actor StreamingGrpcClient: GrpcClient {
       streamRequest.subscribe = try protoCodec.createStreamExecuteRequest(request: request)
 
       do {
-        await subManager.saveSubscriptionRequest(streamRequest, for: requestID)
+        await subManager.saveRequest(streamRequest, for: requestID, type: RequestType.subscribe)
         try await streamingCall.requestStream.send(streamRequest)
       } catch {
         await subManager.removeSubscription(for: requestID)
@@ -316,7 +323,7 @@ actor StreamingGrpcClient: GrpcClient {
 
 // MARK: Helper types
 
-private struct RequestIdentifier: CustomStringConvertible, Hashable, Equatable {
+struct RequestIdentifier: CustomStringConvertible, Hashable, Equatable {
   let operationId: String
   let sequenceNumber: UInt64
 
@@ -345,38 +352,56 @@ private struct RequestIdentifier: CustomStringConvertible, Hashable, Equatable {
   }
 }
 
-private actor StreamSubscriptionManager {
-  private var pendingExecuteRequests: [RequestIdentifier: CheckedContinuation<
+enum RequestType {
+  case query
+  case mutation
+  case subscribe
+}
+
+actor StreamSubscriptionManager {
+  // These structures map request IDs to continuations, for propagating response data back to the
+  // query layer.
+  private var executeContinuations: [RequestIdentifier: CheckedContinuation<
     ServerResponse,
     Error
   >] = [:]
-  private var subscriptionRequests = [RequestIdentifier: AsyncStream<ServerResponse>.Continuation]()
-  private var operationSubs = [String: RequestIdentifier]()
+  private var subscribeContinuations =
+    [RequestIdentifier: AsyncStream<ServerResponse>.Continuation]()
 
-  private var activeSubscriptionRequestsData: [
+  // These structures map request IDs to request bodies, for re-sending requests if the stream
+  // connection unexpectedly terminates, as well as for de-duplicating identical requests. We do not
+  // re-send or de-duplicate mutation execution requests, as those are not idempotent.
+  private var activeSubscribeRequests: [
     RequestIdentifier: FirebaseDataConnectStreamRequest
   ] =
     [:]
-  private var pendingExecuteRequestsData: [RequestIdentifier: FirebaseDataConnectStreamRequest] =
+  private var activeQueryExecuteRequests: [RequestIdentifier: FirebaseDataConnectStreamRequest] =
     [:]
+  private var activeMutationExecuteRequests: Set<RequestIdentifier> = []
 
-  func saveSubscriptionRequest(_ request: FirebaseDataConnectStreamRequest,
-                               for requestID: RequestIdentifier) {
-    activeSubscriptionRequestsData[requestID] = request
-  }
+  // TODO: Do we need this mapping? Can we just track subscribeContinuations?
+  private var operationSubs = [String: RequestIdentifier]()
 
-  func saveExecuteRequest(_ request: FirebaseDataConnectStreamRequest,
-                          for requestID: RequestIdentifier) {
-    pendingExecuteRequestsData[requestID] = request
+  func saveRequest(_ request: FirebaseDataConnectStreamRequest,
+                   for requestID: RequestIdentifier,
+                   type: RequestType) {
+    switch type {
+    case .query:
+      activeQueryExecuteRequests[requestID] = request
+    case .mutation:
+      activeMutationExecuteRequests.insert(requestID)
+    case .subscribe:
+      activeSubscribeRequests[requestID] = request
+    }
   }
 
   func getAllActiveRequests() -> [FirebaseDataConnectStreamRequest] {
-    Array(activeSubscriptionRequestsData.values) + Array(pendingExecuteRequestsData.values)
+    Array(activeSubscribeRequests.values) + Array(activeQueryExecuteRequests.values)
   }
 
   func waitForResponse(for requestID: RequestIdentifier) async throws -> ServerResponse {
     try await withCheckedThrowingContinuation { continuation in
-      pendingExecuteRequests[requestID] = continuation
+      executeContinuations[requestID] = continuation
     }
   }
 
@@ -386,7 +411,7 @@ private actor StreamSubscriptionManager {
     }
 
     let stream = AsyncStream<ServerResponse> { continuation in
-      subscriptionRequests[requestID] = continuation
+      subscribeContinuations[requestID] = continuation
       operationSubs[requestID.operationId] = requestID
 
       continuation.onTermination = { _ in
@@ -405,16 +430,16 @@ private actor StreamSubscriptionManager {
   }
 
   func hasPendingExecutes() -> Bool {
-    !pendingExecuteRequests.isEmpty
+    !executeContinuations.isEmpty
   }
 
   func removeSubscription(for requestID: RequestIdentifier) {
-    if let continuation = subscriptionRequests[requestID] {
+    if let continuation = subscribeContinuations[requestID] {
       continuation.finish()
     }
-    subscriptionRequests.removeValue(forKey: requestID)
+    subscribeContinuations.removeValue(forKey: requestID)
     operationSubs.removeValue(forKey: requestID.operationId)
-    activeSubscriptionRequestsData.removeValue(forKey: requestID)
+    activeSubscribeRequests.removeValue(forKey: requestID)
   }
 
   func handleResponse(_ response: FirebaseDataConnectStreamResponse) {
@@ -424,39 +449,23 @@ private actor StreamSubscriptionManager {
         return
       }
 
-      if let continuation = pendingExecuteRequests.removeValue(
+      if let continuation = executeContinuations.removeValue(
         forKey: reqId
       ) {
-        pendingExecuteRequestsData.removeValue(forKey: reqId)
+        activeQueryExecuteRequests.removeValue(forKey: reqId)
+        activeMutationExecuteRequests.remove(reqId)
         let serverResponse = try serverResponse(for: response)
         continuation.resume(returning: serverResponse)
         return
       }
 
-      if let continuation = subscriptionRequests[reqId] {
+      if let continuation = subscribeContinuations[reqId] {
         let serverResponse = try serverResponse(for: response)
         continuation.yield(serverResponse)
       }
     } catch {
       DataConnectLogger.error("Error handing stream response \(error)")
     }
-  }
-
-  func handleError(_ error: Error, for requestID: RequestIdentifier) {
-    if let continuation = pendingExecuteRequests.removeValue(forKey: requestID) {
-      pendingExecuteRequestsData.removeValue(forKey: requestID)
-      continuation.resume(throwing: error)
-    }
-  }
-
-  func handleStreamFailure(_ error: Error) {
-    pendingExecuteRequests.values.forEach { $0.resume(throwing: error) }
-    pendingExecuteRequests.removeAll()
-    pendingExecuteRequestsData.removeAll()
-    subscriptionRequests.values.forEach { $0.finish() }
-    subscriptionRequests.removeAll()
-    operationSubs.removeAll()
-    activeSubscriptionRequestsData.removeAll()
   }
 
   private func serverResponse(for response: FirebaseDataConnectStreamResponse) throws
@@ -469,6 +478,22 @@ private actor StreamSubscriptionManager {
     } catch {
       DataConnectLogger.error("Failed to decode extensions: \(error)")
     }
-    return try ServerResponse(data: response.data.jsonUTF8Data(), extensions: extensionResponse)
+    let errorInfoList = DataConnectGrpcClient.createErrorInfoList(errors: response.errors)
+    guard errorInfoList.isEmpty else {
+      let resultsString = try response.data.jsonString()
+      // TODO: Decode results here like in the UnaryClient.
+      let failureResponse = OperationFailureResponse(
+        rawJsonData: resultsString,
+        errors: errorInfoList,
+        data: nil
+      )
+      throw
+        DataConnectOperationError
+        .executionFailed(
+          response: failureResponse
+        )
+    }
+    let jsonData = try response.data.jsonUTF8Data()
+    return ServerResponse(data: jsonData, extensions: extensionResponse)
   }
 }
