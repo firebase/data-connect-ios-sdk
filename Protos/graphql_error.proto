@@ -30,11 +30,13 @@ option java_outer_classname = "GraphqlErrorProto";
 // Firebase Data Connect API surfaces `GraphqlError` in various APIs:
 // - Upon compile error, `UpdateSchema` and `UpdateConnector` return
 // Code.Invalid_Argument with a list of `GraphqlError` in error details.
-// - Upon query compile error, `ExecuteGraphql` and `ExecuteGraphqlRead` return
-// Code.OK with a list of `GraphqlError` in response body.
+// - Upon query compile error, `ExecuteGraphql`, `ExecuteGraphqlRead` and
+// `IntrospectGraphql` return Code.OK with a list of `GraphqlError` in response
+// body.
 // - Upon query execution error, `ExecuteGraphql`, `ExecuteGraphqlRead`,
-// `ExecuteMutation` and `ExecuteQuery` all return Code.OK with a list of
-// `GraphqlError` in response body.
+// `ExecuteMutation`, `ExecuteQuery`, `IntrospectGraphql`, `ImpersonateQuery`
+// and `ImpersonateMutation` all return Code.OK with a list of `GraphqlError` in
+// response body.
 message GraphqlError {
   // The detailed error message.
   // The message should help developer understand the underlying problem without
@@ -46,6 +48,7 @@ message GraphqlError {
   // quickly.
   //
   // Included in admin endpoints (`ExecuteGraphql`, `ExecuteGraphqlRead`,
+  // `IntrospectGraphql`, `ImpersonateQuery`, `ImpersonateMutation`,
   // `UpdateSchema` and `UpdateConnector`) to reference the provided GraphQL
   // GQL document.
   //
@@ -65,20 +68,71 @@ message GraphqlError {
   GraphqlErrorExtensions extensions = 4;
 }
 
-// SourceLocation references a location in a GraphQL source.
-message SourceLocation {
-  // Line number starting at 1.
-  int32 line = 1;
-  // Column number starting at 1.
-  int32 column = 2;
-}
-
 // GraphqlErrorExtensions contains additional information of `GraphqlError`.
-// (-- TODO(b/305311379): include more detailed error fields:
-// go/firemat:api:gql-errors.  --)
 message GraphqlErrorExtensions {
   // The source file name where the error occurred.
   // Included only for `UpdateSchema` and `UpdateConnector`, it corresponds
   // to `File.path` of the provided `Source`.
   string file = 1;
+
+  // Maps to canonical gRPC codes.
+  // If not specified, it represents `Code.INTERNAL`.
+  google.rpc.Code code = 2;
+
+  // More detailed error message to assist debugging.
+  // It contains application business logic that are inappropriate to leak
+  // publicly.
+  //
+  // In the emulator, Data Connect API always includes it to assist local
+  // development and debugging.
+  // In the backend, ConnectorService always hides it.
+  // GraphqlService without impersonation always include it.
+  // GraphqlService with impersonation includes it only if explicitly opted-in
+  // with `include_debug_details` in `GraphqlRequestExtensions`.
+  string debug_details = 3;
+
+  // Distinguish which schema or connector the error originates from.
+  // It should be set on errors from control plane APIs (e.g. `UpdateSchema`,
+  // `UpdateConnector`).
+  string resource = 4;
+
+  // Warning level describes the severity and required action to suppress this
+  // warning when Firebase CLI run into it.
+  WarningLevel warning_level = 5;
+  // Workarounds provide suggestions to address warnings.
+  repeated Workaround workarounds = 6;
+}
+
+// Workaround provides suggestions to address errors and warnings.
+message Workaround {
+  // Description of this workaround.
+  string description = 1;
+  // Why would this workaround address the error and warning.
+  string reason = 2;
+  // A suggested code snippet to fix the error and warning.
+  string replace = 3;
+}
+
+// SourceLocation references a location in a GraphQL source.
+message SourceLocation {
+  // Line number starting at 1.
+  int32 line = 1;
+
+  // Column number starting at 1.
+  int32 column = 2;
+}
+
+// WarningLevel describes the severity and required action to suppress this
+// warning when Firebase CLI run into it.
+enum WarningLevel {
+  // Warning level is not specified.
+  WARNING_LEVEL_UNKNOWN = 0;
+  // Display a warning without action needed.
+  LOG_ONLY = 1;
+  // Request a confirmation in interactive deployment flow.
+  INTERACTIVE_ACK = 2;
+  // Require an explicit confirmation in all deployment flows.
+  REQUIRE_ACK = 3;
+  // Require --force in all deployment flows.
+  REQUIRE_FORCE = 4;
 }
