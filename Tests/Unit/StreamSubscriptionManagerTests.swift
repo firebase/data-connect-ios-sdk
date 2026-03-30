@@ -10,7 +10,7 @@ final class StreamSubscriptionManagerTests: XCTestCase {
     let requestID = RequestIdentifier(operationId: "test-query", sequenceNumber: 1)
 
     let queryContinuation = Task {
-      try await subManager.waitForResponse(for: requestID, isMutation: false)
+      try await subManager.waitForResponse(for: requestID)
     }
 
     try await Task.sleep(nanoseconds: 100_000_000) // 0.1s
@@ -34,7 +34,7 @@ final class StreamSubscriptionManagerTests: XCTestCase {
     let requestID = RequestIdentifier(operationId: "test-mutation", sequenceNumber: 1)
 
     let mutationContinuation = Task {
-      try await subManager.waitForResponse(for: requestID, isMutation: true)
+      try await subManager.waitForResponse(for: requestID)
     }
 
     try await Task.sleep(nanoseconds: 100_000_000) // 0.1s
@@ -51,36 +51,41 @@ final class StreamSubscriptionManagerTests: XCTestCase {
     XCTAssertEqual(decodedData?["test"], "mutation-data")
   }
 
-  func testStreamFailureResetsContinuations() async throws {
+  func testStreamFailureResetsMutationContinuations() async throws {
     let subManager = StreamSubscriptionManager()
     let queryRequestID = RequestIdentifier(operationId: "test-query", sequenceNumber: 1)
     let mutationRequestID = RequestIdentifier(operationId: "test-mutation", sequenceNumber: 2)
 
     let queryContinuation = Task {
-      try await subManager.waitForResponse(for: queryRequestID, isMutation: false)
+      try await subManager.waitForResponse(for: queryRequestID)
     }
 
     let mutationContinuation = Task {
-      try await subManager.waitForResponse(for: mutationRequestID, isMutation: true)
+      try await subManager.waitForResponse(for: mutationRequestID)
     }
+
+    await subManager.saveRequest(
+      FirebaseDataConnectStreamRequest(),
+      for: mutationRequestID,
+      type: .mutation
+    )
 
     try await Task.sleep(nanoseconds: 100_000_000) // 0.1s
 
-    let error = DataConnectInternalError.internalError(message: "Stream failed")
-    await subManager.handleStreamFailure(error)
+    await subManager.handleMutationsOnDisconnect()
 
-    do {
-      _ = try await queryContinuation.value
-      XCTFail("Query continuation should have thrown an error")
-    } catch {
-      XCTAssertEqual((error as? DataConnectInternalError)?.message, "Stream failed")
-    }
+    queryContinuation.cancel() // Queries shouldn't fail, so we just cancel the dangling task.
 
     do {
       _ = try await mutationContinuation.value
       XCTFail("Mutation continuation should have thrown an error")
+    } catch let error as DataConnectOperationError {
+      XCTAssertEqual(
+        error.response?.errors.first?.message,
+        "Stream terminated while waiting for mutation response"
+      )
     } catch {
-      XCTAssertEqual((error as? DataConnectInternalError)?.message, "Stream failed")
+      XCTFail("Unexpected error type: \(error)")
     }
   }
 }
