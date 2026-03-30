@@ -163,6 +163,12 @@ actor DataConnectGrpcClient: GrpcClient, CustomStringConvertible {
         return try await streamingClient.executeQuery(request: request, resultType: resultType)
       } catch let operationErr as DataConnectOperationError {
         throw operationErr
+      } catch let internalErr as DataConnectInternalError {
+        DataConnectLogger
+          .error(
+            "Error executing query with streaming gRPC, falling back to non-streaming: \(internalErr)"
+          )
+        return try await unaryClient.executeQuery(request: request, resultType: resultType)
       } catch {
         DataConnectLogger
           .error("Error executing query with streaming gRPC, falling back to non-streaming.")
@@ -184,7 +190,9 @@ actor DataConnectGrpcClient: GrpcClient, CustomStringConvertible {
         throw operationErr
       } catch let internalErr as DataConnectInternalError {
         DataConnectLogger
-          .error("Error executing mutation with streaming gRPC, falling back to non-streaming.")
+          .error(
+            "Error executing mutation with streaming gRPC, falling back to non-streaming: \(internalErr)"
+          )
         return try await unaryClient.executeMutation(request: request, resultType: resultType)
       } catch {
         DataConnectLogger.error("Unexpected error executing mutation.")
