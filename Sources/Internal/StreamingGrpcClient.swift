@@ -255,7 +255,12 @@ actor StreamingGrpcClient: GrpcClient {
       } else {
         await subManager.saveRequest(streamRequest, for: seqRequestId, type: RequestType.query)
       }
-      try await streamingCall.requestStream.send(streamRequest)
+      do {
+        try await streamingCall.requestStream.send(streamRequest)
+      } catch {
+        await subManager.handleError(error, for: seqRequestId)
+        throw error
+      }
       DataConnectLogger.debug("Done sending request")
 
       return try await response
@@ -493,6 +498,14 @@ actor StreamSubscriptionManager {
         DataConnectLogger
           .debug("No continuation found for pending mutation with request ID \(reqId)")
       }
+    }
+  }
+
+  func handleError(_ error: Error, for reqId: RequestIdentifier) {
+    if let continuation = executeContinuations.removeValue(forKey: reqId) {
+      activeQueryExecuteRequests.removeValue(forKey: reqId)
+      activeMutationExecuteRequests.remove(reqId)
+      continuation.resume(throwing: error)
     }
   }
 
