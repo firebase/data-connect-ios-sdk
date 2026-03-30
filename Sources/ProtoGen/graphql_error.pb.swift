@@ -36,17 +36,77 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
   typealias Version = _2
 }
 
+/// WarningLevel describes the severity and required action to suppress this
+/// warning when Firebase CLI run into it.
+public enum Google_Firebase_Dataconnect_V1_WarningLevel: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+
+  /// Warning level is not specified.
+  case unknown // = 0
+
+  /// Display a warning without action needed.
+  case logOnly // = 1
+
+  /// Request a confirmation in interactive deployment flow.
+  case interactiveAck // = 2
+
+  /// Require an explicit confirmation in all deployment flows.
+  case requireAck // = 3
+
+  /// Require --force in all deployment flows.
+  case requireForce // = 4
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .unknown
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .unknown
+    case 1: self = .logOnly
+    case 2: self = .interactiveAck
+    case 3: self = .requireAck
+    case 4: self = .requireForce
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .unknown: return 0
+    case .logOnly: return 1
+    case .interactiveAck: return 2
+    case .requireAck: return 3
+    case .requireForce: return 4
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [Google_Firebase_Dataconnect_V1_WarningLevel] = [
+    .unknown,
+    .logOnly,
+    .interactiveAck,
+    .requireAck,
+    .requireForce,
+  ]
+
+}
+
 /// GraphqlError conforms to the GraphQL error spec.
 /// https://spec.graphql.org/draft/#sec-Errors
 ///
 /// Firebase Data Connect API surfaces `GraphqlError` in various APIs:
 /// - Upon compile error, `UpdateSchema` and `UpdateConnector` return
 /// Code.Invalid_Argument with a list of `GraphqlError` in error details.
-/// - Upon query compile error, `ExecuteGraphql` and `ExecuteGraphqlRead` return
-/// Code.OK with a list of `GraphqlError` in response body.
+/// - Upon query compile error, `ExecuteGraphql`, `ExecuteGraphqlRead` and
+/// `IntrospectGraphql` return Code.OK with a list of `GraphqlError` in response
+/// body.
 /// - Upon query execution error, `ExecuteGraphql`, `ExecuteGraphqlRead`,
-/// `ExecuteMutation` and `ExecuteQuery` all return Code.OK with a list of
-/// `GraphqlError` in response body.
+/// `ExecuteMutation`, `ExecuteQuery`, `IntrospectGraphql`, `ImpersonateQuery`
+/// and `ImpersonateMutation` all return Code.OK with a list of `GraphqlError` in
+/// response body.
 public struct Google_Firebase_Dataconnect_V1_GraphqlError: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -62,6 +122,7 @@ public struct Google_Firebase_Dataconnect_V1_GraphqlError: Sendable {
   /// quickly.
   ///
   /// Included in admin endpoints (`ExecuteGraphql`, `ExecuteGraphqlRead`,
+  /// `IntrospectGraphql`, `ImpersonateQuery`, `ImpersonateMutation`,
   /// `UpdateSchema` and `UpdateConnector`) to reference the provided GraphQL
   /// GQL document.
   ///
@@ -102,6 +163,70 @@ public struct Google_Firebase_Dataconnect_V1_GraphqlError: Sendable {
   fileprivate var _extensions: Google_Firebase_Dataconnect_V1_GraphqlErrorExtensions? = nil
 }
 
+/// GraphqlErrorExtensions contains additional information of `GraphqlError`.
+public struct Google_Firebase_Dataconnect_V1_GraphqlErrorExtensions: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// The source file name where the error occurred.
+  /// Included only for `UpdateSchema` and `UpdateConnector`, it corresponds
+  /// to `File.path` of the provided `Source`.
+  public var file: String = String()
+
+  /// Maps to canonical gRPC codes.
+  /// If not specified, it represents `Code.INTERNAL`.
+  public var code: Google_Rpc_Code = .ok
+
+  /// More detailed error message to assist debugging.
+  /// It contains application business logic that are inappropriate to leak
+  /// publicly.
+  ///
+  /// In the emulator, Data Connect API always includes it to assist local
+  /// development and debugging.
+  /// In the backend, ConnectorService always hides it.
+  /// GraphqlService without impersonation always include it.
+  /// GraphqlService with impersonation includes it only if explicitly opted-in
+  /// with `include_debug_details` in `GraphqlRequestExtensions`.
+  public var debugDetails: String = String()
+
+  /// Distinguish which schema or connector the error originates from.
+  /// It should be set on errors from control plane APIs (e.g. `UpdateSchema`,
+  /// `UpdateConnector`).
+  public var resource: String = String()
+
+  /// Warning level describes the severity and required action to suppress this
+  /// warning when Firebase CLI run into it.
+  public var warningLevel: Google_Firebase_Dataconnect_V1_WarningLevel = .unknown
+
+  /// Workarounds provide suggestions to address warnings.
+  public var workarounds: [Google_Firebase_Dataconnect_V1_Workaround] = []
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// Workaround provides suggestions to address errors and warnings.
+public struct Google_Firebase_Dataconnect_V1_Workaround: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// Description of this workaround.
+  public var description_p: String = String()
+
+  /// Why would this workaround address the error and warning.
+  public var reason: String = String()
+
+  /// A suggested code snippet to fix the error and warning.
+  public var replace: String = String()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
 /// SourceLocation references a location in a GraphQL source.
 public struct Google_Firebase_Dataconnect_V1_SourceLocation: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
@@ -119,27 +244,19 @@ public struct Google_Firebase_Dataconnect_V1_SourceLocation: Sendable {
   public init() {}
 }
 
-/// GraphqlErrorExtensions contains additional information of `GraphqlError`.
-/// (-- TODO(b/305311379): include more detailed error fields:
-/// go/firemat:api:gql-errors.  --)
-public struct Google_Firebase_Dataconnect_V1_GraphqlErrorExtensions: Sendable {
-  // SwiftProtobuf.Message conformance is added in an extension below. See the
-  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
-  // methods supported on all messages.
-
-  /// The source file name where the error occurred.
-  /// Included only for `UpdateSchema` and `UpdateConnector`, it corresponds
-  /// to `File.path` of the provided `Source`.
-  public var file: String = String()
-
-  public var unknownFields = SwiftProtobuf.UnknownStorage()
-
-  public init() {}
-}
-
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 fileprivate let _protobuf_package = "google.firebase.dataconnect.v1"
+
+extension Google_Firebase_Dataconnect_V1_WarningLevel: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "WARNING_LEVEL_UNKNOWN"),
+    1: .same(proto: "LOG_ONLY"),
+    2: .same(proto: "INTERACTIVE_ACK"),
+    3: .same(proto: "REQUIRE_ACK"),
+    4: .same(proto: "REQUIRE_FORCE"),
+  ]
+}
 
 extension Google_Firebase_Dataconnect_V1_GraphqlError: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GraphqlError"
@@ -195,6 +312,112 @@ extension Google_Firebase_Dataconnect_V1_GraphqlError: SwiftProtobuf.Message, Sw
   }
 }
 
+extension Google_Firebase_Dataconnect_V1_GraphqlErrorExtensions: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".GraphqlErrorExtensions"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "file"),
+    2: .same(proto: "code"),
+    3: .standard(proto: "debug_details"),
+    4: .same(proto: "resource"),
+    5: .standard(proto: "warning_level"),
+    6: .same(proto: "workarounds"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.file) }()
+      case 2: try { try decoder.decodeSingularEnumField(value: &self.code) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self.debugDetails) }()
+      case 4: try { try decoder.decodeSingularStringField(value: &self.resource) }()
+      case 5: try { try decoder.decodeSingularEnumField(value: &self.warningLevel) }()
+      case 6: try { try decoder.decodeRepeatedMessageField(value: &self.workarounds) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.file.isEmpty {
+      try visitor.visitSingularStringField(value: self.file, fieldNumber: 1)
+    }
+    if self.code != .ok {
+      try visitor.visitSingularEnumField(value: self.code, fieldNumber: 2)
+    }
+    if !self.debugDetails.isEmpty {
+      try visitor.visitSingularStringField(value: self.debugDetails, fieldNumber: 3)
+    }
+    if !self.resource.isEmpty {
+      try visitor.visitSingularStringField(value: self.resource, fieldNumber: 4)
+    }
+    if self.warningLevel != .unknown {
+      try visitor.visitSingularEnumField(value: self.warningLevel, fieldNumber: 5)
+    }
+    if !self.workarounds.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.workarounds, fieldNumber: 6)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Google_Firebase_Dataconnect_V1_GraphqlErrorExtensions, rhs: Google_Firebase_Dataconnect_V1_GraphqlErrorExtensions) -> Bool {
+    if lhs.file != rhs.file {return false}
+    if lhs.code != rhs.code {return false}
+    if lhs.debugDetails != rhs.debugDetails {return false}
+    if lhs.resource != rhs.resource {return false}
+    if lhs.warningLevel != rhs.warningLevel {return false}
+    if lhs.workarounds != rhs.workarounds {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Google_Firebase_Dataconnect_V1_Workaround: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".Workaround"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "description"),
+    2: .same(proto: "reason"),
+    3: .same(proto: "replace"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.description_p) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.reason) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self.replace) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.description_p.isEmpty {
+      try visitor.visitSingularStringField(value: self.description_p, fieldNumber: 1)
+    }
+    if !self.reason.isEmpty {
+      try visitor.visitSingularStringField(value: self.reason, fieldNumber: 2)
+    }
+    if !self.replace.isEmpty {
+      try visitor.visitSingularStringField(value: self.replace, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Google_Firebase_Dataconnect_V1_Workaround, rhs: Google_Firebase_Dataconnect_V1_Workaround) -> Bool {
+    if lhs.description_p != rhs.description_p {return false}
+    if lhs.reason != rhs.reason {return false}
+    if lhs.replace != rhs.replace {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension Google_Firebase_Dataconnect_V1_SourceLocation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SourceLocation"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
@@ -228,38 +451,6 @@ extension Google_Firebase_Dataconnect_V1_SourceLocation: SwiftProtobuf.Message, 
   public static func ==(lhs: Google_Firebase_Dataconnect_V1_SourceLocation, rhs: Google_Firebase_Dataconnect_V1_SourceLocation) -> Bool {
     if lhs.line != rhs.line {return false}
     if lhs.column != rhs.column {return false}
-    if lhs.unknownFields != rhs.unknownFields {return false}
-    return true
-  }
-}
-
-extension Google_Firebase_Dataconnect_V1_GraphqlErrorExtensions: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  public static let protoMessageName: String = _protobuf_package + ".GraphqlErrorExtensions"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "file"),
-  ]
-
-  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularStringField(value: &self.file) }()
-      default: break
-      }
-    }
-  }
-
-  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if !self.file.isEmpty {
-      try visitor.visitSingularStringField(value: self.file, fieldNumber: 1)
-    }
-    try unknownFields.traverse(visitor: &visitor)
-  }
-
-  public static func ==(lhs: Google_Firebase_Dataconnect_V1_GraphqlErrorExtensions, rhs: Google_Firebase_Dataconnect_V1_GraphqlErrorExtensions) -> Bool {
-    if lhs.file != rhs.file {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

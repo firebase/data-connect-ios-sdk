@@ -58,11 +58,8 @@ public struct Google_Firebase_Dataconnect_V1_StreamRequest: Sendable {
   /// Only needed for the first request of rpc Stream.
   public var name: String = String()
 
-  /// SDK can pass the auth token via this field or the X-Firebase-Auth-Token
-  /// header. Either would work. Each stream cannot alter `auth.uid`.
-  public var authToken: String = String()
-
   /// The HTTP headers to use for the request.
+  /// (-- See go/fdc-realtime-headers --)
   public var headers: Dictionary<String,String> = [:]
 
   /// The request id used to identify a request within the stream.
@@ -259,7 +256,6 @@ extension Google_Firebase_Dataconnect_V1_StreamRequest: SwiftProtobuf.Message, S
   public static let protoMessageName: String = _protobuf_package + ".StreamRequest"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "name"),
-    7: .standard(proto: "auth_token"),
     10: .same(proto: "headers"),
     2: .standard(proto: "request_id"),
     3: .same(proto: "subscribe"),
@@ -329,7 +325,6 @@ extension Google_Firebase_Dataconnect_V1_StreamRequest: SwiftProtobuf.Message, S
           self.requestKind = .cancel(v)
         }
       }()
-      case 7: try { try decoder.decodeSingularStringField(value: &self.authToken) }()
       case 8: try { try decoder.decodeSingularStringField(value: &self.dataEtag) }()
       case 10: try { try decoder.decodeMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufString,SwiftProtobuf.ProtobufString>.self, value: &self.headers) }()
       default: break
@@ -367,9 +362,6 @@ extension Google_Firebase_Dataconnect_V1_StreamRequest: SwiftProtobuf.Message, S
     }()
     case nil: break
     }
-    if !self.authToken.isEmpty {
-      try visitor.visitSingularStringField(value: self.authToken, fieldNumber: 7)
-    }
     if !self.dataEtag.isEmpty {
       try visitor.visitSingularStringField(value: self.dataEtag, fieldNumber: 8)
     }
@@ -381,7 +373,6 @@ extension Google_Firebase_Dataconnect_V1_StreamRequest: SwiftProtobuf.Message, S
 
   public static func ==(lhs: Google_Firebase_Dataconnect_V1_StreamRequest, rhs: Google_Firebase_Dataconnect_V1_StreamRequest) -> Bool {
     if lhs.name != rhs.name {return false}
-    if lhs.authToken != rhs.authToken {return false}
     if lhs.headers != rhs.headers {return false}
     if lhs.requestID != rhs.requestID {return false}
     if lhs.requestKind != rhs.requestKind {return false}
