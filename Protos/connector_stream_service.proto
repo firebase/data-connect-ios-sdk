@@ -53,6 +53,7 @@ service ConnectorStreamService {
 // - Cancel: Signal that the client is no longer interested in the result of
 // this operation.
 message StreamRequest {
+  reserved 7, 9;
   // The resource name of the connector to find the predefined query, in
   // the format:
   // ```
@@ -61,11 +62,8 @@ message StreamRequest {
   // Only needed for the first request of rpc Stream.
   string name = 1 [(google.api.field_behavior) = REQUIRED];
 
-  // SDK can pass the auth token via this field or the X-Firebase-Auth-Token
-  // header. Either would work. Each stream cannot alter `auth.uid`.
-  string auth_token = 7 [(google.api.field_behavior) = OPTIONAL];
-
   // The HTTP headers to use for the request.
+  // (-- See go/fdc-realtime-headers --)
   map<string, string> headers = 10 [(google.api.field_behavior) = OPTIONAL];
 
   // The request id used to identify a request within the stream.
