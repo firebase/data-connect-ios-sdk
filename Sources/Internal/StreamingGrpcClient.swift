@@ -171,11 +171,11 @@ actor StreamingGrpcClient: GrpcClient {
           try await internalConnectStream()
 
           if let call = streamingCall {
-            // TODO: Error out any pending mutation requests.
-            let requests = await subManager.getAllActiveRequests()
+            let requests = await subManager.getResendableRequests()
             for req in requests {
               try await call.requestStream.send(req)
             }
+            await subManager.handleMutationsOnDisconnect()
             break
           }
           DataConnectLogger.debug("Stream closed before active requests could be re-sent.")
@@ -395,7 +395,7 @@ actor StreamSubscriptionManager {
     }
   }
 
-  func getAllActiveRequests() -> [FirebaseDataConnectStreamRequest] {
+  func getResendableRequests() -> [FirebaseDataConnectStreamRequest] {
     Array(activeSubscribeRequests.values) + Array(activeQueryExecuteRequests.values)
   }
 
@@ -454,17 +454,45 @@ actor StreamSubscriptionManager {
       ) {
         activeQueryExecuteRequests.removeValue(forKey: reqId)
         activeMutationExecuteRequests.remove(reqId)
-        let serverResponse = try serverResponse(for: response)
-        continuation.resume(returning: serverResponse)
+        do {
+          let serverResponse = try serverResponse(for: response)
+          continuation.resume(returning: serverResponse)
+        } catch {
+          continuation.resume(throwing: error)
+        }
         return
       }
 
       if let continuation = subscribeContinuations[reqId] {
-        let serverResponse = try serverResponse(for: response)
-        continuation.yield(serverResponse)
+        do {
+          let serverResponse = try serverResponse(for: response)
+          continuation.yield(serverResponse)
+        } catch {
+          DataConnectLogger.error("Error handling stream response: \(error)")
+        }
       }
     } catch {
-      DataConnectLogger.error("Error handing stream response \(error)")
+      DataConnectLogger.error("Error handling stream response \(error)")
+    }
+  }
+
+  func handleMutationsOnDisconnect() {
+    let mutations = Array(activeMutationExecuteRequests)
+    let errStr = "Stream terminated while waiting for mutation response"
+    let failureResponse = OperationFailureResponse(
+      rawJsonData: "",
+      errors: [.init(message: errStr, path: [])],
+      data: nil
+    )
+    for reqId in mutations {
+      if let continuation = executeContinuations.removeValue(forKey: reqId) {
+        activeMutationExecuteRequests.remove(reqId)
+        continuation
+          .resume(throwing: DataConnectOperationError.executionFailed(response: failureResponse))
+      } else {
+        DataConnectLogger
+          .debug("No continuation found for pending mutation with request ID \(reqId)")
+      }
     }
   }
 
