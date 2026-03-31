@@ -35,6 +35,7 @@ actor StreamingGrpcClient: GrpcClient {
   private var subManager = StreamSubscriptionManager()
   private var connectionTask: Task<Void, Never>?
   private var reconnectTask: Task<Void, Never>?
+  private var responseStreamTask: Task<Void, Never>?
 
   private var requestIdSequence: UInt64 = 0
 
@@ -81,15 +82,12 @@ actor StreamingGrpcClient: GrpcClient {
   }
 
   func connectStream() async {
-    guard streamingCall == nil else {
-      DataConnectLogger.debug(
-        "gRPC stream already set up. Ignoring connectStream() call."
-      )
-      return
-    }
-
     if let existingTask = connectionTask {
       _ = await existingTask.result
+      return
+    }
+    if let existingReconnectTask = reconnectTask {
+      _ = await existingReconnectTask.result
       return
     }
 
@@ -111,6 +109,17 @@ actor StreamingGrpcClient: GrpcClient {
       )
       throw DataConnectInternalError.internalError(message: "Streaming client not configured")
     }
+    guard streamingCall == nil else {
+      DataConnectLogger.debug(
+        "gRPC stream already set up. Ignoring internalConnectStream() call."
+      )
+      return
+    }
+    guard responseStreamTask == nil else {
+      DataConnectLogger
+        .debug("Already listening to responseStream. Ignoring internalConnectStream() call.")
+      return
+    }
 
     let callOptions = await createCallOptions()
     let call = streamingClient.makeConnectCall(callOptions: callOptions)
@@ -126,18 +135,17 @@ actor StreamingGrpcClient: GrpcClient {
     try await call.requestStream.send(firstRequest)
     DataConnectLogger.debug("Created streaming call")
 
-    Task {
+    responseStreamTask = Task {
       do {
         for try await response in call.responseStream {
           DataConnectLogger.debug("Received stream response from the server: \(response)")
           await subManager.handleResponse(response)
         }
         DataConnectLogger.error("Server closed stream while client is still expecting responses.")
-        await handleStreamDisconnect()
       } catch {
         DataConnectLogger.error("Stream terminated with error: \(error)")
-        await handleStreamDisconnect()
       }
+      await handleStreamDisconnect()
     }
 
     streamingCall = call
@@ -145,6 +153,8 @@ actor StreamingGrpcClient: GrpcClient {
 
   private func handleStreamDisconnect() async {
     streamingCall = nil
+    responseStreamTask = nil
+    await subManager.handleMutationsOnDisconnect()
 
     let hasSubs = await subManager.hasAnySubscription()
     let hasPending = await subManager.hasPendingExecutes()
@@ -163,7 +173,7 @@ actor StreamingGrpcClient: GrpcClient {
       let maxBackoffSeconds = 30.0
       let backoffMultiplier = 1.3
 
-      while true {
+      while !Task.isCancelled {
         do {
           try await Task.sleep(nanoseconds: UInt64(backoffSeconds * 1_000_000_000))
 
@@ -175,7 +185,6 @@ actor StreamingGrpcClient: GrpcClient {
             for req in requests {
               try await call.requestStream.send(req)
             }
-            await subManager.handleMutationsOnDisconnect()
             break
           }
           DataConnectLogger.debug("Stream closed before active requests could be re-sent.")
@@ -405,9 +414,27 @@ actor StreamSubscriptionManager {
   }
 
   func waitForResponse(for requestID: RequestIdentifier) async throws -> ServerResponse {
-    try await withCheckedThrowingContinuation { continuation in
-      executeContinuations[requestID] = continuation
+    try await withTaskCancellationHandler {
+      try await withCheckedThrowingContinuation { continuation in
+        guard !Task.isCancelled else {
+          continuation.resume(throwing: CancellationError())
+          return
+        }
+        executeContinuations[requestID] = continuation
+      }
+    } onCancel: {
+      Task {
+        await self.cancelPendingExecute(for: requestID)
+      }
     }
+  }
+
+  func cancelPendingExecute(for requestID: RequestIdentifier) {
+    if let continuation = executeContinuations.removeValue(forKey: requestID) {
+      continuation.resume(throwing: CancellationError())
+    }
+    activeQueryExecuteRequests.removeValue(forKey: requestID)
+    activeMutationExecuteRequests.remove(requestID)
   }
 
   func createStream(for requestID: RequestIdentifier) throws -> AsyncStream<ServerResponse> {

@@ -102,4 +102,29 @@ final class StreamSubscriptionManagerTests: XCTestCase {
       XCTFail("Unexpected error type: \(error)")
     }
   }
+
+  func testWaitForResponseCancellation() async throws {
+    let subManager = StreamSubscriptionManager()
+    let requestID = RequestIdentifier(operationId: "test-cancel", sequenceNumber: 1)
+
+    let task = Task {
+      try await subManager.waitForResponse(for: requestID)
+    }
+
+    try await Task.sleep(nanoseconds: 100_000_000) // 0.1s
+
+    task.cancel()
+
+    do {
+      _ = try await task.value
+      XCTFail("Task should have been cancelled and thrown an error")
+    } catch is CancellationError {
+      // Success
+    } catch {
+      XCTFail("Unexpected error: \(error)")
+    }
+
+    let hasPending = await subManager.hasPendingExecutes()
+    XCTAssertFalse(hasPending, "Execute continuation should have been removed")
+  }
 }
