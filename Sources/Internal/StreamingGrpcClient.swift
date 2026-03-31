@@ -124,7 +124,6 @@ actor StreamingGrpcClient: GrpcClient {
     let callOptions = await createCallOptions()
     let call = streamingClient.makeConnectCall(callOptions: callOptions)
 
-    requestIdSequence = 0 // reset sequence
     let firstRequestId = RequestIdentifier(
       operationId: UUID().uuidString,
       sequenceNumber: nextRequestIdSequence
@@ -190,6 +189,8 @@ actor StreamingGrpcClient: GrpcClient {
           DataConnectLogger.debug("Stream closed before active requests could be re-sent.")
         } catch {
           DataConnectLogger.error("Reconnect failed: \(error)")
+          streamingCall = nil
+          responseStreamTask = nil
 
           let randomFactor = Double.random(in: 0.9 ... 1.1)
           let nextBackoff = backoffSeconds * backoffMultiplier
