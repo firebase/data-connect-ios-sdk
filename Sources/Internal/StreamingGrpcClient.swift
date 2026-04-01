@@ -102,11 +102,12 @@ actor StreamingGrpcClient: GrpcClient {
   private func authStatusChanged(user: User?) async {
     let newUid = user?.uid
     if newUid != currentUid {
-      currentUid = newUid
       DataConnectLogger
         .debug(
           "Auth identity changed from \(currentUid ?? "nil") to \(newUid ?? "nil"). Reconnecting stream."
         )
+      currentUid = newUid
+      pendingNewToken = nil
       // This should trigger handleStreamDisconnect(), as the responseStream will also terminate.
       await streamingCall?.requestStream.finish()
     } else if let user = user {
