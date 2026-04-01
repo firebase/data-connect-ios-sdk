@@ -38,7 +38,7 @@ actor StreamingGrpcClient: GrpcClient {
   private var responseStreamTask: Task<Void, Never>?
 
   private var authListenerHandle: AuthStateDidChangeListenerHandle?
-  private var lastKnownUid: String?
+  private var currentUid: String?
   private var pendingNewToken: String?
 
   private var requestIdSequence: UInt64 = 0
@@ -84,7 +84,7 @@ actor StreamingGrpcClient: GrpcClient {
     self.googRequestHeaderValue = googRequestHeaderValue
     self.googApiClientHeaderValue = googApiClientHeaderValue
 
-    lastKnownUid = auth.currentUser?.uid
+    currentUid = auth.currentUser?.uid
 
     authListenerHandle = auth.addStateDidChangeListener { [weak self] auth, user in
       Task { [weak self] in
@@ -101,18 +101,14 @@ actor StreamingGrpcClient: GrpcClient {
 
   private func authStatusChanged(user: User?) async {
     let newUid = user?.uid
-    if newUid != lastKnownUid {
+    if newUid != currentUid {
+      currentUid = newUid
       DataConnectLogger
         .debug(
-          "Auth identity changed from \(lastKnownUid ?? "nil") to \(newUid ?? "nil"). Reconnecting stream."
+          "Auth identity changed from \(currentUid ?? "nil") to \(newUid ?? "nil"). Reconnecting stream."
         )
-      lastKnownUid = newUid
-
-      if responseStreamTask != nil {
-        responseStreamTask?.cancel()
-        responseStreamTask = nil
-      }
-      streamingCall = nil
+      // This should trigger handleStreamDisconnect(), as the responseStream will also terminate.
+      await streamingCall?.requestStream.finish()
     } else if let user = user {
       DataConnectLogger
         .debug("Auth token refreshed for user \(newUid ?? "nil"). Updating on stream.")
