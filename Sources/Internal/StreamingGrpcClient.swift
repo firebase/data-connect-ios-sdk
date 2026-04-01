@@ -37,6 +37,10 @@ actor StreamingGrpcClient: GrpcClient {
   private var reconnectTask: Task<Void, Never>?
   private var responseStreamTask: Task<Void, Never>?
 
+  private var authListenerHandle: AuthStateDidChangeListenerHandle?
+  private var lastKnownUid: String?
+  private var pendingNewToken: String?
+
   private var requestIdSequence: UInt64 = 0
 
   private var nextRequestIdSequence: UInt64 {
@@ -79,6 +83,61 @@ actor StreamingGrpcClient: GrpcClient {
     self.callerSDKType = callerSDKType
     self.googRequestHeaderValue = googRequestHeaderValue
     self.googApiClientHeaderValue = googApiClientHeaderValue
+
+    lastKnownUid = auth.currentUser?.uid
+
+    authListenerHandle = auth.addStateDidChangeListener { [weak self] auth, user in
+      Task { [weak self] in
+        await self?.authStatusChanged(user: user)
+      }
+    }
+  }
+
+  deinit {
+    if let handle = authListenerHandle {
+      auth.removeStateDidChangeListener(handle)
+    }
+  }
+
+  private func authStatusChanged(user: User?) async {
+    let newUid = user?.uid
+    if newUid != lastKnownUid {
+      DataConnectLogger
+        .debug(
+          "Auth identity changed from \(lastKnownUid ?? "nil") to \(newUid ?? "nil"). Reconnecting stream."
+        )
+      lastKnownUid = newUid
+
+      if responseStreamTask != nil {
+        responseStreamTask?.cancel()
+        responseStreamTask = nil
+      }
+      streamingCall = nil
+    } else if let user = user {
+      DataConnectLogger
+        .debug("Auth token refreshed for user \(newUid ?? "nil"). Updating on stream.")
+      do {
+        let token = try await user.getIDToken()
+        let hasSubs = await subManager.hasAnySubscription()
+        if hasSubs {
+          var headerRequest = FirebaseDataConnectStreamRequest()
+          headerRequest.headers["x-firebase-auth-token"] = token
+
+          if let call = streamingCall {
+            try await call.requestStream.send(headerRequest)
+            DataConnectLogger.debug("Sent new auth token on stream.")
+          } else {
+            DataConnectLogger.debug("Stream not active, storing token for next request.")
+            pendingNewToken = token
+          }
+        } else {
+          DataConnectLogger.debug("No active subscriptions, storing token for next request.")
+          pendingNewToken = token
+        }
+      } catch {
+        DataConnectLogger.error("Failed to get ID token: \(error)")
+      }
+    }
   }
 
   func connectStream() async {
@@ -252,6 +311,11 @@ actor StreamingGrpcClient: GrpcClient {
       streamRequest.requestID = "\(seqRequestId)"
       streamRequest.execute = try protoCodec.createStreamExecuteRequest(request: request)
 
+      if let token = pendingNewToken {
+        streamRequest.headers["x-firebase-auth-token"] = token
+        pendingNewToken = nil
+      }
+
       DataConnectLogger
         .debug(
           "Making streaming call with request \(streamRequest.requestID), \(streamRequest.name), \(streamRequest.execute.operationName)"
@@ -308,6 +372,11 @@ actor StreamingGrpcClient: GrpcClient {
       var streamRequest = FirebaseDataConnectStreamRequest()
       streamRequest.requestID = requestID.stringValue
       streamRequest.subscribe = try protoCodec.createStreamExecuteRequest(request: request)
+
+      if let token = pendingNewToken {
+        streamRequest.headers["x-firebase-auth-token"] = token
+        pendingNewToken = nil
+      }
 
       do {
         await subManager.saveRequest(streamRequest, for: requestID, type: RequestType.subscribe)
