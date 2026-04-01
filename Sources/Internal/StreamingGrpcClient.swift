@@ -49,6 +49,11 @@ actor StreamingGrpcClient: GrpcClient {
   }
 
   private lazy var streamingClient: FirebaseDataConnectStreamingClient? = {
+    authListenerHandle = auth.addStateDidChangeListener { [weak self] auth, user in
+      Task { [weak self] in
+        await self?.authStatusChanged(user: user)
+      }
+    }
     do {
       DataConnectLogger.debug(
         "StreamingGrpcClient: streaming client initialization starting."
@@ -85,12 +90,6 @@ actor StreamingGrpcClient: GrpcClient {
     self.googApiClientHeaderValue = googApiClientHeaderValue
 
     currentUid = auth.currentUser?.uid
-
-    authListenerHandle = auth.addStateDidChangeListener { [weak self] auth, user in
-      Task { [weak self] in
-        await self?.authStatusChanged(user: user)
-      }
-    }
   }
 
   deinit {
@@ -106,9 +105,11 @@ actor StreamingGrpcClient: GrpcClient {
         .debug(
           "Auth identity changed from \(currentUid ?? "nil") to \(newUid ?? "nil"). Reconnecting stream."
         )
+
       currentUid = newUid
       pendingNewToken = nil
-      // This should trigger handleStreamDisconnect(), as the responseStream will also terminate.
+
+      await subManager.handleAuthStateChange()
       await streamingCall?.requestStream.finish()
     } else if let user = user {
       DataConnectLogger
@@ -593,6 +594,28 @@ actor StreamSubscriptionManager {
           .debug("No continuation found for pending mutation with request ID \(reqId)")
       }
     }
+  }
+
+  func handleAuthStateChange() {
+    for value in subscribeContinuations.values {
+      value.finish()
+    }
+    subscribeContinuations.removeAll()
+    activeSubscribeRequests.removeAll()
+    operationSubs.removeAll()
+
+    let errStr = "Authentication state change occured while waiting for stream response"
+    let failureResponse = OperationFailureResponse(
+      rawJsonData: "",
+      errors: [.init(message: errStr, path: [])],
+      data: nil
+    )
+    for value in executeContinuations.values {
+      value.resume(throwing: DataConnectOperationError.executionFailed(response: failureResponse))
+    }
+    executeContinuations.removeAll()
+    activeQueryExecuteRequests.removeAll()
+    activeMutationExecuteRequests.removeAll()
   }
 
   func handleError(_ error: Error, for reqId: RequestIdentifier) {
