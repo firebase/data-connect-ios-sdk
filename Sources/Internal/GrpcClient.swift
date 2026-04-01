@@ -161,10 +161,17 @@ actor DataConnectGrpcClient: GrpcClient, CustomStringConvertible {
     if await streamingClient.hasActiveSubscriptions() {
       do {
         return try await streamingClient.executeQuery(request: request, resultType: resultType)
-      } catch {
-        // TODO: Distinguish network errors from stream errors.
+      } catch let operationErr as DataConnectOperationError {
+        throw operationErr
+      } catch let internalErr as DataConnectInternalError {
         DataConnectLogger
-          .error("Error executing queries with streaming gRPC, falling back to non-streaming.")
+          .error(
+            "Error executing query with streaming gRPC, falling back to non-streaming: \(internalErr)"
+          )
+        return try await unaryClient.executeQuery(request: request, resultType: resultType)
+      } catch {
+        DataConnectLogger
+          .error("Error executing query with streaming gRPC, falling back to non-streaming.")
       }
     }
     return try await unaryClient.executeQuery(request: request, resultType: resultType)
@@ -179,10 +186,17 @@ actor DataConnectGrpcClient: GrpcClient, CustomStringConvertible {
     if await streamingClient.hasActiveSubscriptions() {
       do {
         return try await streamingClient.executeMutation(request: request, resultType: resultType)
-      } catch {
-        // TODO: Distinguish network errors from stream errors.
+      } catch let operationErr as DataConnectOperationError {
+        throw operationErr
+      } catch let internalErr as DataConnectInternalError {
         DataConnectLogger
-          .error("Error executing mutations with streaming gRPC, falling back to non-streaming.")
+          .error(
+            "Error executing mutation with streaming gRPC, falling back to non-streaming: \(internalErr)"
+          )
+        return try await unaryClient.executeMutation(request: request, resultType: resultType)
+      } catch {
+        DataConnectLogger.error("Unexpected error executing mutation.")
+        throw error
       }
     }
     return try await unaryClient.executeMutation(request: request, resultType: resultType)
