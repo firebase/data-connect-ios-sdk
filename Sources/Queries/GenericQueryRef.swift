@@ -73,7 +73,8 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
                   ))))
           }
         }
-
+        // Exiting the loop indicates the stream has finished.
+        self.subscriptionStream = nil
       } catch {
         // stream failures
         resultsPublisher

@@ -119,7 +119,7 @@ actor StreamingGrpcClient: GrpcClient {
         let hasSubs = await subManager.hasAnySubscription()
         if hasSubs {
           var headerRequest = FirebaseDataConnectStreamRequest()
-          headerRequest.headers["x-firebase-auth-token"] = token
+          headerRequest.headers[GrpcClientRequestHeaders.firebaseAuthToken] = token
 
           if let call = streamingCall {
             try await call.requestStream.send(headerRequest)
@@ -310,7 +310,7 @@ actor StreamingGrpcClient: GrpcClient {
       streamRequest.execute = try protoCodec.createStreamExecuteRequest(request: request)
 
       if let token = pendingNewToken {
-        streamRequest.headers["x-firebase-auth-token"] = token
+        streamRequest.headers[GrpcClientRequestHeaders.firebaseAuthToken] = token
         pendingNewToken = nil
       }
 
@@ -372,7 +372,7 @@ actor StreamingGrpcClient: GrpcClient {
       streamRequest.subscribe = try protoCodec.createStreamExecuteRequest(request: request)
 
       if let token = pendingNewToken {
-        streamRequest.headers["x-firebase-auth-token"] = token
+        streamRequest.headers[GrpcClientRequestHeaders.firebaseAuthToken] = token
         pendingNewToken = nil
       }
 
