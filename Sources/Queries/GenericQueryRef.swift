@@ -50,6 +50,8 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
     -> AnyPublisher<Result<OperationResult<ResultData>, AnyDataConnectError>, Never> {
     Task {
       do {
+        _ = try await fetchCachedResults(allowStale: true)
+
         // if we already have a stream return
         guard self.subscriptionStream == nil else { return }
 
@@ -73,7 +75,8 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
                   ))))
           }
         }
-
+        // Exiting the loop indicates the stream has finished.
+        self.subscriptionStream = nil
       } catch {
         // stream failures
         resultsPublisher

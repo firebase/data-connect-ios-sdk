@@ -37,6 +37,10 @@ actor StreamingGrpcClient: GrpcClient {
   private var reconnectTask: Task<Void, Never>?
   private var responseStreamTask: Task<Void, Never>?
 
+  private var authListenerHandle: AuthStateDidChangeListenerHandle?
+  private var currentUid: String?
+  private var pendingNewToken: String?
+
   private var requestIdSequence: UInt64 = 0
 
   private var nextRequestIdSequence: UInt64 {
@@ -45,6 +49,11 @@ actor StreamingGrpcClient: GrpcClient {
   }
 
   private lazy var streamingClient: FirebaseDataConnectStreamingClient? = {
+    authListenerHandle = auth.addStateDidChangeListener { [weak self] auth, user in
+      Task { [weak self] in
+        await self?.authStatusChanged(user: user)
+      }
+    }
     do {
       DataConnectLogger.debug(
         "StreamingGrpcClient: streaming client initialization starting."
@@ -79,6 +88,54 @@ actor StreamingGrpcClient: GrpcClient {
     self.callerSDKType = callerSDKType
     self.googRequestHeaderValue = googRequestHeaderValue
     self.googApiClientHeaderValue = googApiClientHeaderValue
+
+    currentUid = auth.currentUser?.uid
+  }
+
+  deinit {
+    if let handle = authListenerHandle {
+      auth.removeStateDidChangeListener(handle)
+    }
+  }
+
+  private func authStatusChanged(user: User?) async {
+    let newUid = user?.uid
+    if newUid != currentUid {
+      DataConnectLogger
+        .debug(
+          "Auth identity changed from \(currentUid ?? "nil") to \(newUid ?? "nil"). Disconnecting stream."
+        )
+
+      currentUid = newUid
+      pendingNewToken = nil
+
+      await subManager.handleAuthStateChange()
+      await streamingCall?.requestStream.finish()
+    } else if let user = user {
+      DataConnectLogger
+        .debug("Auth token refreshed for user \(newUid ?? "nil"). Updating on stream.")
+      do {
+        let token = try await user.getIDToken()
+        let hasSubs = await subManager.hasAnySubscription()
+        if hasSubs {
+          var headerRequest = FirebaseDataConnectStreamRequest()
+          headerRequest.headers[GrpcClientRequestHeaders.firebaseAuthToken] = token
+
+          if let call = streamingCall {
+            try await call.requestStream.send(headerRequest)
+            DataConnectLogger.debug("Sent new auth token on stream.")
+          } else {
+            DataConnectLogger.debug("Stream not active, storing token for next request.")
+            pendingNewToken = token
+          }
+        } else {
+          DataConnectLogger.debug("No active subscriptions, storing token for next request.")
+          pendingNewToken = token
+        }
+      } catch {
+        DataConnectLogger.error("Failed to get ID token: \(error)")
+      }
+    }
   }
 
   func connectStream() async {
@@ -252,6 +309,11 @@ actor StreamingGrpcClient: GrpcClient {
       streamRequest.requestID = "\(seqRequestId)"
       streamRequest.execute = try protoCodec.createStreamExecuteRequest(request: request)
 
+      if let token = pendingNewToken {
+        streamRequest.headers[GrpcClientRequestHeaders.firebaseAuthToken] = token
+        pendingNewToken = nil
+      }
+
       DataConnectLogger
         .debug(
           "Making streaming call with request \(streamRequest.requestID), \(streamRequest.name), \(streamRequest.execute.operationName)"
@@ -308,6 +370,11 @@ actor StreamingGrpcClient: GrpcClient {
       var streamRequest = FirebaseDataConnectStreamRequest()
       streamRequest.requestID = requestID.stringValue
       streamRequest.subscribe = try protoCodec.createStreamExecuteRequest(request: request)
+
+      if let token = pendingNewToken {
+        streamRequest.headers[GrpcClientRequestHeaders.firebaseAuthToken] = token
+        pendingNewToken = nil
+      }
 
       do {
         await subManager.saveRequest(streamRequest, for: requestID, type: RequestType.subscribe)
@@ -527,6 +594,28 @@ actor StreamSubscriptionManager {
           .debug("No continuation found for pending mutation with request ID \(reqId)")
       }
     }
+  }
+
+  func handleAuthStateChange() {
+    for value in subscribeContinuations.values {
+      value.finish()
+    }
+    subscribeContinuations.removeAll()
+    activeSubscribeRequests.removeAll()
+    operationSubs.removeAll()
+
+    let errStr = "Authentication state change occured while waiting for stream response"
+    let failureResponse = OperationFailureResponse(
+      rawJsonData: "",
+      errors: [.init(message: errStr, path: [])],
+      data: nil
+    )
+    for value in executeContinuations.values {
+      value.resume(throwing: DataConnectOperationError.executionFailed(response: failureResponse))
+    }
+    executeContinuations.removeAll()
+    activeQueryExecuteRequests.removeAll()
+    activeMutationExecuteRequests.removeAll()
   }
 
   func handleError(_ error: Error, for reqId: RequestIdentifier) {
