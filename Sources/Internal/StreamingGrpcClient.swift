@@ -521,6 +521,7 @@ actor StreamSubscriptionManager {
     if let continuation = subscribeContinuations[requestID] {
       // This shouldn't occur, as subscribes should be de-duplicated earlier, but we want to handle
       // it gracefully in case.
+      continuation.onTermination = nil
       continuation.finish()
     }
 

@@ -190,19 +190,6 @@ public class QueryRefObservation<
       grpcClient: grpcClient,
       cache: cache
     )
-    resultsRepublisher.handleEvents(
-      receiveSubscription: { subscription in
-        self.subscribeCounter += 1
-        DataConnectLogger.debug("Added new subscription for operation Id \(self.operationId)")
-      },
-      receiveCancel: {
-        self.subscribeCounter -= 1
-        DataConnectLogger.debug("Removed a subscription for operationId: \(self.operationId)")
-        if self.subscribeCounter == 0 {
-          self.resultsCancellable?.cancel()
-        }
-      }
-    )
   }
 
   // ObservableQueryRef implementation
@@ -255,7 +242,19 @@ public class QueryRefObservation<
           self.resultsRepublisher.send(.failure(dcerror))
         }
       })
-    return resultsRepublisher.eraseToAnyPublisher()
+    return resultsRepublisher.handleEvents(
+      receiveSubscription: { subscription in
+        self.subscribeCounter += 1
+        DataConnectLogger.debug("Added new subscription for operation Id \(self.operationId)")
+      },
+      receiveCancel: {
+        self.subscribeCounter -= 1
+        DataConnectLogger.debug("Removed a subscription for operationId: \(self.operationId)")
+        if self.subscribeCounter == 0 {
+          self.resultsCancellable?.cancel()
+        }
+      }
+    ).eraseToAnyPublisher()
   }
 }
 
