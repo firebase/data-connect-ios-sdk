@@ -42,7 +42,15 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
     self.grpcClient = grpcClient
     self.cache = cache
     operationId = self.request.requestId
-    resultsPublisher.handleEvents(receiveCancel: {})
+    resultsPublisher.handleEvents(receiveCancel: {
+      Task {
+        do {
+          try await self.grpcClient.unsubscribe(request: request)
+        } catch {
+          DataConnectLogger.error("Failed to unsubscribe from request \(request)")
+        }
+      }
+    })
   }
 
   // This call starts query execution and publishes data to data var

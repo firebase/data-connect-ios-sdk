@@ -247,10 +247,8 @@ actor UnaryGrpcClient: GrpcClient {
   }
 
   func unsubscribe<
-    ResultType: Decodable,
     VariableType: OperationVariable
-  >(request: QueryRequest<VariableType>,
-    resultType: ResultType.Type) async throws {
+  >(request: QueryRequest<VariableType>) async throws {
     throw DataConnectInternalError
       .internalError(message: "Unsubscribe not supported in UnaryGrpcClient")
   }

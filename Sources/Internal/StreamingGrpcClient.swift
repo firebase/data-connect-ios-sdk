@@ -392,10 +392,8 @@ actor StreamingGrpcClient: GrpcClient {
   }
 
   func unsubscribe<
-    ResultType: Decodable,
     VariableType: OperationVariable
-  >(request: QueryRequest<VariableType>,
-    resultType: ResultType.Type) async throws {
+  >(request: QueryRequest<VariableType>) async throws {
     var fdcRequest = request
     await subManager.removeSubscription(for: RequestIdentifier(operationId: fdcRequest.requestId))
   }
