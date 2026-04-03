@@ -19,6 +19,7 @@ import Foundation
 import GRPC
 import NIOCore
 import NIOPosix
+import SwiftProtobuf
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 actor StreamingGrpcClient: GrpcClient {
@@ -394,8 +395,44 @@ actor StreamingGrpcClient: GrpcClient {
   func unsubscribe<
     VariableType: OperationVariable
   >(request: QueryRequest<VariableType>) async throws {
+    guard let streamingCall else {
+      DataConnectLogger.error(
+        "When calling unsubscribe(), gRPC client has not been configured."
+      )
+      throw DataConnectInternalError.internalError(message: "Streaming call not configured")
+    }
+
     var fdcRequest = request
-    await subManager.removeSubscription(for: RequestIdentifier(operationId: fdcRequest.requestId))
+    let hasSubscription = await subManager.hasSubscription(for: fdcRequest.requestId)
+    if !hasSubscription {
+      DataConnectLogger
+        .debug(
+          "unsubscribe() called without active subscription for request: \(fdcRequest.requestId)"
+        )
+      return
+    }
+
+    let requestID = RequestIdentifier(
+      operationId: fdcRequest.requestId,
+    )
+
+    let protoCodec = ProtoCodec()
+    var streamRequest = FirebaseDataConnectStreamRequest()
+    streamRequest.requestID = requestID.stringValue
+    streamRequest.cancel = SwiftProtobuf.Google_Protobuf_Empty()
+
+    if let token = pendingNewToken {
+      streamRequest.headers[GrpcClientRequestHeaders.firebaseAuthToken] = token
+      pendingNewToken = nil
+    }
+
+    do {
+      try await streamingCall.requestStream.send(streamRequest)
+      await subManager.removeSubscription(for: requestID)
+    } catch {
+      await subManager.removeSubscription(for: requestID)
+      throw error
+    }
   }
 
   func hasActiveSubscriptions() async -> Bool {
