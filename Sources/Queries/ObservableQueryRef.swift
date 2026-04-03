@@ -173,6 +173,15 @@ public class QueryRefObservation<
   @ObservationIgnored
   private var resultsCancellable: AnyCancellable?
 
+  @ObservationIgnored
+  private let resultsRepublisher = PassthroughSubject<
+    Result<OperationResult<ResultData>, AnyDataConnectError>,
+    Never
+  >()
+
+  @ObservationIgnored
+  private var subscribeCounter = 0
+
   init(request: QueryRequest<Variable>, dataType: ResultData.Type, grpcClient: GrpcClient,
        cache: Cache?) {
     self.request = request
@@ -180,6 +189,19 @@ public class QueryRefObservation<
       request: request,
       grpcClient: grpcClient,
       cache: cache
+    )
+    resultsRepublisher.handleEvents(
+      receiveSubscription: { subscription in
+        self.subscribeCounter += 1
+        DataConnectLogger.debug("Added new subscription for operation Id \(self.operationId)")
+      },
+      receiveCancel: {
+        self.subscribeCounter -= 1
+        DataConnectLogger.debug("Removed a subscription for operationId: \(self.operationId)")
+        if self.subscribeCounter == 0 {
+          self.resultsCancellable?.cancel()
+        }
+      }
     )
   }
 
@@ -227,11 +249,13 @@ public class QueryRefObservation<
           self.data = resultData.data
           self.source = resultData.source
           self.lastError = nil
+          self.resultsRepublisher.send(.success(resultData))
         case let .failure(dcerror):
           self.lastError = dcerror.dataConnectError
+          self.resultsRepublisher.send(.failure(dcerror))
         }
       })
-    return resultsSub
+    return resultsRepublisher.eraseToAnyPublisher()
   }
 }
 

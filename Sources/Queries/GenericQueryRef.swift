@@ -42,6 +42,7 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
     self.grpcClient = grpcClient
     self.cache = cache
     operationId = self.request.requestId
+    resultsPublisher.handleEvents(receiveCancel: {})
   }
 
   // This call starts query execution and publishes data to data var
@@ -52,10 +53,9 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
       do {
         _ = try await fetchCachedResults(allowStale: true)
 
-        // if we already have a stream return
+        // If we already have a stream return
         guard self.subscriptionStream == nil else { return }
 
-        // TODO: Save this stream so we don't keep calling subscribe
         subscriptionStream = try await grpcClient
           .subscribe(request: self.request, resultType: ResultData.self)
 
