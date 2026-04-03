@@ -103,7 +103,7 @@ actor StreamingGrpcClient: GrpcClient {
     if newUid != currentUid {
       DataConnectLogger
         .debug(
-          "Auth identity changed from \(currentUid ?? "nil") to \(newUid ?? "nil"). Reconnecting stream."
+          "Auth identity changed from \(currentUid ?? "nil") to \(newUid ?? "nil"). Disconnecting stream."
         )
 
       currentUid = newUid
