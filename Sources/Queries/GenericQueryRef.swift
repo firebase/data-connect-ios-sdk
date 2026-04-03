@@ -42,15 +42,6 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
     self.grpcClient = grpcClient
     self.cache = cache
     operationId = self.request.requestId
-    resultsPublisher.handleEvents(receiveCancel: {
-      Task {
-        do {
-          try await self.grpcClient.unsubscribe(request: request)
-        } catch {
-          DataConnectLogger.error("Failed to unsubscribe from request \(request)")
-        }
-      }
-    })
   }
 
   // This call starts query execution and publishes data to data var
@@ -95,7 +86,15 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
               ))))
       }
     }
-    return resultsPublisher.eraseToAnyPublisher()
+    return resultsPublisher.handleEvents(receiveCancel: {
+      Task {
+        do {
+          try await self.grpcClient.unsubscribe(request: self.request)
+        } catch {
+          DataConnectLogger.error("Failed to unsubscribe from request \(self.request)")
+        }
+      }
+    }).eraseToAnyPublisher()
   }
 
   // one-shot execution. It will fetch latest data, update any caches

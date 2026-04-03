@@ -245,7 +245,7 @@ public class QueryRefObservation<
     return resultsRepublisher.handleEvents(
       receiveSubscription: { subscription in
         self.subscribeCounter += 1
-        DataConnectLogger.debug("Added new subscription for operation Id \(self.operationId)")
+        DataConnectLogger.debug("Added new subscription for operationId: \(self.operationId)")
       },
       receiveCancel: {
         self.subscribeCounter -= 1

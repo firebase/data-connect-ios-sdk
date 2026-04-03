@@ -364,9 +364,7 @@ actor StreamingGrpcClient: GrpcClient {
         .debug("subscribe() called multiple times for the same request: \(fdcRequest.requestId)")
     }
 
-    let requestID = RequestIdentifier(
-      operationId: fdcRequest.requestId,
-    )
+    let requestID = RequestIdentifier(operationId: fdcRequest.requestId)
     let stream = try await subManager.createStream(for: requestID)
 
     if !hasSubscription {
@@ -412,11 +410,8 @@ actor StreamingGrpcClient: GrpcClient {
       return
     }
 
-    let requestID = RequestIdentifier(
-      operationId: fdcRequest.requestId,
-    )
+    let requestID = RequestIdentifier(operationId: fdcRequest.requestId)
 
-    let protoCodec = ProtoCodec()
     var streamRequest = FirebaseDataConnectStreamRequest()
     streamRequest.requestID = requestID.stringValue
     streamRequest.cancel = SwiftProtobuf.Google_Protobuf_Empty()
