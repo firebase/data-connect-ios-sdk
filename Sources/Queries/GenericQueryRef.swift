@@ -52,10 +52,9 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
       do {
         _ = try await fetchCachedResults(allowStale: true)
 
-        // if we already have a stream return
+        // If we already have a stream return
         guard self.subscriptionStream == nil else { return }
 
-        // TODO: Save this stream so we don't keep calling subscribe
         subscriptionStream = try await grpcClient
           .subscribe(request: self.request, resultType: ResultData.self)
 
@@ -78,7 +77,7 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
         // Exiting the loop indicates the stream has finished.
         self.subscriptionStream = nil
       } catch {
-        // stream failures
+        // Stream failures
         resultsPublisher
           .send(.failure(AnyDataConnectError(dataConnectError: DataConnectInternalError
               .internalError(
@@ -87,7 +86,15 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
               ))))
       }
     }
-    return resultsPublisher.eraseToAnyPublisher()
+    return resultsPublisher.handleEvents(receiveCancel: {
+      Task {
+        do {
+          try await self.grpcClient.unsubscribe(request: self.request)
+        } catch {
+          DataConnectLogger.error("Failed to unsubscribe from request \(self.request)")
+        }
+      }
+    }).eraseToAnyPublisher()
   }
 
   // one-shot execution. It will fetch latest data, update any caches

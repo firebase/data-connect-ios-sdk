@@ -246,6 +246,13 @@ actor UnaryGrpcClient: GrpcClient {
       .internalError(message: "Subscribe not supported in UnaryGrpcClient")
   }
 
+  func unsubscribe<
+    VariableType: OperationVariable
+  >(request: QueryRequest<VariableType>) async throws {
+    throw DataConnectInternalError
+      .internalError(message: "Unsubscribe not supported in UnaryGrpcClient")
+  }
+
   func createCallOptions() async -> CallOptions {
     return await DataConnectGrpcClient.createCallOptions(
       app: app,

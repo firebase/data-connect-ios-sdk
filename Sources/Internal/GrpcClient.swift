@@ -80,6 +80,10 @@ protocol GrpcClient: Sendable {
   >(request: QueryRequest<VariableType>,
     resultType: ResultType.Type) async throws -> AsyncStream<ServerResponse>
 
+  func unsubscribe<
+    VariableType: OperationVariable
+  >(request: QueryRequest<VariableType>) async throws
+
   func createCallOptions() async -> CallOptions
 }
 
@@ -208,6 +212,12 @@ actor DataConnectGrpcClient: GrpcClient, CustomStringConvertible {
   >(request: QueryRequest<VariableType>,
     resultType: ResultType.Type) async throws -> AsyncStream<ServerResponse> {
     return try await streamingClient.subscribe(request: request, resultType: resultType)
+  }
+
+  func unsubscribe<
+    VariableType: OperationVariable
+  >(request: QueryRequest<VariableType>) async throws {
+    return try await streamingClient.unsubscribe(request: request)
   }
 
   func createCallOptions() async -> CallOptions {

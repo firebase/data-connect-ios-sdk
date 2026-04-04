@@ -19,6 +19,7 @@ import Foundation
 import GRPC
 import NIOCore
 import NIOPosix
+import SwiftProtobuf
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 actor StreamingGrpcClient: GrpcClient {
@@ -41,7 +42,7 @@ actor StreamingGrpcClient: GrpcClient {
   private var currentUid: String?
   private var pendingNewToken: String?
 
-  private var requestIdSequence: UInt64 = 0
+  private var requestIdSequence: UInt64 = 1
 
   private var nextRequestIdSequence: UInt64 {
     requestIdSequence += 1
@@ -358,11 +359,12 @@ actor StreamingGrpcClient: GrpcClient {
 
     var fdcRequest = request
     let hasSubscription = await subManager.hasSubscription(for: fdcRequest.requestId)
+    if hasSubscription {
+      DataConnectLogger
+        .debug("subscribe() called multiple times for the same request: \(fdcRequest.requestId)")
+    }
 
-    let requestID = RequestIdentifier(
-      operationId: fdcRequest.requestId,
-      sequenceNumber: nextRequestIdSequence
-    )
+    let requestID = RequestIdentifier(operationId: fdcRequest.requestId)
     let stream = try await subManager.createStream(for: requestID)
 
     if !hasSubscription {
@@ -386,6 +388,46 @@ actor StreamingGrpcClient: GrpcClient {
     }
 
     return stream
+  }
+
+  func unsubscribe<
+    VariableType: OperationVariable
+  >(request: QueryRequest<VariableType>) async throws {
+    guard let streamingCall else {
+      DataConnectLogger.error(
+        "When calling unsubscribe(), gRPC client has not been configured."
+      )
+      throw DataConnectInternalError.internalError(message: "Streaming call not configured")
+    }
+
+    var fdcRequest = request
+    let hasSubscription = await subManager.hasSubscription(for: fdcRequest.requestId)
+    if !hasSubscription {
+      DataConnectLogger
+        .debug(
+          "unsubscribe() called without active subscription for request: \(fdcRequest.requestId)"
+        )
+      return
+    }
+
+    let requestID = RequestIdentifier(operationId: fdcRequest.requestId)
+
+    var streamRequest = FirebaseDataConnectStreamRequest()
+    streamRequest.requestID = requestID.stringValue
+    streamRequest.cancel = SwiftProtobuf.Google_Protobuf_Empty()
+
+    if let token = pendingNewToken {
+      streamRequest.headers[GrpcClientRequestHeaders.firebaseAuthToken] = token
+      pendingNewToken = nil
+    }
+
+    do {
+      try await streamingCall.requestStream.send(streamRequest)
+      await subManager.removeSubscription(for: requestID)
+    } catch {
+      await subManager.removeSubscription(for: requestID)
+      throw error
+    }
   }
 
   func hasActiveSubscriptions() async -> Bool {
@@ -415,6 +457,11 @@ struct RequestIdentifier: CustomStringConvertible, Hashable, Equatable {
 
   var description: String {
     stringValue
+  }
+
+  init(operationId: String) {
+    self.operationId = operationId
+    sequenceNumber = 0
   }
 
   init(operationId: String, sequenceNumber: UInt64) {
@@ -461,9 +508,6 @@ actor StreamSubscriptionManager {
     [:]
   private var activeMutationExecuteRequests: Set<RequestIdentifier> = []
 
-  // TODO: Do we need this mapping? Can we just track subscribeContinuations?
-  private var operationSubs = [String: RequestIdentifier]()
-
   func saveRequest(_ request: FirebaseDataConnectStreamRequest,
                    for requestID: RequestIdentifier,
                    type: RequestType) {
@@ -506,13 +550,15 @@ actor StreamSubscriptionManager {
   }
 
   func createStream(for requestID: RequestIdentifier) throws -> AsyncStream<ServerResponse> {
-    if let existingReq = operationSubs[requestID.operationId] {
-      removeSubscription(for: existingReq)
+    if let continuation = subscribeContinuations[requestID] {
+      // This shouldn't occur, as subscribes should be de-duplicated earlier, but we want to handle
+      // it gracefully in case.
+      continuation.onTermination = nil
+      continuation.finish()
     }
 
     let stream = AsyncStream<ServerResponse> { continuation in
       subscribeContinuations[requestID] = continuation
-      operationSubs[requestID.operationId] = requestID
 
       continuation.onTermination = { _ in
         Task { await self.removeSubscription(for: requestID) }
@@ -522,11 +568,11 @@ actor StreamSubscriptionManager {
   }
 
   func hasSubscription(for operationId: String) -> Bool {
-    operationSubs[operationId] != nil
+    subscribeContinuations[RequestIdentifier(operationId: operationId)] != nil
   }
 
   func hasAnySubscription() -> Bool {
-    !operationSubs.isEmpty
+    !subscribeContinuations.isEmpty
   }
 
   func hasPendingExecutes() -> Bool {
@@ -534,11 +580,9 @@ actor StreamSubscriptionManager {
   }
 
   func removeSubscription(for requestID: RequestIdentifier) {
-    if let continuation = subscribeContinuations[requestID] {
+    if let continuation = subscribeContinuations.removeValue(forKey: requestID) {
       continuation.finish()
     }
-    subscribeContinuations.removeValue(forKey: requestID)
-    operationSubs.removeValue(forKey: requestID.operationId)
     activeSubscribeRequests.removeValue(forKey: requestID)
   }
 
@@ -602,7 +646,6 @@ actor StreamSubscriptionManager {
     }
     subscribeContinuations.removeAll()
     activeSubscribeRequests.removeAll()
-    operationSubs.removeAll()
 
     let errStr = "Authentication state change occured while waiting for stream response"
     let failureResponse = OperationFailureResponse(

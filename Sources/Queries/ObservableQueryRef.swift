@@ -14,6 +14,7 @@
 
 import Foundation
 
+import Atomics
 @preconcurrency import Combine
 import Observation
 
@@ -55,6 +56,13 @@ public class QueryRefObservableObject<
   private var baseRef: GenericQueryRef<ResultData, Variable>
 
   private var resultsCancellable: AnyCancellable?
+
+  private let resultsRepublisher = PassthroughSubject<
+    Result<OperationResult<ResultData>, AnyDataConnectError>,
+    Never
+  >()
+
+  private var subscribeCounter = ManagedAtomic<Int>(0)
 
   init(request: QueryRequest<Variable>,
        dataType: ResultData.Type,
@@ -104,19 +112,36 @@ public class QueryRefObservableObject<
   public func subscribe() async throws
     -> AnyPublisher<Result<OperationResult<ResultData>, AnyDataConnectError>, Never> {
     let resultsSub = await baseRef.subscribe()
-    resultsCancellable = resultsSub
-      .receive(on: DispatchQueue.main)
-      .sink(receiveValue: { result in
-        switch result {
-        case let .success(resultData):
-          self.data = resultData.data
-          self.source = resultData.source
-          self.lastError = nil
-        case let .failure(dcerror):
-          self.lastError = dcerror.dataConnectError
+    if resultsCancellable == nil {
+      resultsCancellable = resultsSub
+        .receive(on: DispatchQueue.main)
+        .sink(receiveValue: { [weak self] result in
+          switch result {
+          case let .success(resultData):
+            self?.data = resultData.data
+            self?.source = resultData.source
+            self?.lastError = nil
+            self?.resultsRepublisher.send(.success(resultData))
+          case let .failure(dcerror):
+            self?.lastError = dcerror.dataConnectError
+            self?.resultsRepublisher.send(.failure(dcerror))
+          }
+        })
+    }
+    return resultsRepublisher.handleEvents(
+      receiveSubscription: { subscription in
+        self.subscribeCounter.wrappingIncrement(ordering: .acquiringAndReleasing)
+        DataConnectLogger.debug("Added new subscription for operationId: \(self.operationId)")
+      },
+      receiveCancel: {
+        self.subscribeCounter.wrappingDecrement(ordering: .acquiringAndReleasing)
+        DataConnectLogger.debug("Removed a subscription for operationId: \(self.operationId)")
+        if self.subscribeCounter.load(ordering: .acquiring) == 0 {
+          self.resultsCancellable?.cancel()
+          self.resultsCancellable = nil
         }
-      })
-    return resultsSub
+      }
+    ).eraseToAnyPublisher()
   }
 }
 
@@ -173,6 +198,15 @@ public class QueryRefObservation<
   @ObservationIgnored
   private var resultsCancellable: AnyCancellable?
 
+  @ObservationIgnored
+  private let resultsRepublisher = PassthroughSubject<
+    Result<OperationResult<ResultData>, AnyDataConnectError>,
+    Never
+  >()
+
+  @ObservationIgnored
+  private var subscribeCounter = ManagedAtomic<Int>(0)
+
   init(request: QueryRequest<Variable>, dataType: ResultData.Type, grpcClient: GrpcClient,
        cache: Cache?) {
     self.request = request
@@ -219,19 +253,36 @@ public class QueryRefObservation<
   public func subscribe() async throws
     -> AnyPublisher<Result<OperationResult<ResultData>, AnyDataConnectError>, Never> {
     let resultsSub = await baseRef.subscribe()
-    resultsCancellable = resultsSub
-      .receive(on: DispatchQueue.main)
-      .sink(receiveValue: { result in
-        switch result {
-        case let .success(resultData):
-          self.data = resultData.data
-          self.source = resultData.source
-          self.lastError = nil
-        case let .failure(dcerror):
-          self.lastError = dcerror.dataConnectError
+    if resultsCancellable == nil {
+      resultsCancellable = resultsSub
+        .receive(on: DispatchQueue.main)
+        .sink(receiveValue: { [weak self] result in
+          switch result {
+          case let .success(resultData):
+            self?.data = resultData.data
+            self?.source = resultData.source
+            self?.lastError = nil
+            self?.resultsRepublisher.send(.success(resultData))
+          case let .failure(dcerror):
+            self?.lastError = dcerror.dataConnectError
+            self?.resultsRepublisher.send(.failure(dcerror))
+          }
+        })
+    }
+    return resultsRepublisher.handleEvents(
+      receiveSubscription: { subscription in
+        self.subscribeCounter.wrappingIncrement(ordering: .acquiringAndReleasing)
+        DataConnectLogger.debug("Added new subscription for operationId: \(self.operationId)")
+      },
+      receiveCancel: {
+        self.subscribeCounter.wrappingDecrement(ordering: .acquiringAndReleasing)
+        DataConnectLogger.debug("Removed a subscription for operationId: \(self.operationId)")
+        if self.subscribeCounter.load(ordering: .acquiring) == 0 {
+          self.resultsCancellable?.cancel()
+          self.resultsCancellable = nil
         }
-      })
-    return resultsSub
+      }
+    ).eraseToAnyPublisher()
   }
 }
 
