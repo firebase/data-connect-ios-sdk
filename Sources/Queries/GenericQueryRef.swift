@@ -77,7 +77,7 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
         // Exiting the loop indicates the stream has finished.
         self.subscriptionStream = nil
       } catch {
-        // stream failures
+        // Stream failures
         resultsPublisher
           .send(.failure(AnyDataConnectError(dataConnectError: DataConnectInternalError
               .internalError(
