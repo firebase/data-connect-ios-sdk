@@ -30,6 +30,8 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
 
   private let cache: Cache?
 
+  private var subscriptionStream: AsyncStream<ServerResponse>?
+
   // Ideally we would like this to be part of the QueryRef protocol
   // Not adding for now since the protocol is Public
   // This property is for now an internal property.
@@ -49,8 +51,33 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
     Task {
       do {
         _ = try await fetchCachedResults(allowStale: true)
-        _ = try await fetchServerResults()
+
+        // If we already have a stream return
+        guard self.subscriptionStream == nil else { return }
+
+        subscriptionStream = try await grpcClient
+          .subscribe(request: self.request, resultType: ResultData.self)
+
+        guard let subscriptionStream else { return }
+
+        for await response in subscriptionStream {
+          do {
+            DataConnectLogger.debug("Received response in sub stream in GenericQueryRef")
+            _ = try await self.handleServerResponse(response: response)
+          } catch {
+            // failures in handling response
+            resultsPublisher
+              .send(.failure(AnyDataConnectError(dataConnectError: DataConnectInternalError
+                  .internalError(
+                    message: "Failed to handle response",
+                    cause: error
+                  ))))
+          }
+        }
+        // Exiting the loop indicates the stream has finished.
+        self.subscriptionStream = nil
       } catch {
+        // Stream failures
         resultsPublisher
           .send(.failure(AnyDataConnectError(dataConnectError: DataConnectInternalError
               .internalError(
@@ -59,7 +86,15 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
               ))))
       }
     }
-    return resultsPublisher.eraseToAnyPublisher()
+    return resultsPublisher.handleEvents(receiveCancel: {
+      Task {
+        do {
+          try await self.grpcClient.unsubscribe(request: self.request)
+        } catch {
+          DataConnectLogger.error("Failed to unsubscribe from request \(self.request)")
+        }
+      }
+    }).eraseToAnyPublisher()
   }
 
   // one-shot execution. It will fetch latest data, update any caches
@@ -90,6 +125,11 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
       resultType: ResultData.self
     )
 
+    return try await handleServerResponse(response: response)
+  }
+
+  private func handleServerResponse(response: ServerResponse) async throws
+    -> OperationResult<ResultData> {
     do {
       if let cache {
         await cache.update(queryId: operationId, response: response, requestor: self)

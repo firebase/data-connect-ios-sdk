@@ -268,7 +268,7 @@ public struct OperationFailureResponse: Sendable {
     /// The error message (if available)
     public let message: String
     /// The path to the field to which this error applies.
-    public let path: [DataConnectPathSegment]
+    public let path: [DataConnectPathSegment]?
   }
 }
 

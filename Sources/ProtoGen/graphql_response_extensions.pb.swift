@@ -36,6 +36,61 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
   typealias Version = _2
 }
 
+/// Action indicates the operation type on the entity.
+public enum Google_Firebase_Dataconnect_V1_Action: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+  case unspecified // = 0
+  case get // = 1
+  case list // = 2
+  case create // = 3
+  case update // = 4
+  case upsert // = 5
+  case delete // = 6
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .unspecified
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .unspecified
+    case 1: self = .get
+    case 2: self = .list
+    case 3: self = .create
+    case 4: self = .update
+    case 5: self = .upsert
+    case 6: self = .delete
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .unspecified: return 0
+    case .get: return 1
+    case .list: return 2
+    case .create: return 3
+    case .update: return 4
+    case .upsert: return 5
+    case .delete: return 6
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [Google_Firebase_Dataconnect_V1_Action] = [
+    .unspecified,
+    .get,
+    .list,
+    .create,
+    .update,
+    .upsert,
+    .delete,
+  ]
+
+}
+
 /// GraphqlResponseExtensions contains additional information of
 /// `GraphqlResponse` or `ExecuteQueryResponse`.
 public struct Google_Firebase_Dataconnect_V1_GraphqlResponseExtensions: Sendable {
@@ -47,64 +102,79 @@ public struct Google_Firebase_Dataconnect_V1_GraphqlResponseExtensions: Sendable
   /// (-- Future fields should go inside to avoid name conflicts with other GQL
   /// extensions in the wild unless we're implementing a common 3P pattern in
   /// extensions such as versioning and telemetry. --)
-  public var dataConnect: [Google_Firebase_Dataconnect_V1_GraphqlResponseExtensions.DataConnectProperties] = []
+  public var dataConnect: [Google_Firebase_Dataconnect_V1_DataConnectProperties] = []
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  /// Data Connect specific properties for a path under response.data.
-  /// (-- Design doc: http://go/fdc-caching-wire-protocol --)
-  public struct DataConnectProperties: Sendable {
-    // SwiftProtobuf.Message conformance is added in an extension below. See the
-    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
-    // methods supported on all messages.
+  public init() {}
+}
 
-    /// The path under response.data where the rest of the fields apply.
-    /// Each element may be a string (field name) or number (array index).
-    /// The root of response.data is denoted by the empty list `[]`.
-    /// (-- To simplify client logic, the server should never set this to null.
-    /// i.e. Use `[]` if the properties below apply to everything in data. --)
-    public var path: SwiftProtobuf.Google_Protobuf_ListValue {
-      get {return _path ?? SwiftProtobuf.Google_Protobuf_ListValue()}
-      set {_path = newValue}
-    }
-    /// Returns true if `path` has been explicitly set.
-    public var hasPath: Bool {return self._path != nil}
-    /// Clears the value of `path`. Subsequent reads from it will return its default value.
-    public mutating func clearPath() {self._path = nil}
+/// Data Connect specific properties for a path under response.data.
+/// (-- Design doc: http://go/fdc-caching-wire-protocol --)
+public struct Google_Firebase_Dataconnect_V1_DataConnectProperties: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
 
-    /// A single Entity ID. Set if the path points to a single entity.
-    public var entityID: String = String()
-
-    /// A list of Entity IDs. Set if the path points to an array of entities. An
-    /// ID is present for each element of the array at the corresponding index.
-    public var entityIds: [String] = []
-
-    /// The server-suggested duration before data under path is considered stale.
-    /// (-- Right now, this field is never set. For future plans, see
-    /// http://go/fdc-sdk-caching-config#heading=h.rmvncy2rao3g --)
-    public var maxAge: SwiftProtobuf.Google_Protobuf_Duration {
-      get {return _maxAge ?? SwiftProtobuf.Google_Protobuf_Duration()}
-      set {_maxAge = newValue}
-    }
-    /// Returns true if `maxAge` has been explicitly set.
-    public var hasMaxAge: Bool {return self._maxAge != nil}
-    /// Clears the value of `maxAge`. Subsequent reads from it will return its default value.
-    public mutating func clearMaxAge() {self._maxAge = nil}
-
-    public var unknownFields = SwiftProtobuf.UnknownStorage()
-
-    public init() {}
-
-    fileprivate var _path: SwiftProtobuf.Google_Protobuf_ListValue? = nil
-    fileprivate var _maxAge: SwiftProtobuf.Google_Protobuf_Duration? = nil
+  /// The path under response.data where the rest of the fields apply.
+  /// Each element may be a string (field name) or number (array index).
+  /// The root of response.data is denoted by the empty list `[]`.
+  /// (-- To simplify client logic, the server should never set this to null.
+  /// i.e. Use `[]` if the properties below apply to everything in data. --)
+  public var path: SwiftProtobuf.Google_Protobuf_ListValue {
+    get {return _path ?? SwiftProtobuf.Google_Protobuf_ListValue()}
+    set {_path = newValue}
   }
+  /// Returns true if `path` has been explicitly set.
+  public var hasPath: Bool {return self._path != nil}
+  /// Clears the value of `path`. Subsequent reads from it will return its default value.
+  public mutating func clearPath() {self._path = nil}
+
+  /// A single Entity ID. Set if the path points to a single entity.
+  public var entityID: String = String()
+
+  /// A list of Entity IDs. Set if the path points to an array of entities. An
+  /// ID is present for each element of the array at the corresponding index.
+  public var entityIds: [String] = []
+
+  /// Indicates the action performed on the entity in this path.
+  public var action: Google_Firebase_Dataconnect_V1_Action = .unspecified
+
+  /// The server-suggested duration before data under path is considered stale.
+  /// (-- Right now, this field is never set. For future plans, see
+  /// http://go/fdc-sdk-caching-config#heading=h.rmvncy2rao3g --)
+  public var maxAge: SwiftProtobuf.Google_Protobuf_Duration {
+    get {return _maxAge ?? SwiftProtobuf.Google_Protobuf_Duration()}
+    set {_maxAge = newValue}
+  }
+  /// Returns true if `maxAge` has been explicitly set.
+  public var hasMaxAge: Bool {return self._maxAge != nil}
+  /// Clears the value of `maxAge`. Subsequent reads from it will return its default value.
+  public mutating func clearMaxAge() {self._maxAge = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
+
+  fileprivate var _path: SwiftProtobuf.Google_Protobuf_ListValue? = nil
+  fileprivate var _maxAge: SwiftProtobuf.Google_Protobuf_Duration? = nil
 }
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 fileprivate let _protobuf_package = "google.firebase.dataconnect.v1"
+
+extension Google_Firebase_Dataconnect_V1_Action: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "ACTION_UNSPECIFIED"),
+    1: .same(proto: "GET"),
+    2: .same(proto: "LIST"),
+    3: .same(proto: "CREATE"),
+    4: .same(proto: "UPDATE"),
+    5: .same(proto: "UPSERT"),
+    6: .same(proto: "DELETE"),
+  ]
+}
 
 extension Google_Firebase_Dataconnect_V1_GraphqlResponseExtensions: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GraphqlResponseExtensions"
@@ -138,12 +208,13 @@ extension Google_Firebase_Dataconnect_V1_GraphqlResponseExtensions: SwiftProtobu
   }
 }
 
-extension Google_Firebase_Dataconnect_V1_GraphqlResponseExtensions.DataConnectProperties: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  public static let protoMessageName: String = Google_Firebase_Dataconnect_V1_GraphqlResponseExtensions.protoMessageName + ".DataConnectProperties"
+extension Google_Firebase_Dataconnect_V1_DataConnectProperties: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".DataConnectProperties"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "path"),
     2: .standard(proto: "entity_id"),
     3: .standard(proto: "entity_ids"),
+    5: .same(proto: "action"),
     4: .standard(proto: "max_age"),
   ]
 
@@ -157,6 +228,7 @@ extension Google_Firebase_Dataconnect_V1_GraphqlResponseExtensions.DataConnectPr
       case 2: try { try decoder.decodeSingularStringField(value: &self.entityID) }()
       case 3: try { try decoder.decodeRepeatedStringField(value: &self.entityIds) }()
       case 4: try { try decoder.decodeSingularMessageField(value: &self._maxAge) }()
+      case 5: try { try decoder.decodeSingularEnumField(value: &self.action) }()
       default: break
       }
     }
@@ -179,13 +251,17 @@ extension Google_Firebase_Dataconnect_V1_GraphqlResponseExtensions.DataConnectPr
     try { if let v = self._maxAge {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
     } }()
+    if self.action != .unspecified {
+      try visitor.visitSingularEnumField(value: self.action, fieldNumber: 5)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: Google_Firebase_Dataconnect_V1_GraphqlResponseExtensions.DataConnectProperties, rhs: Google_Firebase_Dataconnect_V1_GraphqlResponseExtensions.DataConnectProperties) -> Bool {
+  public static func ==(lhs: Google_Firebase_Dataconnect_V1_DataConnectProperties, rhs: Google_Firebase_Dataconnect_V1_DataConnectProperties) -> Bool {
     if lhs._path != rhs._path {return false}
     if lhs.entityID != rhs.entityID {return false}
     if lhs.entityIds != rhs.entityIds {return false}
+    if lhs.action != rhs.action {return false}
     if lhs._maxAge != rhs._maxAge {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true

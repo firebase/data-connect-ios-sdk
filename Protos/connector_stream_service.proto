@@ -1,0 +1,152 @@
+// Copyright 2025 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+// Adapted from third_party/firebase/dataconnect/emulator/server/api/connector_stream_service.proto
+syntax = "proto3";
+
+package google.firebase.dataconnect.v1;
+
+import "google/api/field_behavior.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/struct.proto";
+import "graphql_error.proto";
+import "graphql_response_extensions.proto";
+
+option java_package = "com.google.firebase.dataconnect.api";
+option java_multiple_files = true;
+option java_outer_classname = "ConnectorStreamServiceProto";
+
+// ConnectorStreamService provides bi-directional streaming APIs to use with
+// Firebase Data Connect connectors.
+service ConnectorStreamService {
+  // Connect establishes a bi-directional connection to the server.
+  // The client can send new requests, resume requests, and receive realtime
+  // updates.
+  //
+  // The connection may last for hours, the Data Connect SDK should refresh
+  // Firebase auth token to avoid revoked query subscriptions.
+  //
+  // (-- api-linter: core::0136::verb-noun=disabled
+  //     aip.dev/not-precedent: Connect is a general purpose streaming API. --)
+  rpc Connect(stream StreamRequest) returns (stream StreamResponse) {}
+}
+
+// StreamRequest defines the request of Data Connect's bi-directional streaming
+// API.
+//
+// It supports 4 different request kinds:
+// - Subscribe: Subscribe to the result of a Data Connect query.
+// - Execute: Execute a Data Connect query or mutation.
+// - Resume: Resume a query or part of it.
+// - Cancel: Signal that the client is no longer interested in the result of
+// this operation.
+message StreamRequest {
+  reserved 7, 9;
+  // The resource name of the connector to find the predefined query, in
+  // the format:
+  // ```
+  // projects/{project}/locations/{location}/services/{service}/connectors/{connector}
+  // ```
+  // Only needed for the first request of rpc Stream.
+  string name = 1 [(google.api.field_behavior) = REQUIRED];
+
+  // The HTTP headers to use for the request.
+  // (-- See go/fdc-realtime-headers --)
+  map<string, string> headers = 10 [(google.api.field_behavior) = OPTIONAL];
+
+  // The request id used to identify a request within the stream.
+  // It only needs to be unique within the stream, commonly a monotonically
+  // increasing sequence number per stream.
+  // (-- api-linter: core::0155::request-id-format=disabled
+  //     aip.dev/not-precedent: request_id is only unique within the stream. --)
+  string request_id = 2 [(google.api.field_behavior) = OPTIONAL];
+
+  // The kind of request.
+  oneof request_kind {
+    // Subscribe to the result of a Data Connect query.
+    // Watch for any subsequent changes until it’s cancelled by either client or
+    // backend.
+    //
+    // Must provide a new stream request id.
+    ExecuteRequest subscribe = 3;
+
+    // Execute a Data Connect query or mutation.
+    //
+    // Must provide a new stream request id.
+    ExecuteRequest execute = 4;
+
+    // Resume a query or part of it.
+    //
+    // Prefer an existing stream request id.
+    // Though it can send a new request if the connection was interrupted.
+    ResumeRequest resume = 5;
+
+    // Signal that the client is no longer interested in the result of this
+    // operation.
+    google.protobuf.Empty cancel = 6;
+  }
+
+  // A server-provided ETag for the data payload.
+  // To save bandwidth, include this ETag in subsequent requests to prevent
+  // the server from resending data that has not changed.
+  string data_etag = 8 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// ExecuteRequest defines the request to execute a Data Connect query or
+// mutation.
+message ExecuteRequest {
+  // The name of the GraphQL operation name.
+  // Required because all connector operations must be named.
+  // See https://graphql.org/learn/queries/#operation-name.
+  // (-- api-linter: core::0122::name-suffix=disabled
+  //     aip.dev/not-precedent: Must conform to GraphQL HTTP spec standard. --)
+  string operation_name = 2 [(google.api.field_behavior) = REQUIRED];
+
+  // Values for GraphQL variables provided in this request.
+  google.protobuf.Struct variables = 3 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// ResumeRequest defines the request to resume a query or part of it.
+message ResumeRequest {}
+
+// StreamResponse defines the response of Data Connect's bi-directional
+// streaming API.
+message StreamResponse {
+  // Identify which request this response is for.
+  // (-- api-linter: core::0155::request-id-format=disabled
+  //     aip.dev/not-precedent: request_id is only unique within the stream. --)
+  string request_id = 1 [(google.api.field_behavior) = OPTIONAL];
+
+  // The result of executing the requested operation.
+  google.protobuf.Struct data = 2;
+
+  // The backend may return a data_etag, computed based on the data JSON
+  // payload.
+  //
+  // To save bandwidth, the Data Connect SDK should include data_etag of cached
+  // data in subsequent requests, so the backend can avoid sending redundant
+  // data already in SDK cache.
+  string data_etag = 4;
+
+  // Errors of this response.
+  repeated GraphqlError errors = 3;
+
+  // The backend can no longer serve this operation.
+  // For example, it may become invalid after schema change.
+  bool cancelled = 5;
+
+  // Additional response information.
+  GraphqlResponseExtensions extensions = 6;
+}

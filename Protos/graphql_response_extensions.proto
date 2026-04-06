@@ -28,28 +28,6 @@ option java_package = "com.google.firebase.dataconnect.api";
 // GraphqlResponseExtensions contains additional information of
 // `GraphqlResponse` or `ExecuteQueryResponse`.
 message GraphqlResponseExtensions {
-  // Data Connect specific properties for a path under response.data.
-  // (-- Design doc: http://go/fdc-caching-wire-protocol --)
-  message DataConnectProperties {
-    // The path under response.data where the rest of the fields apply.
-    // Each element may be a string (field name) or number (array index).
-    // The root of response.data is denoted by the empty list `[]`.
-    // (-- To simplify client logic, the server should never set this to null.
-    // i.e. Use `[]` if the properties below apply to everything in data. --)
-    google.protobuf.ListValue path = 1;
-
-    // A single Entity ID. Set if the path points to a single entity.
-    string entity_id = 2;
-
-    // A list of Entity IDs. Set if the path points to an array of entities. An
-    // ID is present for each element of the array at the corresponding index.
-    repeated string entity_ids = 3;
-
-    // The server-suggested duration before data under path is considered stale.
-    // (-- Right now, this field is never set. For future plans, see
-    // http://go/fdc-sdk-caching-config#heading=h.rmvncy2rao3g --)
-    google.protobuf.Duration max_age = 4;
-  }
   // Data Connect specific GraphQL extension, a list of paths and properties.
   // (-- Future fields should go inside to avoid name conflicts with other GQL
   // extensions in the wild unless we're implementing a common 3P pattern in
@@ -57,3 +35,39 @@ message GraphqlResponseExtensions {
   repeated DataConnectProperties data_connect = 1;
 }
 
+// Data Connect specific properties for a path under response.data.
+// (-- Design doc: http://go/fdc-caching-wire-protocol --)
+message DataConnectProperties {
+  // The path under response.data where the rest of the fields apply.
+  // Each element may be a string (field name) or number (array index).
+  // The root of response.data is denoted by the empty list `[]`.
+  // (-- To simplify client logic, the server should never set this to null.
+  // i.e. Use `[]` if the properties below apply to everything in data. --)
+  google.protobuf.ListValue path = 1;
+
+  // A single Entity ID. Set if the path points to a single entity.
+  string entity_id = 2;
+
+  // A list of Entity IDs. Set if the path points to an array of entities. An
+  // ID is present for each element of the array at the corresponding index.
+  repeated string entity_ids = 3;
+
+  // Indicates the action performed on the entity in this path.
+  Action action = 5;
+
+  // The server-suggested duration before data under path is considered stale.
+  // (-- Right now, this field is never set. For future plans, see
+  // http://go/fdc-sdk-caching-config#heading=h.rmvncy2rao3g --)
+  google.protobuf.Duration max_age = 4;
+}
+
+// Action indicates the operation type on the entity.
+enum Action {
+  ACTION_UNSPECIFIED = 0;
+  GET = 1;
+  LIST = 2;
+  CREATE = 3;
+  UPDATE = 4;
+  UPSERT = 5;
+  DELETE = 6;
+}
