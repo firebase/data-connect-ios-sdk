@@ -1,5 +1,5 @@
 # 11.12.0
-- [added] Support for bidirectional streaming for subscriptions and operation execution. 
+- [added] Support for bidirectional streaming for subscriptions and operation execution.
 
 # 11.11.1
 - [fixed] Update cache identifier format to match Dart.
