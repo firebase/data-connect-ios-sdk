@@ -120,8 +120,10 @@ struct EntityNode {
           // no point in keeping with query scalars
           // since they get overwritten with every query update
           DataConnectLogger.debug("Empty Array found for key \(key)")
-          if entityData != nil {
-            entityData?.updateServerValue(key, value, impactedRefsAccumulator?.requestorId)
+          if let entityData {
+            entityData.updateServerValue(key, value, impactedRefsAccumulator?.requestorId)
+          } else {
+            scalars[key] = value
           }
         }
       default:
