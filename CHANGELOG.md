@@ -1,5 +1,5 @@
 # 11.12.1
-- [fixed] Cache fails to store and decode results with empty root array
+- [fixed] Cache fails to store and decode results with empty root array.
 
 # 11.12.0
 - [added] Support for bidirectional streaming for subscriptions and operation execution.
