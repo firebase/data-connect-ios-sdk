@@ -217,6 +217,24 @@ final class CacheTests: XCTestCase {
       ]}
   """
 
+  let emptyRootArray = """
+  {
+  "sharedLists":[],
+  "ownedLists":[{"createdAt":"2026-05-04T09:10:45.387765Z","id":"fe36d12a06b146b987f0346f31ea903e","owner":{"email":"test4@gmail.com","id":"UtDFqWXfSBn46yXjAs0b8ok816Rq"},"title":"Test21341234"}]
+  }
+  """
+
+  let emptyRootArrayExt = """
+  { "dataConnect" : [
+      { "path": ["ownedLists"],
+        "entityIds":["ownedListItem1"] },
+      { "path": ["ownedLists", 0, "owner"],
+        "entityId": "ownerId1" },
+      { "path": ["sharedLists"] }
+    ]
+  }
+  """
+
   var cacheProvider: SQLiteCacheProvider?
 
   override func setUpWithError() throws {
@@ -355,6 +373,45 @@ final class CacheTests: XCTestCase {
       )
 
       XCTAssertEqual(do1, do2)
+    }
+  }
+
+  func testEmptyRootArrayDehydrationHydration() throws {
+    do {
+      let cp = try XCTUnwrap(cacheProvider)
+
+      let jsonDecoder = JSONDecoder()
+      let extResponse = try jsonDecoder.decode(
+        ExtensionResponse.self,
+        from: emptyRootArrayExt.data(using: .utf8)!
+      )
+      let flattenedPaths = extResponse.flattenPathMetadata()
+
+      let resultsProcessor = ResultTreeProcessor()
+
+      let (dehydratedTree, do1, _) = try resultsProcessor.dehydrateResults("queryEmptyRootArray",
+                                                                           emptyRootArray
+                                                                             .data(using: .utf8)!,
+                                                                           flattenedPaths,
+                                                                           cacheProvider: cp)
+
+      let (hydratedResults, do2) = try resultsProcessor.hydrateResults(
+        dehydratedTree,
+        cacheProvider: cp
+      )
+
+      XCTAssertEqual(do1, do2)
+
+      let decodedOriginal = try JSONSerialization.jsonObject(
+        with: emptyRootArray.data(using: .utf8)!,
+        options: []
+      ) as? [String: Any]
+      let decodedHydrated = try JSONSerialization.jsonObject(
+        with: hydratedResults,
+        options: []
+      ) as? [String: Any]
+
+      XCTAssertEqual(decodedOriginal as NSDictionary?, decodedHydrated as NSDictionary?)
     }
   }
 

@@ -115,13 +115,21 @@ struct EntityNode {
             }
           }
         } else {
-          // Since we don't know the type of an empty array
-          // we store it as a scalar with the Entity if present
-          // no point in keeping with query scalars
-          // since they get overwritten with every query update
+          // Since we don't know the type of an empty array,
+          // we store it with the Entity if present (and accumulate impacted refs).
+          // Otherwise, we store it as a query-level scalar.
           DataConnectLogger.debug("Empty Array found for key \(key)")
-          if entityData != nil {
-            entityData?.updateServerValue(key, value, impactedRefsAccumulator?.requestorId)
+          if let entityData {
+            let impactedRefs = entityData.updateServerValue(
+              key,
+              value,
+              impactedRefsAccumulator?.requestorId
+            )
+            for r in impactedRefs {
+              impactedRefsAccumulator?.append(r)
+            }
+          } else {
+            scalars[key] = value
           }
         }
       default:
