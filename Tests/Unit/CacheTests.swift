@@ -216,24 +216,24 @@ final class CacheTests: XCTestCase {
         }
       ]}
   """
-  
+
   let emptyRootArray = """
-    {
-    "sharedLists":[],
-    "ownedLists":[{"createdAt":"2026-05-04T09:10:45.387765Z","id":"fe36d12a06b146b987f0346f31ea903e","owner":{"email":"test4@gmail.com","id":"UtDFqWXfSBn46yXjAs0b8ok816Rq"},"title":"Test21341234"}]
-    }
-    """
-  
+  {
+  "sharedLists":[],
+  "ownedLists":[{"createdAt":"2026-05-04T09:10:45.387765Z","id":"fe36d12a06b146b987f0346f31ea903e","owner":{"email":"test4@gmail.com","id":"UtDFqWXfSBn46yXjAs0b8ok816Rq"},"title":"Test21341234"}]
+  }
+  """
+
   let emptyRootArrayExt = """
-    { "dataConnect" : [
-        { "path": ["ownedLists"],
-          "entityIds":["ownedListItem1"] },
-        { "path": ["ownedLists", 0, "owner"],
-          "entityId": "ownerId1" },
-        { "path": ["sharedLists"] }
-      ]
-    }
-    """
+  { "dataConnect" : [
+      { "path": ["ownedLists"],
+        "entityIds":["ownedListItem1"] },
+      { "path": ["ownedLists", 0, "owner"],
+        "entityId": "ownerId1" },
+      { "path": ["sharedLists"] }
+    ]
+  }
+  """
 
   var cacheProvider: SQLiteCacheProvider?
 
@@ -402,13 +402,18 @@ final class CacheTests: XCTestCase {
 
       XCTAssertEqual(do1, do2)
 
-      let decodedOriginal = try JSONSerialization.jsonObject(with: emptyRootArray.data(using: .utf8)!, options: []) as? [String: Any]
-      let decodedHydrated = try JSONSerialization.jsonObject(with: hydratedResults, options: []) as? [String: Any]
+      let decodedOriginal = try JSONSerialization.jsonObject(
+        with: emptyRootArray.data(using: .utf8)!,
+        options: []
+      ) as? [String: Any]
+      let decodedHydrated = try JSONSerialization.jsonObject(
+        with: hydratedResults,
+        options: []
+      ) as? [String: Any]
 
       XCTAssertEqual(decodedOriginal as NSDictionary?, decodedHydrated as NSDictionary?)
     }
   }
-
 
   func testImpactedRefs() throws {
     do {
@@ -529,9 +534,7 @@ final class CacheTests: XCTestCase {
       XCTFail()
     }
   }
-  
-  
-  
+
   func testMaxAge() throws {
     let ttl: TimeInterval = 0.2 // 200ms
     let resultTree = ResultTree(

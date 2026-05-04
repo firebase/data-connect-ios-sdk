@@ -50,11 +50,11 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
     -> AnyPublisher<Result<OperationResult<ResultData>, AnyDataConnectError>, Never> {
     Task {
       do {
-        
         do {
           _ = try await fetchCachedResults(allowStale: true)
         } catch {
-          DataConnectLogger.debug("Error fetching cached results. Proceeding with server subscribe: \(error)")
+          DataConnectLogger
+            .debug("Error fetching cached results. Proceeding with server subscribe: \(error)")
         }
 
         // If we already have a stream return
