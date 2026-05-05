@@ -13,9 +13,10 @@ The Agent must produce the following deliverables in strict sequential order:
 
 The Agent **must** verify these items before attempting to generate the SDK:
 
-* **Firebase MCP Server:** Used for project initiation and credential management.  
-* **Firebase Agent Skills:** Load `firebase-agent-skills` locally for Firebase Basics, FDC schema, operation definitions, CEL logic, SDK configuration, SDK generation.  
+* **Firebase MCP Server:** Ensure installed. Used for project initiation and credential management.  
+* **Firebase Agent Skills:** Install and load `firebase-agent-skills` locally for Firebase Basics, FDC schema, FDC queries, FDC mutations, FDC CEL logic, SDK configuration, SDK generation.  
 * **App Registration & Config (Mandatory):**  
+  * Prompt the user for an iOS app bundle ID or suggest one based on app description.  
   * Register the iOS app bundle ID in the Firebase Project.  
   * Download `GoogleService-Info.plist` to the project root.  
   * **Agent Action:** Search the local directory for `GoogleService-Info.plist`. If missing, stop and prompt: *"I cannot find GoogleService-Info.plist. I need to register the app via MCP or have you provide the file before I can initialize the SDK."*
@@ -59,7 +60,7 @@ To prevent SQL foreign key constraint violations (e.g., `violates SQL foreign ke
 3. **Connector Config:**  
    * Set `connectorId` in `dataconnect/$CONNECTOR_NAME/connector.yaml`.  
    * **Caching:** Configure `clientCache` with `maxAge: 3s` within the sdk generate section for the Swift SDK.  
-4. **Operations:** Define logic in `queries.gql` and `mutations.gql`. Use `@refresh` directives for realtime query support based on skill defined in firebase-agent-skills. If the skill isn't found, the information can be found here - https://firebase.google.com/docs/sql-connect/realtime  
+4. **Operations:** Define logic in `queries.gql` and `mutations.gql`. Use `@refresh` directives for realtime support.  
    * IMPORTANT: When generating queries and mutations, prefer FDC GQL over Native SQL unless the query or mutation is complex and cannot be successfully expressed in GQL.  
 5. **SDK Generation:** Set output to a **Local Swift Package** at the **root**. The generator creates its own folder; do not create a containing folder manually.
 
@@ -151,5 +152,11 @@ public class UserStore {
 1. **Computed Properties Only:** Do not store arrays of data; store the `Ref` and map data lazily via `var`.  
 2. **No UI:** Deliverable 2 must contain **zero** SwiftUI View code.  
 3. **UI Isolation:** Views **must not** import the Generated SDK. They only interact with the Consolidated Model Store.  
-4. **Emulator Awareness:** Provide a `useEmulator function` in the Consolidated Model Store initialization that starts the emulators for Data Connect Connectors and Firebase Auth on their default ports with option to override the port.   
-5. **Clean Builds:** Always ensure the generated packages compile successfully before finishing a task.
+4. **Emulator Awareness:** Provide a `useEmulator function` on the Consolidated Model Store that starts the emulators for Data Connect connector and Firebase Auth on their default ports with option to override the port.   
+5. **Clean Builds:** Always ensure the generated packages compile successfully before finishing a task.  
+6. **Xcode Project:** Provide instructions for integration into Xcode  
+   1. Add Local Package dependencies  
+   2. Add GoogleService-Info.plist  
+   3. Specify the necessary imports.  
+   4. Call `FirebaseApp.configure()` in the app init  
+   5. Optionally call `useEmulator()` on the generated Store class.
