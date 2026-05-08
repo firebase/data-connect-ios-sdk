@@ -33,7 +33,7 @@ actor StreamingGrpcClient: GrpcClient {
   private let googApiClientHeaderValue: String
 
   private var streamingCall: FirebaseDataConnectStreamingCall?
-  private var subManager = StreamSubscriptionManager()
+  private let subManager = StreamSubscriptionManager()
   private var connectionTask: Task<Void, Never>?
   private var reconnectTask: Task<Void, Never>?
   private var responseStreamTask: Task<Void, Never>?
@@ -91,12 +91,35 @@ actor StreamingGrpcClient: GrpcClient {
     self.googApiClientHeaderValue = googApiClientHeaderValue
 
     currentUid = auth.currentUser?.uid
+
+    Task { [weak self] in
+      await self?.subManager.setOnIdle { [weak self] in
+        await self?.disconnectStream()
+      }
+    }
   }
 
   deinit {
     if let handle = authListenerHandle {
       auth.removeStateDidChangeListener(handle)
     }
+  }
+
+  private func disconnectStream() async {
+    guard streamingCall != nil || responseStreamTask != nil || reconnectTask != nil else {
+      return
+    }
+
+    DataConnectLogger.debug("StreamingGrpcClient: Disconnecting stream due to idle.")
+
+    await streamingCall?.requestStream.finish()
+    streamingCall = nil
+
+    responseStreamTask?.cancel()
+    responseStreamTask = nil
+
+    reconnectTask?.cancel()
+    reconnectTask = nil
   }
 
   private func authStatusChanged(user: User?) async {
@@ -508,6 +531,22 @@ actor StreamSubscriptionManager {
     [:]
   private var activeMutationExecuteRequests: Set<RequestIdentifier> = []
 
+  private var onIdle: (@Sendable () async -> Void)?
+
+  init(onIdle: (@Sendable () async -> Void)? = nil) {
+    self.onIdle = onIdle
+  }
+
+  func setOnIdle(_ onIdle: @Sendable @escaping () async -> Void) {
+    self.onIdle = onIdle
+  }
+
+  private func checkIdle() async {
+    if subscribeContinuations.isEmpty, executeContinuations.isEmpty {
+      await onIdle?()
+    }
+  }
+
   func saveRequest(_ request: FirebaseDataConnectStreamRequest,
                    for requestID: RequestIdentifier,
                    type: RequestType) {
@@ -541,12 +580,13 @@ actor StreamSubscriptionManager {
     }
   }
 
-  func cancelPendingExecute(for requestID: RequestIdentifier) {
+  func cancelPendingExecute(for requestID: RequestIdentifier) async {
     if let continuation = executeContinuations.removeValue(forKey: requestID) {
       continuation.resume(throwing: CancellationError())
     }
     activeQueryExecuteRequests.removeValue(forKey: requestID)
     activeMutationExecuteRequests.remove(requestID)
+    await checkIdle()
   }
 
   func createStream(for requestID: RequestIdentifier) throws -> AsyncStream<ServerResponse> {
@@ -579,14 +619,15 @@ actor StreamSubscriptionManager {
     !executeContinuations.isEmpty
   }
 
-  func removeSubscription(for requestID: RequestIdentifier) {
+  func removeSubscription(for requestID: RequestIdentifier) async {
     if let continuation = subscribeContinuations.removeValue(forKey: requestID) {
       continuation.finish()
     }
     activeSubscribeRequests.removeValue(forKey: requestID)
+    await checkIdle()
   }
 
-  func handleResponse(_ response: FirebaseDataConnectStreamResponse) {
+  func handleResponse(_ response: FirebaseDataConnectStreamResponse) async {
     do {
       guard let reqId = RequestIdentifier(stringValue: response.requestID) else {
         DataConnectLogger.error("Error obtaining requestID from response")
@@ -604,6 +645,7 @@ actor StreamSubscriptionManager {
         } catch {
           continuation.resume(throwing: error)
         }
+        await checkIdle()
         return
       }
 
@@ -620,7 +662,7 @@ actor StreamSubscriptionManager {
     }
   }
 
-  func handleMutationsOnDisconnect() {
+  func handleMutationsOnDisconnect() async {
     let mutations = Array(activeMutationExecuteRequests)
     let errStr = "Stream terminated while waiting for mutation response"
     let failureResponse = OperationFailureResponse(
@@ -638,9 +680,10 @@ actor StreamSubscriptionManager {
           .debug("No continuation found for pending mutation with request ID \(reqId)")
       }
     }
+    await checkIdle()
   }
 
-  func handleAuthStateChange() {
+  func handleAuthStateChange() async {
     for value in subscribeContinuations.values {
       value.finish()
     }
@@ -659,14 +702,16 @@ actor StreamSubscriptionManager {
     executeContinuations.removeAll()
     activeQueryExecuteRequests.removeAll()
     activeMutationExecuteRequests.removeAll()
+    await checkIdle()
   }
 
-  func handleError(_ error: Error, for reqId: RequestIdentifier) {
+  func handleError(_ error: Error, for reqId: RequestIdentifier) async {
     if let continuation = executeContinuations.removeValue(forKey: reqId) {
       activeQueryExecuteRequests.removeValue(forKey: reqId)
       activeMutationExecuteRequests.remove(reqId)
       continuation.resume(throwing: error)
     }
+    await checkIdle()
   }
 
   private func serverResponse(for response: FirebaseDataConnectStreamResponse) throws
