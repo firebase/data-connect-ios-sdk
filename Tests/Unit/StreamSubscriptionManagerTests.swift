@@ -127,4 +127,36 @@ final class StreamSubscriptionManagerTests: XCTestCase {
     let hasPending = await subManager.hasPendingExecutes()
     XCTAssertFalse(hasPending, "Execute continuation should have been removed")
   }
+
+  func testOnIdleCallback() async throws {
+    let expectation = expectation(description: "onIdle should be called")
+
+    let subManager = StreamSubscriptionManager()
+    await subManager.setOnIdle {
+      expectation.fulfill()
+    }
+
+    let queryRequestID = RequestIdentifier(operationId: "test-query", sequenceNumber: 1)
+    let subRequestID = RequestIdentifier(operationId: "test-sub", sequenceNumber: 2)
+
+    let stream = try await subManager.createStream(for: subRequestID)
+    let queryContinuation = Task {
+      try await subManager.waitForResponse(for: queryRequestID)
+    }
+
+    try await Task.sleep(nanoseconds: 50_000_000)
+
+    await subManager.removeSubscription(for: subRequestID)
+
+    var response = FirebaseDataConnectStreamResponse()
+    response.requestID = "test-query|1"
+    response.data = try Google_Protobuf_Struct(jsonString: "{\"test\": \"data\"}")
+    await subManager.handleResponse(response)
+
+    _ = try await queryContinuation.value
+
+    await fulfillment(of: [expectation], timeout: 1.0)
+
+    _ = stream
+  }
 }
