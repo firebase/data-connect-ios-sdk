@@ -110,16 +110,29 @@ actor StreamingGrpcClient: GrpcClient {
       return
     }
 
+    // Check if we are still idle, as a new request might have come in while this task was queued.
+    let isAnySub = await subManager.hasAnySubscription()
+    let isPending = await subManager.hasPendingExecutes()
+    guard !isAnySub, !isPending else {
+      return
+    }
+
     DataConnectLogger.debug("StreamingGrpcClient: Disconnecting stream due to idle.")
 
-    await streamingCall?.requestStream.finish()
+    // Capture and clear state immediately to avoid race conditions during the async finish() call.
+    // Actors are re-entrant, so other methods could run while we are suspended at `await`.
+    let call = streamingCall
     streamingCall = nil
 
-    responseStreamTask?.cancel()
+    let rStreamTask = responseStreamTask
     responseStreamTask = nil
+    rStreamTask?.cancel()
 
-    reconnectTask?.cancel()
+    let rTask = reconnectTask
     reconnectTask = nil
+    rTask?.cancel()
+
+    await call?.requestStream.finish()
   }
 
   private func authStatusChanged(user: User?) async {
