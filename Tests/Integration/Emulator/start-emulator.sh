@@ -25,13 +25,21 @@ TEMP_DIR="$(mktemp -d -t firebase-data-connect)"
 echo "Starting Firebase Data Connect emulator in ${TEMP_DIR}"
 cd "${TEMP_DIR}"
 
-EMULATOR_VERSION="1.8.3"
-EMULATOR_FILENAME="dataconnect-emulator-macos-v${EMULATOR_VERSION}"
-EMULATOR_URL="https://storage.googleapis.com/firemat-preview-drop/emulator/${EMULATOR_FILENAME}"
+INFO_URL="https://raw.githubusercontent.com/firebase/firebase-tools/main/src/emulator/downloadableEmulatorInfo.json"
+echo "Fetching latest Data Connect emulator info from ${INFO_URL}"
+EMULATOR_URL=$(curl -s "${INFO_URL}" | python3 -c "import sys, json; print(json.load(sys.stdin)['dataconnect']['darwin_arm64']['remoteUrl'])" 2>/dev/null) || true
+
+if [ -z "${EMULATOR_URL}" ]; then
+  echo "Failed to fetch latest emulator info. Falling back to v3.4.7"
+  EMULATOR_URL="https://storage.googleapis.com/firemat-preview-drop/emulator/dataconnect-emulator-macos-arm64-v3.4.7"
+fi
+
+EMULATOR_FILENAME=$(basename "${EMULATOR_URL}")
+
 echo "Downloading emulator from ${EMULATOR_URL}"
 
 curl -o "${EMULATOR_FILENAME}" "${EMULATOR_URL}"
 
 chmod 755 "${EMULATOR_FILENAME}"
 
-./${EMULATOR_FILENAME} --logtostderr  dev --listen="127.0.0.1:3628" &
+./${EMULATOR_FILENAME} --logtostderr -v=2  dev --listen="127.0.0.1:3628" & 
