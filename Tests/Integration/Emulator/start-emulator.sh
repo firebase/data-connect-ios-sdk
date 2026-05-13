@@ -27,7 +27,7 @@ cd "${TEMP_DIR}"
 
 INFO_URL="https://raw.githubusercontent.com/firebase/firebase-tools/main/src/emulator/downloadableEmulatorInfo.json"
 echo "Fetching latest Data Connect emulator info from ${INFO_URL}"
-EMULATOR_URL=$(curl -s "${INFO_URL}" | python3 -c "import sys, json; print(json.load(sys.stdin)['dataconnect']['darwin_arm64']['remoteUrl'])" 2>/dev/null) || true
+EMULATOR_URL=$(curl -s -f "${INFO_URL}" | python3 -c "import sys, json; print(json.load(sys.stdin)['dataconnect']['darwin_arm64']['remoteUrl'])" 2>/dev/null) || true
 
 if [ -z "${EMULATOR_URL}" ]; then
   echo "Failed to fetch latest emulator info. Falling back to v3.4.7"
@@ -38,7 +38,7 @@ EMULATOR_FILENAME=$(basename "${EMULATOR_URL}")
 
 echo "Downloading emulator from ${EMULATOR_URL}"
 
-curl -o "${EMULATOR_FILENAME}" "${EMULATOR_URL}"
+curl -f -o "${EMULATOR_FILENAME}" "${EMULATOR_URL}"
 
 chmod 755 "${EMULATOR_FILENAME}"
 
