@@ -66,7 +66,7 @@ mutation createAnyValueType($id: UUID!, $props: Any!) @auth(level: PUBLIC) {
 
 # Notice how both "inserts" use the same ID; this means that one of them
 # will necessarily fail because you can't have two rows with the same ID.
-mutation InsertMultiplePeople($id: UUID!, $name1: String!, $name2: String!) @auth(level: PUBLIC) {
+mutation InsertMultiplePeople($id: UUID!, $name1: String!, $name2: String!) @auth(level: PUBLIC) @transaction {
   person1: person_insert(data: { id: $id, name: $name1 })
   person2: person_insert(data: { id: $id, name: $name2 }) @check(expr: "false")
 }
