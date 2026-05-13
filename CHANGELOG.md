@@ -1,3 +1,6 @@
+# Unreleased
+- [fixed] Improved handling of stream disconnect and reconnect scenarios.
+
 # 11.12.1
 - [fixed] Cache fails to store and decode results with empty root array.
 
