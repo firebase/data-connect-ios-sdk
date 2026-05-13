@@ -68,7 +68,7 @@ mutation createAnyValueType($id: UUID!, $props: Any!) @auth(level: PUBLIC) {
 # will necessarily fail because you can't have two rows with the same ID.
 mutation InsertMultiplePeople($id: UUID!, $name1: String!, $name2: String!) @auth(level: PUBLIC) {
   person1: person_insert(data: { id: $id, name: $name1 })
-  person2: person_insert(data: { id: $id, name: $name2 }) @check(expr: "false")
+  person2: person_insert(data: { id: $id, name: $name2 })
 }
 
 # ID for second person does not exist.
