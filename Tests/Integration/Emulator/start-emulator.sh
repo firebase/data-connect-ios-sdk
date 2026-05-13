@@ -42,4 +42,4 @@ curl -o "${EMULATOR_FILENAME}" "${EMULATOR_URL}"
 
 chmod 755 "${EMULATOR_FILENAME}"
 
-./${EMULATOR_FILENAME} --logtostderr -v=2  dev --listen="127.0.0.1:3628" & 
+./${EMULATOR_FILENAME} --logtostderr -v=2  dev --listen="127.0.0.1:3628" &
