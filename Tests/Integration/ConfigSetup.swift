@@ -46,8 +46,7 @@ actor ProjectConfigurator {
       "service_id": "\(KitchenSinkConnector.connectorConfig.serviceId)",
       "config_directory": "\(projectDirPath)",
       "use_dummy": \(useDummyEngine)
-    }'
-
+    }
     """
 
     let configureUrl = URL(string: "http://127.0.0.1:3628/emulator/configure")!
@@ -58,6 +57,9 @@ actor ProjectConfigurator {
       for: configureRequest,
       from: configureBody.data(using: .utf8)!
     )
+    guard (response as? HTTPURLResponse)?.statusCode == 200 else {
+      throw KitchenSinkError.configureFailed
+    }
     setupComplete = true
   }
 }
