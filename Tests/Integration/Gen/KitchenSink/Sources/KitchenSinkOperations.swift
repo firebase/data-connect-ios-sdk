@@ -977,7 +977,7 @@ public class GetStandardScalarQuery {
 
   public static let OperationName = "GetStandardScalar"
 
-  public typealias Ref = QueryRefObservation<
+  public typealias Ref = QueryRefObservableObject<
     GetStandardScalarQuery.Data,
     GetStandardScalarQuery.Variables
   >
@@ -1066,19 +1066,18 @@ public class GetStandardScalarQuery {
       standardScalars: StandardScalars?
   }
 
-  public func ref(id: UUID) -> QueryRefObservation<
-    GetStandardScalarQuery.Data,
-    GetStandardScalarQuery.Variables
-  > {
+  public func ref(id: UUID)
+    -> QueryRefObservableObject<GetStandardScalarQuery.Data,
+      GetStandardScalarQuery.Variables> {
     var variables = GetStandardScalarQuery.Variables(id: id)
 
     let ref = dataConnect.query(
       name: "GetStandardScalar",
       variables: variables,
       resultsDataType: GetStandardScalarQuery.Data.self,
-      publisher: .observableMacro
+      publisher: .observableObject
     )
-    return ref as! QueryRefObservation<
+    return ref as! QueryRefObservableObject<
       GetStandardScalarQuery.Data,
       GetStandardScalarQuery.Variables
     >
@@ -1094,10 +1093,10 @@ public class GetStandardScalarQuery {
       name: "GetStandardScalar",
       variables: variables,
       resultsDataType: GetStandardScalarQuery.Data.self,
-      publisher: .observableMacro
+      publisher: .observableObject
     )
 
-    let refCast = ref as! QueryRefObservation<
+    let refCast = ref as! QueryRefObservableObject<
       GetStandardScalarQuery.Data,
       GetStandardScalarQuery.Variables
     >
@@ -1114,7 +1113,7 @@ public class GetScalarBoundaryQuery {
 
   public static let OperationName = "GetScalarBoundary"
 
-  public typealias Ref = QueryRefObservation<
+  public typealias Ref = QueryRefObservableObject<
     GetScalarBoundaryQuery.Data,
     GetScalarBoundaryQuery.Variables
   >
@@ -1189,19 +1188,18 @@ public class GetScalarBoundaryQuery {
       scalarBoundary: ScalarBoundary?
   }
 
-  public func ref(id: UUID) -> QueryRefObservation<
-    GetScalarBoundaryQuery.Data,
-    GetScalarBoundaryQuery.Variables
-  > {
+  public func ref(id: UUID)
+    -> QueryRefObservableObject<GetScalarBoundaryQuery.Data,
+      GetScalarBoundaryQuery.Variables> {
     var variables = GetScalarBoundaryQuery.Variables(id: id)
 
     let ref = dataConnect.query(
       name: "GetScalarBoundary",
       variables: variables,
       resultsDataType: GetScalarBoundaryQuery.Data.self,
-      publisher: .observableMacro
+      publisher: .observableObject
     )
-    return ref as! QueryRefObservation<
+    return ref as! QueryRefObservableObject<
       GetScalarBoundaryQuery.Data,
       GetScalarBoundaryQuery.Variables
     >
@@ -1217,10 +1215,10 @@ public class GetScalarBoundaryQuery {
       name: "GetScalarBoundary",
       variables: variables,
       resultsDataType: GetScalarBoundaryQuery.Data.self,
-      publisher: .observableMacro
+      publisher: .observableObject
     )
 
-    let refCast = ref as! QueryRefObservation<
+    let refCast = ref as! QueryRefObservableObject<
       GetScalarBoundaryQuery.Data,
       GetScalarBoundaryQuery.Variables
     >
@@ -1237,7 +1235,7 @@ public class GetLargeNumQuery {
 
   public static let OperationName = "GetLargeNum"
 
-  public typealias Ref = QueryRefObservation<GetLargeNumQuery.Data, GetLargeNumQuery.Variables>
+  public typealias Ref = QueryRefObservableObject<GetLargeNumQuery.Data, GetLargeNumQuery.Variables>
 
   public struct Variables: OperationVariable {
     public var
@@ -1302,17 +1300,19 @@ public class GetLargeNumQuery {
       largeIntType: LargeIntType?
   }
 
-  public func ref(id: UUID)
-    -> QueryRefObservation<GetLargeNumQuery.Data, GetLargeNumQuery.Variables> {
+  public func ref(id: UUID) -> QueryRefObservableObject<
+    GetLargeNumQuery.Data,
+    GetLargeNumQuery.Variables
+  > {
     var variables = GetLargeNumQuery.Variables(id: id)
 
     let ref = dataConnect.query(
       name: "GetLargeNum",
       variables: variables,
       resultsDataType: GetLargeNumQuery.Data.self,
-      publisher: .observableMacro
+      publisher: .observableObject
     )
-    return ref as! QueryRefObservation<GetLargeNumQuery.Data, GetLargeNumQuery.Variables>
+    return ref as! QueryRefObservableObject<GetLargeNumQuery.Data, GetLargeNumQuery.Variables>
   }
 
   @MainActor
@@ -1325,10 +1325,13 @@ public class GetLargeNumQuery {
       name: "GetLargeNum",
       variables: variables,
       resultsDataType: GetLargeNumQuery.Data.self,
-      publisher: .observableMacro
+      publisher: .observableObject
     )
 
-    let refCast = ref as! QueryRefObservation<GetLargeNumQuery.Data, GetLargeNumQuery.Variables>
+    let refCast = ref as! QueryRefObservableObject<
+      GetLargeNumQuery.Data,
+      GetLargeNumQuery.Variables
+    >
     return try await refCast.execute(fetchPolicy: fetchPolicy)
   }
 }
@@ -1342,7 +1345,7 @@ public class GetLocalDateTypeQuery {
 
   public static let OperationName = "GetLocalDateType"
 
-  public typealias Ref = QueryRefObservation<
+  public typealias Ref = QueryRefObservableObject<
     GetLocalDateTypeQuery.Data,
     GetLocalDateTypeQuery.Variables
   >
@@ -1400,7 +1403,7 @@ public class GetLocalDateTypeQuery {
       localDateType: LocalDateType?
   }
 
-  public func ref(id: UUID) -> QueryRefObservation<
+  public func ref(id: UUID) -> QueryRefObservableObject<
     GetLocalDateTypeQuery.Data,
     GetLocalDateTypeQuery.Variables
   > {
@@ -1410,9 +1413,9 @@ public class GetLocalDateTypeQuery {
       name: "GetLocalDateType",
       variables: variables,
       resultsDataType: GetLocalDateTypeQuery.Data.self,
-      publisher: .observableMacro
+      publisher: .observableObject
     )
-    return ref as! QueryRefObservation<
+    return ref as! QueryRefObservableObject<
       GetLocalDateTypeQuery.Data,
       GetLocalDateTypeQuery.Variables
     >
@@ -1428,10 +1431,10 @@ public class GetLocalDateTypeQuery {
       name: "GetLocalDateType",
       variables: variables,
       resultsDataType: GetLocalDateTypeQuery.Data.self,
-      publisher: .observableMacro
+      publisher: .observableObject
     )
 
-    let refCast = ref as! QueryRefObservation<
+    let refCast = ref as! QueryRefObservableObject<
       GetLocalDateTypeQuery.Data,
       GetLocalDateTypeQuery.Variables
     >
@@ -1448,7 +1451,7 @@ public class GetAnyValueTypeQuery {
 
   public static let OperationName = "GetAnyValueType"
 
-  public typealias Ref = QueryRefObservation<
+  public typealias Ref = QueryRefObservableObject<
     GetAnyValueTypeQuery.Data,
     GetAnyValueTypeQuery.Variables
   >
@@ -1502,7 +1505,7 @@ public class GetAnyValueTypeQuery {
       anyValueType: AnyValueType?
   }
 
-  public func ref(id: UUID) -> QueryRefObservation<
+  public func ref(id: UUID) -> QueryRefObservableObject<
     GetAnyValueTypeQuery.Data,
     GetAnyValueTypeQuery.Variables
   > {
@@ -1512,9 +1515,9 @@ public class GetAnyValueTypeQuery {
       name: "GetAnyValueType",
       variables: variables,
       resultsDataType: GetAnyValueTypeQuery.Data.self,
-      publisher: .observableMacro
+      publisher: .observableObject
     )
-    return ref as! QueryRefObservation<
+    return ref as! QueryRefObservableObject<
       GetAnyValueTypeQuery.Data,
       GetAnyValueTypeQuery.Variables
     >
@@ -1530,10 +1533,10 @@ public class GetAnyValueTypeQuery {
       name: "GetAnyValueType",
       variables: variables,
       resultsDataType: GetAnyValueTypeQuery.Data.self,
-      publisher: .observableMacro
+      publisher: .observableObject
     )
 
-    let refCast = ref as! QueryRefObservation<
+    let refCast = ref as! QueryRefObservableObject<
       GetAnyValueTypeQuery.Data,
       GetAnyValueTypeQuery.Variables
     >
