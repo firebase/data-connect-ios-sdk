@@ -68,7 +68,7 @@ final class IntegrationTests: IntegrationTestBase {
     let dc = DataConnect.kitchenSinkConnector.dataConnect
 
     XCTAssertEqual(
-      executeResult.data?.standardScalars_insert.id,
+      executeResult.data?.standardScalars_upsert.id,
       standardScalarUUID,
       "UUID mismatch between specified and returned"
     )

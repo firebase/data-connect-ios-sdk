@@ -23,7 +23,7 @@ mutation createTestAutoId @auth(level: PUBLIC) {
 }
 
 mutation createStandardScalar($id: UUID!, $number: Int!, $text: String!, $decimal: Float!) @auth(level: PUBLIC) {
-    standardScalars_insert(data: {
+    standardScalars_upsert(data: {
         id: $id,
         number: $number,
         text: $text,

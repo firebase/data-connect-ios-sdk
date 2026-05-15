@@ -54,31 +54,47 @@ final class CachingTests: IntegrationTestBase {
     XCTAssertEqual(secondResult.data?.standardScalars?.text, "preferCache test")
   }
 
-  // Test cacheOnly policy: returns cached data if available, or nil if not
-  func testCacheOnlyPolicy() async throws {
+  // Test cacheOnly policy when no cached data exists: returns nil data
+  func testCacheOnlyPolicy_noCachedData() async throws {
     let connector = DataConnect.kitchenSinkConnector
     let id = UUID()
 
     let queryRef = connector.getStandardScalarQuery.ref(id: id)
 
-    // Initial cacheOnly fetch should return nil data since cache is empty
     let emptyResult = try await queryRef.execute(fetchPolicy: .cacheOnly)
     XCTAssertEqual(emptyResult.source, .cache)
     XCTAssertNil(emptyResult.data?.standardScalars)
+  }
 
-    // Populate server and cache
+  // Test cacheOnly policy when cached data exists: returns cached data without fetching from server
+  func testCacheOnlyPolicy_withCachedData() async throws {
+    let connector = DataConnect.kitchenSinkConnector
+    let id = UUID()
+
+    // Populate server and cache with initial data
     _ = try await connector.createStandardScalarMutation.execute(
       id: id,
       number: 100,
-      text: "cacheOnly test",
+      text: "initial cacheOnly test",
       decimal: 1.23
     )
+
+    let queryRef = connector.getStandardScalarQuery.ref(id: id)
     _ = try await queryRef.execute(fetchPolicy: .preferCache)
 
-    // Now cacheOnly should return the cached result
+    // Perform another mutation on the server to alter the data without updating this query's cache
+    _ = try await connector.createStandardScalarMutation.execute(
+      id: id,
+      number: 200,
+      text: "updated server data",
+      decimal: 4.56
+    )
+
+    // Now cacheOnly should return the original cached result, ignoring the server update
     let cachedResult = try await queryRef.execute(fetchPolicy: .cacheOnly)
     XCTAssertEqual(cachedResult.source, .cache)
-    XCTAssertEqual(cachedResult.data?.standardScalars?.text, "cacheOnly test")
+    XCTAssertEqual(cachedResult.data?.standardScalars?.text, "initial cacheOnly test")
+    XCTAssertEqual(cachedResult.data?.standardScalars?.number, 100)
   }
 
   // Test serverOnly policy: always reaches out to server even if cache exists
@@ -86,22 +102,32 @@ final class CachingTests: IntegrationTestBase {
     let connector = DataConnect.kitchenSinkConnector
     let id = UUID()
 
+    // Populate server and cache with initial data
     _ = try await connector.createStandardScalarMutation.execute(
       id: id,
       number: 7,
-      text: "serverOnly test",
+      text: "initial serverOnly test",
       decimal: 0.99
     )
 
     let queryRef = connector.getStandardScalarQuery.ref(id: id)
-
-    // First fetch populates cache
     let firstResult = try await queryRef.execute(fetchPolicy: .serverOnly)
     XCTAssertEqual(firstResult.source, .server)
+    XCTAssertEqual(firstResult.data?.standardScalars?.text, "initial serverOnly test")
 
-    // Second fetch with serverOnly should still come from server
+    // Perform another mutation on the server to alter the data
+    _ = try await connector.createStandardScalarMutation.execute(
+      id: id,
+      number: 8,
+      text: "updated serverOnly test",
+      decimal: 1.99
+    )
+
+    // Second fetch with serverOnly should fetch the new server data, ignoring the cache
     let secondResult = try await queryRef.execute(fetchPolicy: .serverOnly)
     XCTAssertEqual(secondResult.source, .server)
+    XCTAssertEqual(secondResult.data?.standardScalars?.text, "updated serverOnly test")
+    XCTAssertEqual(secondResult.data?.standardScalars?.number, 8)
   }
 
   // Test maxAge expiry: once TTL expires, preferCache should reach out to server

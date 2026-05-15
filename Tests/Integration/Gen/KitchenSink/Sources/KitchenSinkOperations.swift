@@ -236,7 +236,7 @@ public class CreateStandardScalarMutation {
 
   public struct Data: Decodable, Sendable {
     public var
-      standardScalars_insert: StandardScalarsKey
+      standardScalars_upsert: StandardScalarsKey
   }
 
   public func ref(id: UUID,
