@@ -13,22 +13,21 @@
 // limitations under the License.
 
 /// Policies for executing a Data Connect query. This value is optionally passed to `execute()`
+/// `maxAge` is specified as part of the YAML config using
+/// `clientCache.maxAge` key.
+/// Documentation: https://firebase.google.com/docs/sql-connect/ios-sdk#caching
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public enum QueryFetchPolicy {
-  /// default policy tries to fetch from cache if fetch is within the revalidationInterval.
-  /// If fetch is outside revalidationInterval it revalidates / refreshes from the server.
-  /// Throws if server revalidation fails
-  /// Callers may call with `cacheOnly` policy to fetch data (if present) outside
-  /// revalidationInterval from cache.
-  /// revalidationInterval is specified as part of the query YAML config using
-  /// `client-cache.revalidateAfter` key
+  /// The default policy. Tries to fetch from cache if fetch is within the `maxAge`.
+  /// If fetch is outside `maxAge` it revalidates / refreshes from the server.
+  /// Throws if server revalidation fails.
   case preferCache
 
-  /// Always attempts to return from cache. Does not reach out to server
+  /// Always attempts to return from cache even if outside `maxAge`. Does not reach out to server.
   case cacheOnly
 
   /// Attempts to fetch from server ignoring cache.
   /// Cache is refreshed from server data if call succeeds.
-  /// Throws if server call fails
+  /// Throws if server call fails.
   case serverOnly
 }
