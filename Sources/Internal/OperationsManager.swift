@@ -18,7 +18,7 @@ import Foundation
 class OperationsManager {
   private var grpcClient: GrpcClient
 
-  var cache: Cache?
+  private var cache: Cache?
 
   private let queryRefAccessQueue = DispatchQueue(
     label: "firebase.dataconnect.queryRef.AccessQ",
