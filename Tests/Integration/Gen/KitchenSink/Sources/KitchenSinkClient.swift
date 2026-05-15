@@ -19,7 +19,7 @@ import FirebaseDataConnect
 
 public extension DataConnect {
   static let kitchenSinkConnector: KitchenSinkConnector = {
-    let cacheSettings = CacheSettings(storage: .memory, maxAge: 15)
+    let cacheSettings = CacheSettings(storage: .memory, maxAge: 2)
     let settings = DataConnectSettings(cacheSettings: cacheSettings)
 
     let dc = DataConnect.dataConnect(

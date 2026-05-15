@@ -106,7 +106,7 @@ final class CachingTests: IntegrationTestBase {
 
   // Test maxAge expiry: once TTL expires, preferCache should reach out to server
   func testMaxAgeExpiry() async throws {
-    let ttl: TimeInterval = 15.0
+    let ttl: TimeInterval = 2.0
     let connector = DataConnect.kitchenSinkConnector
     let id = UUID()
 

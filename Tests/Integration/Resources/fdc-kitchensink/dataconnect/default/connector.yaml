@@ -26,5 +26,5 @@ generate:
      outputDir: "../../../../Gen/"
      package: "KitchenSink"
      clientCache:
-        maxAge: 15s
+        maxAge: 2s
         storage: memory
