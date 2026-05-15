@@ -24,6 +24,15 @@ public enum OrderDirection: String, Codable, Sendable {
   case DESC
 }
 
+public enum SearchQueryFormat: String, Codable, Sendable {
+  case QUERY
+  case PLAIN
+  case PHRASE
+  case ADVANCED
+}
+
+// MARK: Connector Enums
+
 // End enum definitions
 
 public class CreateTestIdMutation {
@@ -919,6 +928,9 @@ public class DeleteNonExistentPeopleMutation {
 
   public struct Data: Decodable, Sendable {
     public var
+      person1_insert: PersonKey
+
+    public var
       person1: PersonKey?
 
     public var
@@ -965,7 +977,7 @@ public class GetStandardScalarQuery {
 
   public static let OperationName = "GetStandardScalar"
 
-  public typealias Ref = QueryRefObservableObject<
+  public typealias Ref = QueryRefObservation<
     GetStandardScalarQuery.Data,
     GetStandardScalarQuery.Variables
   >
@@ -1054,39 +1066,42 @@ public class GetStandardScalarQuery {
       standardScalars: StandardScalars?
   }
 
-  public func ref(id: UUID)
-    -> QueryRefObservableObject<GetStandardScalarQuery.Data,
-      GetStandardScalarQuery.Variables> {
+  public func ref(id: UUID) -> QueryRefObservation<
+    GetStandardScalarQuery.Data,
+    GetStandardScalarQuery.Variables
+  > {
     var variables = GetStandardScalarQuery.Variables(id: id)
 
     let ref = dataConnect.query(
       name: "GetStandardScalar",
       variables: variables,
       resultsDataType: GetStandardScalarQuery.Data.self,
-      publisher: .observableObject
+      publisher: .observableMacro
     )
-    return ref as! QueryRefObservableObject<
+    return ref as! QueryRefObservation<
       GetStandardScalarQuery.Data,
       GetStandardScalarQuery.Variables
     >
   }
 
   @MainActor
-  public func execute(id: UUID) async throws -> OperationResult<GetStandardScalarQuery.Data> {
+  public func execute(fetchPolicy: QueryFetchPolicy = .preferCache,
+
+                      id: UUID) async throws -> OperationResult<GetStandardScalarQuery.Data> {
     var variables = GetStandardScalarQuery.Variables(id: id)
 
     let ref = dataConnect.query(
       name: "GetStandardScalar",
       variables: variables,
       resultsDataType: GetStandardScalarQuery.Data.self,
-      publisher: .observableObject
+      publisher: .observableMacro
     )
 
-    let refCast = ref as! QueryRefObservableObject<
+    let refCast = ref as! QueryRefObservation<
       GetStandardScalarQuery.Data,
       GetStandardScalarQuery.Variables
     >
-    return try await refCast.execute()
+    return try await refCast.execute(fetchPolicy: fetchPolicy)
   }
 }
 
@@ -1099,7 +1114,7 @@ public class GetScalarBoundaryQuery {
 
   public static let OperationName = "GetScalarBoundary"
 
-  public typealias Ref = QueryRefObservableObject<
+  public typealias Ref = QueryRefObservation<
     GetScalarBoundaryQuery.Data,
     GetScalarBoundaryQuery.Variables
   >
@@ -1174,39 +1189,42 @@ public class GetScalarBoundaryQuery {
       scalarBoundary: ScalarBoundary?
   }
 
-  public func ref(id: UUID)
-    -> QueryRefObservableObject<GetScalarBoundaryQuery.Data,
-      GetScalarBoundaryQuery.Variables> {
+  public func ref(id: UUID) -> QueryRefObservation<
+    GetScalarBoundaryQuery.Data,
+    GetScalarBoundaryQuery.Variables
+  > {
     var variables = GetScalarBoundaryQuery.Variables(id: id)
 
     let ref = dataConnect.query(
       name: "GetScalarBoundary",
       variables: variables,
       resultsDataType: GetScalarBoundaryQuery.Data.self,
-      publisher: .observableObject
+      publisher: .observableMacro
     )
-    return ref as! QueryRefObservableObject<
+    return ref as! QueryRefObservation<
       GetScalarBoundaryQuery.Data,
       GetScalarBoundaryQuery.Variables
     >
   }
 
   @MainActor
-  public func execute(id: UUID) async throws -> OperationResult<GetScalarBoundaryQuery.Data> {
+  public func execute(fetchPolicy: QueryFetchPolicy = .preferCache,
+
+                      id: UUID) async throws -> OperationResult<GetScalarBoundaryQuery.Data> {
     var variables = GetScalarBoundaryQuery.Variables(id: id)
 
     let ref = dataConnect.query(
       name: "GetScalarBoundary",
       variables: variables,
       resultsDataType: GetScalarBoundaryQuery.Data.self,
-      publisher: .observableObject
+      publisher: .observableMacro
     )
 
-    let refCast = ref as! QueryRefObservableObject<
+    let refCast = ref as! QueryRefObservation<
       GetScalarBoundaryQuery.Data,
       GetScalarBoundaryQuery.Variables
     >
-    return try await refCast.execute()
+    return try await refCast.execute(fetchPolicy: fetchPolicy)
   }
 }
 
@@ -1219,7 +1237,7 @@ public class GetLargeNumQuery {
 
   public static let OperationName = "GetLargeNum"
 
-  public typealias Ref = QueryRefObservableObject<GetLargeNumQuery.Data, GetLargeNumQuery.Variables>
+  public typealias Ref = QueryRefObservation<GetLargeNumQuery.Data, GetLargeNumQuery.Variables>
 
   public struct Variables: OperationVariable {
     public var
@@ -1284,37 +1302,34 @@ public class GetLargeNumQuery {
       largeIntType: LargeIntType?
   }
 
-  public func ref(id: UUID) -> QueryRefObservableObject<
-    GetLargeNumQuery.Data,
-    GetLargeNumQuery.Variables
-  > {
+  public func ref(id: UUID)
+    -> QueryRefObservation<GetLargeNumQuery.Data, GetLargeNumQuery.Variables> {
     var variables = GetLargeNumQuery.Variables(id: id)
 
     let ref = dataConnect.query(
       name: "GetLargeNum",
       variables: variables,
       resultsDataType: GetLargeNumQuery.Data.self,
-      publisher: .observableObject
+      publisher: .observableMacro
     )
-    return ref as! QueryRefObservableObject<GetLargeNumQuery.Data, GetLargeNumQuery.Variables>
+    return ref as! QueryRefObservation<GetLargeNumQuery.Data, GetLargeNumQuery.Variables>
   }
 
   @MainActor
-  public func execute(id: UUID) async throws -> OperationResult<GetLargeNumQuery.Data> {
+  public func execute(fetchPolicy: QueryFetchPolicy = .preferCache,
+
+                      id: UUID) async throws -> OperationResult<GetLargeNumQuery.Data> {
     var variables = GetLargeNumQuery.Variables(id: id)
 
     let ref = dataConnect.query(
       name: "GetLargeNum",
       variables: variables,
       resultsDataType: GetLargeNumQuery.Data.self,
-      publisher: .observableObject
+      publisher: .observableMacro
     )
 
-    let refCast = ref as! QueryRefObservableObject<
-      GetLargeNumQuery.Data,
-      GetLargeNumQuery.Variables
-    >
-    return try await refCast.execute()
+    let refCast = ref as! QueryRefObservation<GetLargeNumQuery.Data, GetLargeNumQuery.Variables>
+    return try await refCast.execute(fetchPolicy: fetchPolicy)
   }
 }
 
@@ -1327,7 +1342,7 @@ public class GetLocalDateTypeQuery {
 
   public static let OperationName = "GetLocalDateType"
 
-  public typealias Ref = QueryRefObservableObject<
+  public typealias Ref = QueryRefObservation<
     GetLocalDateTypeQuery.Data,
     GetLocalDateTypeQuery.Variables
   >
@@ -1385,7 +1400,7 @@ public class GetLocalDateTypeQuery {
       localDateType: LocalDateType?
   }
 
-  public func ref(id: UUID) -> QueryRefObservableObject<
+  public func ref(id: UUID) -> QueryRefObservation<
     GetLocalDateTypeQuery.Data,
     GetLocalDateTypeQuery.Variables
   > {
@@ -1395,30 +1410,32 @@ public class GetLocalDateTypeQuery {
       name: "GetLocalDateType",
       variables: variables,
       resultsDataType: GetLocalDateTypeQuery.Data.self,
-      publisher: .observableObject
+      publisher: .observableMacro
     )
-    return ref as! QueryRefObservableObject<
+    return ref as! QueryRefObservation<
       GetLocalDateTypeQuery.Data,
       GetLocalDateTypeQuery.Variables
     >
   }
 
   @MainActor
-  public func execute(id: UUID) async throws -> OperationResult<GetLocalDateTypeQuery.Data> {
+  public func execute(fetchPolicy: QueryFetchPolicy = .preferCache,
+
+                      id: UUID) async throws -> OperationResult<GetLocalDateTypeQuery.Data> {
     var variables = GetLocalDateTypeQuery.Variables(id: id)
 
     let ref = dataConnect.query(
       name: "GetLocalDateType",
       variables: variables,
       resultsDataType: GetLocalDateTypeQuery.Data.self,
-      publisher: .observableObject
+      publisher: .observableMacro
     )
 
-    let refCast = ref as! QueryRefObservableObject<
+    let refCast = ref as! QueryRefObservation<
       GetLocalDateTypeQuery.Data,
       GetLocalDateTypeQuery.Variables
     >
-    return try await refCast.execute()
+    return try await refCast.execute(fetchPolicy: fetchPolicy)
   }
 }
 
@@ -1431,7 +1448,7 @@ public class GetAnyValueTypeQuery {
 
   public static let OperationName = "GetAnyValueType"
 
-  public typealias Ref = QueryRefObservableObject<
+  public typealias Ref = QueryRefObservation<
     GetAnyValueTypeQuery.Data,
     GetAnyValueTypeQuery.Variables
   >
@@ -1485,7 +1502,7 @@ public class GetAnyValueTypeQuery {
       anyValueType: AnyValueType?
   }
 
-  public func ref(id: UUID) -> QueryRefObservableObject<
+  public func ref(id: UUID) -> QueryRefObservation<
     GetAnyValueTypeQuery.Data,
     GetAnyValueTypeQuery.Variables
   > {
@@ -1495,29 +1512,31 @@ public class GetAnyValueTypeQuery {
       name: "GetAnyValueType",
       variables: variables,
       resultsDataType: GetAnyValueTypeQuery.Data.self,
-      publisher: .observableObject
+      publisher: .observableMacro
     )
-    return ref as! QueryRefObservableObject<
+    return ref as! QueryRefObservation<
       GetAnyValueTypeQuery.Data,
       GetAnyValueTypeQuery.Variables
     >
   }
 
   @MainActor
-  public func execute(id: UUID) async throws -> OperationResult<GetAnyValueTypeQuery.Data> {
+  public func execute(fetchPolicy: QueryFetchPolicy = .preferCache,
+
+                      id: UUID) async throws -> OperationResult<GetAnyValueTypeQuery.Data> {
     var variables = GetAnyValueTypeQuery.Variables(id: id)
 
     let ref = dataConnect.query(
       name: "GetAnyValueType",
       variables: variables,
       resultsDataType: GetAnyValueTypeQuery.Data.self,
-      publisher: .observableObject
+      publisher: .observableMacro
     )
 
-    let refCast = ref as! QueryRefObservableObject<
+    let refCast = ref as! QueryRefObservation<
       GetAnyValueTypeQuery.Data,
       GetAnyValueTypeQuery.Variables
     >
-    return try await refCast.execute()
+    return try await refCast.execute(fetchPolicy: fetchPolicy)
   }
 }

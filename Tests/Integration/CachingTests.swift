@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import XCTest
 import FirebaseCore
 @testable import FirebaseDataConnect
+import XCTest
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class CachingTests: IntegrationTestBase {
@@ -29,26 +29,9 @@ final class CachingTests: IntegrationTestBase {
     }
   }
 
-  func createCachedConnector(storage: CacheSettings.Storage = .memory, maxAge: TimeInterval = 60) -> KitchenSinkConnector {
-    let cacheSettings = CacheSettings(storage: storage, maxAge: maxAge)
-    let settings = DataConnectSettings(
-      host: DataConnect.EmulatorDefaults.host,
-      port: 3628,
-      sslEnabled: false,
-      cacheSettings: cacheSettings
-    )
-    let dc = DataConnect(
-      app: IntegrationTestBase.defaultApp!,
-      connectorConfig: KitchenSinkConnector.connectorConfig,
-      settings: settings,
-      callerSDKType: .generated
-    )
-    return KitchenSinkConnector(dataConnect: dc)
-  }
-
   // Test preferCache policy: first call fetches from server, second call fetches from cache
   func testPreferCachePolicy() async throws {
-    let connector = createCachedConnector()
+    let connector = DataConnect.kitchenSinkConnector
     let id = UUID()
 
     _ = try await connector.createStandardScalarMutation.execute(
@@ -73,7 +56,7 @@ final class CachingTests: IntegrationTestBase {
 
   // Test cacheOnly policy: returns cached data if available, or nil if not
   func testCacheOnlyPolicy() async throws {
-    let connector = createCachedConnector()
+    let connector = DataConnect.kitchenSinkConnector
     let id = UUID()
 
     let queryRef = connector.getStandardScalarQuery.ref(id: id)
@@ -100,7 +83,7 @@ final class CachingTests: IntegrationTestBase {
 
   // Test serverOnly policy: always reaches out to server even if cache exists
   func testServerOnlyPolicy() async throws {
-    let connector = createCachedConnector()
+    let connector = DataConnect.kitchenSinkConnector
     let id = UUID()
 
     _ = try await connector.createStandardScalarMutation.execute(
@@ -123,8 +106,8 @@ final class CachingTests: IntegrationTestBase {
 
   // Test maxAge expiry: once TTL expires, preferCache should reach out to server
   func testMaxAgeExpiry() async throws {
-    let ttl: TimeInterval = 1.0
-    let connector = createCachedConnector(storage: .memory, maxAge: ttl)
+    let ttl: TimeInterval = 15.0
+    let connector = DataConnect.kitchenSinkConnector
     let id = UUID()
 
     _ = try await connector.createStandardScalarMutation.execute(

@@ -14,6 +14,7 @@
 
 import Foundation
 
+import FirebaseCore
 import FirebaseDataConnect
 
 public struct AnyValueTypeKey {
