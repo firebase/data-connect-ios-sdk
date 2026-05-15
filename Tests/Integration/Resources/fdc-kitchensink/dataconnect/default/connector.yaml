@@ -26,3 +26,6 @@ generate:
      outputDir: "../../../../Gen/"
      package: "KitchenSink"
      observablePublisher: "observableObject"
+     clientCache:
+        maxAge: 2s
+        storage: memory

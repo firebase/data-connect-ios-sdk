@@ -24,6 +24,15 @@ public enum OrderDirection: String, Codable, Sendable {
   case DESC
 }
 
+public enum SearchQueryFormat: String, Codable, Sendable {
+  case QUERY
+  case PLAIN
+  case PHRASE
+  case ADVANCED
+}
+
+// MARK: Connector Enums
+
 // End enum definitions
 
 public class CreateTestIdMutation {
@@ -227,7 +236,7 @@ public class CreateStandardScalarMutation {
 
   public struct Data: Decodable, Sendable {
     public var
-      standardScalars_insert: StandardScalarsKey
+      standardScalars_upsert: StandardScalarsKey
   }
 
   public func ref(id: UUID,
@@ -919,6 +928,9 @@ public class DeleteNonExistentPeopleMutation {
 
   public struct Data: Decodable, Sendable {
     public var
+      person1_insert: PersonKey
+
+    public var
       person1: PersonKey?
 
     public var
@@ -1072,7 +1084,9 @@ public class GetStandardScalarQuery {
   }
 
   @MainActor
-  public func execute(id: UUID) async throws -> OperationResult<GetStandardScalarQuery.Data> {
+  public func execute(fetchPolicy: QueryFetchPolicy = .preferCache,
+
+                      id: UUID) async throws -> OperationResult<GetStandardScalarQuery.Data> {
     var variables = GetStandardScalarQuery.Variables(id: id)
 
     let ref = dataConnect.query(
@@ -1086,7 +1100,7 @@ public class GetStandardScalarQuery {
       GetStandardScalarQuery.Data,
       GetStandardScalarQuery.Variables
     >
-    return try await refCast.execute()
+    return try await refCast.execute(fetchPolicy: fetchPolicy)
   }
 }
 
@@ -1192,7 +1206,9 @@ public class GetScalarBoundaryQuery {
   }
 
   @MainActor
-  public func execute(id: UUID) async throws -> OperationResult<GetScalarBoundaryQuery.Data> {
+  public func execute(fetchPolicy: QueryFetchPolicy = .preferCache,
+
+                      id: UUID) async throws -> OperationResult<GetScalarBoundaryQuery.Data> {
     var variables = GetScalarBoundaryQuery.Variables(id: id)
 
     let ref = dataConnect.query(
@@ -1206,7 +1222,7 @@ public class GetScalarBoundaryQuery {
       GetScalarBoundaryQuery.Data,
       GetScalarBoundaryQuery.Variables
     >
-    return try await refCast.execute()
+    return try await refCast.execute(fetchPolicy: fetchPolicy)
   }
 }
 
@@ -1300,7 +1316,9 @@ public class GetLargeNumQuery {
   }
 
   @MainActor
-  public func execute(id: UUID) async throws -> OperationResult<GetLargeNumQuery.Data> {
+  public func execute(fetchPolicy: QueryFetchPolicy = .preferCache,
+
+                      id: UUID) async throws -> OperationResult<GetLargeNumQuery.Data> {
     var variables = GetLargeNumQuery.Variables(id: id)
 
     let ref = dataConnect.query(
@@ -1314,7 +1332,7 @@ public class GetLargeNumQuery {
       GetLargeNumQuery.Data,
       GetLargeNumQuery.Variables
     >
-    return try await refCast.execute()
+    return try await refCast.execute(fetchPolicy: fetchPolicy)
   }
 }
 
@@ -1404,7 +1422,9 @@ public class GetLocalDateTypeQuery {
   }
 
   @MainActor
-  public func execute(id: UUID) async throws -> OperationResult<GetLocalDateTypeQuery.Data> {
+  public func execute(fetchPolicy: QueryFetchPolicy = .preferCache,
+
+                      id: UUID) async throws -> OperationResult<GetLocalDateTypeQuery.Data> {
     var variables = GetLocalDateTypeQuery.Variables(id: id)
 
     let ref = dataConnect.query(
@@ -1418,7 +1438,7 @@ public class GetLocalDateTypeQuery {
       GetLocalDateTypeQuery.Data,
       GetLocalDateTypeQuery.Variables
     >
-    return try await refCast.execute()
+    return try await refCast.execute(fetchPolicy: fetchPolicy)
   }
 }
 
@@ -1504,7 +1524,9 @@ public class GetAnyValueTypeQuery {
   }
 
   @MainActor
-  public func execute(id: UUID) async throws -> OperationResult<GetAnyValueTypeQuery.Data> {
+  public func execute(fetchPolicy: QueryFetchPolicy = .preferCache,
+
+                      id: UUID) async throws -> OperationResult<GetAnyValueTypeQuery.Data> {
     var variables = GetAnyValueTypeQuery.Variables(id: id)
 
     let ref = dataConnect.query(
@@ -1518,6 +1540,6 @@ public class GetAnyValueTypeQuery {
       GetAnyValueTypeQuery.Data,
       GetAnyValueTypeQuery.Variables
     >
-    return try await refCast.execute()
+    return try await refCast.execute(fetchPolicy: fetchPolicy)
   }
 }
