@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-query GetStandardScalar($id: UUID!) @auth(level: PUBLIC) 
+query GetStandardScalar($id: UUID!) @auth(level: PUBLIC)
 @refresh(onMutationExecuted: [ {
    operation: "CreateStandardScalar"
    condition: "request.variables.id == mutation.variables.id"
