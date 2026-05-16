@@ -470,6 +470,10 @@ actor StreamingGrpcClient: GrpcClient {
     await subManager.hasAnySubscription()
   }
 
+  func isStreamingConnected() async -> Bool {
+    streamingCall != nil
+  }
+
   func createCallOptions() async -> CallOptions {
     return await DataConnectGrpcClient.createCallOptions(
       app: app,
