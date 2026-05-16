@@ -55,21 +55,23 @@ final class RealtimeTests: IntegrationTestBase {
 
     let queryRef = connector.getStandardScalarQuery.ref(id: id)
     let pub = try await queryRef.subscribe()
-    let cancellable = pub.sink { result in
-      switch result {
-      case let .success(res):
-        if let data = res.data {
-          results.append(data)
-          if results.count == 1 {
-            initialExpectation.fulfill()
-          } else if results.count == 2 {
-            refreshExpectation.fulfill()
+    let cancellable = pub
+      .receive(on: DispatchQueue.main)
+      .sink { result in
+        switch result {
+        case let .success(res):
+          if let data = res.data {
+            results.append(data)
+            if results.count == 1 {
+              initialExpectation.fulfill()
+            } else if results.count == 2 {
+              refreshExpectation.fulfill()
+            }
           }
+        case let .failure(err):
+          XCTFail("Subscription failed: \(err)")
         }
-      case let .failure(err):
-        XCTFail("Subscription failed: \(err)")
       }
-    }
 
     // Wait for initial result
     await fulfillment(of: [initialExpectation], timeout: 5.0)
@@ -108,30 +110,45 @@ final class RealtimeTests: IntegrationTestBase {
 
     let queryRef = connector.getLargeNumQuery.ref(id: id)
     let pub = try await queryRef.subscribe()
-    let cancellable = pub.sink { result in
-      switch result {
-      case let .success(res):
-        if let data = res.data {
-          results.append(data)
-          if results.count == 1 {
-            initialExpectation.fulfill()
-          } else if results.count == 2 {
-            periodicExpectation.fulfill()
+    let cancellable = pub
+      .receive(on: DispatchQueue.main)
+      .sink { result in
+        switch result {
+        case let .success(res):
+          if let data = res.data {
+            results.append(data)
+            if results.count == 1 {
+              initialExpectation.fulfill()
+            } else if results.count == 2 {
+              periodicExpectation.fulfill()
+            }
           }
+        case let .failure(err):
+          XCTFail("Subscription failed: \(err)")
         }
-      case let .failure(err):
-        XCTFail("Subscription failed: \(err)")
       }
-    }
 
     // Wait for initial result
     await fulfillment(of: [initialExpectation], timeout: 5.0)
 
-    // Wait for periodic refresh (configured for 10 seconds, timeout after 11 seconds)
-    await fulfillment(of: [periodicExpectation], timeout: 11.0)
+    // Wait for periodic refresh (configured for 10 seconds, timeout after 15 seconds)
+    await fulfillment(of: [periodicExpectation], timeout: 15.0)
 
     XCTAssertGreaterThanOrEqual(results.count, 2)
     cancellable.cancel()
+  }
+
+  private func assertCondition(timeout: TimeInterval = 5.0,
+                               message: String,
+                               condition: @escaping () async -> Bool) async throws {
+    let startTime = Date()
+    while Date().timeIntervalSince(startTime) < timeout {
+      if await condition() {
+        return
+      }
+      try await Task.sleep(nanoseconds: 50_000_000) // 50ms poll interval
+    }
+    XCTFail(message)
   }
 
   // 3. Test unsubscribe.
@@ -145,23 +162,25 @@ final class RealtimeTests: IntegrationTestBase {
       let pub = try await queryRef.subscribe()
       let cancellable = pub.sink { _ in }
 
-      // Give the background Task time to establish the gRPC subscription
-      try await Task.sleep(nanoseconds: 500_000_000)
-
-      // Verify subscription is active
-      let isActive = await connector.dataConnect.grpcClient.hasActiveSubscriptions()
-      XCTAssertTrue(isActive, "Expected active subscription")
+      // Poll until subscription becomes active
+      try await assertCondition(
+        timeout: 5.0,
+        message: "Expected active subscription after subscribe"
+      ) {
+        await connector.dataConnect.grpcClient.hasActiveSubscriptions()
+      }
 
       // Cancel subscription
       cancellable.cancel()
     }
 
-    // Give the actor a moment to process the cancellation, deallocation of queryRef, and idle check
-    try await Task.sleep(nanoseconds: 500_000_000)
-
-    // Verify subscription is disconnected
-    let isDisconnected = await connector.dataConnect.grpcClient.hasActiveSubscriptions()
-    XCTAssertFalse(isDisconnected, "Expected no active subscriptions after cancel")
+    // Poll until subscription becomes disconnected
+    try await assertCondition(
+      timeout: 5.0,
+      message: "Expected no active subscriptions after cancel"
+    ) {
+      await !connector.dataConnect.grpcClient.hasActiveSubscriptions()
+    }
   }
 
   // 4. Before the first subscribe any execute operations should use unarygrpcclient.
@@ -178,12 +197,7 @@ final class RealtimeTests: IntegrationTestBase {
     )
 
     // Execute a query
-    do {
-      _ = try await connector.getStandardScalarQuery.execute(id: id)
-    } catch {
-      DataConnectLogger
-        .debug("Execute completed via Unary client (with expected Postgres config error): \(error)")
-    }
+    _ = try await connector.getStandardScalarQuery.execute(id: id)
 
     // Verify streaming connection is STILL null / not connected
     let isConnectedAfterExecute = await connector.dataConnect.grpcClient.isStreamingConnected()
@@ -198,16 +212,14 @@ final class RealtimeTests: IntegrationTestBase {
       let pub = try await queryRef.subscribe()
       let cancellable = pub.sink { _ in }
 
-      try await Task.sleep(nanoseconds: 500_000_000)
-
-      let isConnectedAfterSubscribe = await connector.dataConnect.grpcClient.isStreamingConnected()
-      XCTAssertTrue(
-        isConnectedAfterSubscribe,
-        "Expected streaming connection to be active after subscribe"
-      )
+      // Poll until streaming connects
+      try await assertCondition(
+        timeout: 5.0,
+        message: "Expected streaming connection to be active after subscribe"
+      ) {
+        await connector.dataConnect.grpcClient.isStreamingConnected()
+      }
       cancellable.cancel()
     }
-
-    try await Task.sleep(nanoseconds: 500_000_000)
   }
 }
