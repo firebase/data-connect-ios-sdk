@@ -32,6 +32,8 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
 
   private var subscriptionStream: AsyncStream<ServerResponse>?
 
+  private var connectionTask: Task<Void, Never>?
+
   private var subscriberCount = 0
 
   // Ideally we would like this to be part of the QueryRef protocol
@@ -56,18 +58,23 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
   public func subscribe()
     -> AnyPublisher<Result<OperationResult<ResultData>, AnyDataConnectError>, Never> {
     subscriberCount += 1
-    if subscriptionStream == nil {
-      Task {
-        do {
-          do {
-            _ = try await fetchCachedResults(allowStale: true)
-          } catch {
-            DataConnectLogger
-              .debug("Error fetching cached results. Proceeding with server subscribe: \(error)")
-          }
 
+    // 1. Immediately fetch and publish cached results in parallel for every subscriber
+    Task {
+      do {
+        _ = try await fetchCachedResults(allowStale: true)
+      } catch {
+        DataConnectLogger.debug("Error fetching cached results: \(error)")
+      }
+    }
+
+    // 2. If no stream or handshake is active, establish connection immediately in parallel
+    if subscriptionStream == nil && connectionTask == nil {
+      connectionTask = Task {
+        defer { self.connectionTask = nil }
+        do {
           // If we already have a stream return
-          guard self.subscriptionStream == nil else { return }
+          guard self.subscriptionStream == nil && self.subscriberCount > 0 else { return }
 
           subscriptionStream = try await grpcClient
             .subscribe(request: self.request, resultType: ResultData.self)
@@ -111,6 +118,8 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
   private func handleUnsubscribe() async {
     subscriberCount -= 1
     if subscriberCount == 0 {
+      connectionTask?.cancel()
+      connectionTask = nil
       subscriptionStream = nil
       do {
         try await grpcClient.unsubscribe(request: request)
