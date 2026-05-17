@@ -85,6 +85,7 @@ public class QueryRefObservableObject<
 
   /// Executes the query and returns `ResultData`. This will also update the published `data`
   /// variable
+  @MainActor
   public func execute(fetchPolicy: QueryFetchPolicy = .preferCache) async throws
     -> OperationResult<ResultData> {
     do {
@@ -102,6 +103,7 @@ public class QueryRefObservableObject<
   /// Returns the underlying results publisher.
   /// Use this function ONLY if you plan to use the Query Ref outside of SwiftUI context - (UIKit,
   /// background updates,...)
+  @MainActor
   public func subscribe() async throws
     -> AnyPublisher<Result<OperationResult<ResultData>, AnyDataConnectError>, Never> {
     if internalSub == nil {
@@ -126,7 +128,7 @@ public class QueryRefObservableObject<
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public extension QueryRefObservableObject {
-  nonisolated func hash(into hasher: inout Hasher) {
+  func hash(into hasher: inout Hasher) {
     hasher.combine(baseRef)
   }
 
@@ -177,7 +179,8 @@ public class QueryRefObservation<
   @ObservationIgnored
   private var internalSub: AnyCancellable?
 
-  init(request: QueryRequest<Variable>, dataType: ResultData.Type, grpcClient: GrpcClient,
+  init(request: QueryRequest<Variable>, dataType: ResultData.Type,
+       grpcClient: GrpcClient,
        cache: Cache?) {
     self.request = request
     baseRef = GenericQueryRef(
@@ -203,6 +206,7 @@ public class QueryRefObservation<
 
   /// Executes the query and returns `ResultData`. This will also update the published `data`
   /// variable
+  @MainActor
   public func execute(fetchPolicy: QueryFetchPolicy = .preferCache) async throws
     -> OperationResult<ResultData> {
     do {
@@ -220,6 +224,7 @@ public class QueryRefObservation<
   /// Returns the underlying results publisher.
   /// Use this function ONLY if you plan to use the Query Ref outside of SwiftUI context - (UIKit,
   /// background updates,...)
+  @MainActor
   public func subscribe() async throws
     -> AnyPublisher<Result<OperationResult<ResultData>, AnyDataConnectError>, Never> {
     if internalSub == nil {
@@ -245,7 +250,7 @@ public class QueryRefObservation<
 
 @available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
 public extension QueryRefObservation {
-  nonisolated func hash(into hasher: inout Hasher) {
+  func hash(into hasher: inout Hasher) {
     hasher.combine(baseRef)
   }
 
@@ -256,7 +261,7 @@ public extension QueryRefObservation {
 
 @available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
 extension QueryRefObservation: CustomStringConvertible {
-  public nonisolated var description: String {
+  public var description: String {
     "QueryRefObservation(\(String(describing: baseRef)))"
   }
 }
