@@ -71,40 +71,53 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
     // 2. If no stream or handshake is active, establish connection immediately in parallel
     if subscriptionStream == nil && connectionTask == nil {
       connectionTask = Task {
-        defer { self.connectionTask = nil }
+        defer {
+          if !Task.isCancelled {
+            self.connectionTask = nil
+          }
+        }
         do {
           // If we already have a stream return
           guard self.subscriptionStream == nil && self.subscriberCount > 0 else { return }
 
-          subscriptionStream = try await grpcClient
+          let stream = try await grpcClient
             .subscribe(request: self.request, resultType: ResultData.self)
 
-          guard let subscriptionStream else { return }
+          try Task.checkCancellation()
 
-          for await response in subscriptionStream {
+          self.subscriptionStream = stream
+
+          for await response in stream {
+            if Task.isCancelled { break }
             do {
               DataConnectLogger.debug("Received response in sub stream in GenericQueryRef")
               _ = try await self.handleServerResponse(response: response)
             } catch {
               // failures in handling response
-              resultsPublisher
-                .send(.failure(AnyDataConnectError(dataConnectError: DataConnectInternalError
-                    .internalError(
-                      message: "Failed to handle response",
-                      cause: error
-                    ))))
+              if !Task.isCancelled {
+                resultsPublisher
+                  .send(.failure(AnyDataConnectError(dataConnectError: DataConnectInternalError
+                      .internalError(
+                        message: "Failed to handle response",
+                        cause: error
+                      ))))
+              }
             }
           }
           // Exiting the loop indicates the stream has finished.
-          self.subscriptionStream = nil
+          if !Task.isCancelled {
+            self.subscriptionStream = nil
+          }
         } catch {
           // Stream failures
-          resultsPublisher
-            .send(.failure(AnyDataConnectError(dataConnectError: DataConnectInternalError
-                .internalError(
-                  message: "Failed to subscribe to query",
-                  cause: error
-                ))))
+          if !Task.isCancelled {
+            resultsPublisher
+              .send(.failure(AnyDataConnectError(dataConnectError: DataConnectInternalError
+                  .internalError(
+                    message: "Failed to subscribe to query",
+                    cause: error
+                  ))))
+          }
         }
       }
     }

@@ -90,9 +90,6 @@ public class QueryRefObservableObject<
     -> OperationResult<ResultData> {
     do {
       let result = try await baseRef.execute(fetchPolicy: fetchPolicy)
-      data = result.data
-      source = result.source
-      lastError = nil
       return result
     } catch let error as AnyDataConnectError {
       self.lastError = error.dataConnectError
