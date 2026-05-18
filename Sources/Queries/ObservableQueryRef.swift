@@ -14,7 +14,6 @@
 
 import Foundation
 
-import Atomics
 @preconcurrency import Combine
 import Observation
 
@@ -55,15 +54,6 @@ public class QueryRefObservableObject<
 
   private var baseRef: GenericQueryRef<ResultData, Variable>
 
-  private var resultsCancellable: AnyCancellable?
-
-  private let resultsRepublisher = PassthroughSubject<
-    Result<OperationResult<ResultData>, AnyDataConnectError>,
-    Never
-  >()
-
-  private var subscribeCounter = ManagedAtomic<Int>(0)
-
   init(request: QueryRequest<Variable>,
        dataType: ResultData.Type,
        grpcClient: GrpcClient,
@@ -88,17 +78,18 @@ public class QueryRefObservableObject<
   /// Source of the query results (server, local cache, ...)
   @Published public private(set) var source: DataSource?
 
+  /// Internal subscription from base ref
+  private var internalSub: AnyCancellable?
+
   // QueryRef implementation
 
   /// Executes the query and returns `ResultData`. This will also update the published `data`
   /// variable
+  @MainActor
   public func execute(fetchPolicy: QueryFetchPolicy = .preferCache) async throws
     -> OperationResult<ResultData> {
     do {
       let result = try await baseRef.execute(fetchPolicy: fetchPolicy)
-      data = result.data
-      source = result.source
-      lastError = nil
       return result
     } catch let error as AnyDataConnectError {
       self.lastError = error.dataConnectError
@@ -109,45 +100,32 @@ public class QueryRefObservableObject<
   /// Returns the underlying results publisher.
   /// Use this function ONLY if you plan to use the Query Ref outside of SwiftUI context - (UIKit,
   /// background updates,...)
+  @MainActor
   public func subscribe() async throws
     -> AnyPublisher<Result<OperationResult<ResultData>, AnyDataConnectError>, Never> {
-    let resultsSub = await baseRef.subscribe()
-    if resultsCancellable == nil {
-      resultsCancellable = resultsSub
+    if internalSub == nil {
+      let internalPub = await baseRef.internalSubscribe()
+      internalSub = internalPub
         .receive(on: DispatchQueue.main)
-        .sink(receiveValue: { [weak self] result in
+        .sink { [weak self] result in
           switch result {
           case let .success(resultData):
             self?.data = resultData.data
             self?.source = resultData.source
             self?.lastError = nil
-            self?.resultsRepublisher.send(.success(resultData))
           case let .failure(dcerror):
             self?.lastError = dcerror.dataConnectError
-            self?.resultsRepublisher.send(.failure(dcerror))
           }
-        })
-    }
-    return resultsRepublisher.handleEvents(
-      receiveSubscription: { subscription in
-        self.subscribeCounter.wrappingIncrement(ordering: .acquiringAndReleasing)
-        DataConnectLogger.debug("Added new subscription for operationId: \(self.operationId)")
-      },
-      receiveCancel: {
-        self.subscribeCounter.wrappingDecrement(ordering: .acquiringAndReleasing)
-        DataConnectLogger.debug("Removed a subscription for operationId: \(self.operationId)")
-        if self.subscribeCounter.load(ordering: .acquiring) == 0 {
-          self.resultsCancellable?.cancel()
-          self.resultsCancellable = nil
         }
-      }
-    ).eraseToAnyPublisher()
+    }
+    let resultsSub = await baseRef.subscribe()
+    return resultsSub
   }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public extension QueryRefObservableObject {
-  nonisolated func hash(into hasher: inout Hasher) {
+  func hash(into hasher: inout Hasher) {
     hasher.combine(baseRef)
   }
 
@@ -196,18 +174,10 @@ public class QueryRefObservation<
   private var baseRef: GenericQueryRef<ResultData, Variable>
 
   @ObservationIgnored
-  private var resultsCancellable: AnyCancellable?
+  private var internalSub: AnyCancellable?
 
-  @ObservationIgnored
-  private let resultsRepublisher = PassthroughSubject<
-    Result<OperationResult<ResultData>, AnyDataConnectError>,
-    Never
-  >()
-
-  @ObservationIgnored
-  private var subscribeCounter = ManagedAtomic<Int>(0)
-
-  init(request: QueryRequest<Variable>, dataType: ResultData.Type, grpcClient: GrpcClient,
+  init(request: QueryRequest<Variable>, dataType: ResultData.Type,
+       grpcClient: GrpcClient,
        cache: Cache?) {
     self.request = request
     baseRef = GenericQueryRef(
@@ -233,6 +203,7 @@ public class QueryRefObservation<
 
   /// Executes the query and returns `ResultData`. This will also update the published `data`
   /// variable
+  @MainActor
   public func execute(fetchPolicy: QueryFetchPolicy = .preferCache) async throws
     -> OperationResult<ResultData> {
     do {
@@ -250,45 +221,33 @@ public class QueryRefObservation<
   /// Returns the underlying results publisher.
   /// Use this function ONLY if you plan to use the Query Ref outside of SwiftUI context - (UIKit,
   /// background updates,...)
+  @MainActor
   public func subscribe() async throws
     -> AnyPublisher<Result<OperationResult<ResultData>, AnyDataConnectError>, Never> {
-    let resultsSub = await baseRef.subscribe()
-    if resultsCancellable == nil {
-      resultsCancellable = resultsSub
+    if internalSub == nil {
+      let internalPub = await baseRef.internalSubscribe()
+      internalSub = internalPub
         .receive(on: DispatchQueue.main)
-        .sink(receiveValue: { [weak self] result in
+        .sink { [weak self] result in
           switch result {
           case let .success(resultData):
             self?.data = resultData.data
             self?.source = resultData.source
             self?.lastError = nil
-            self?.resultsRepublisher.send(.success(resultData))
           case let .failure(dcerror):
             self?.lastError = dcerror.dataConnectError
-            self?.resultsRepublisher.send(.failure(dcerror))
           }
-        })
-    }
-    return resultsRepublisher.handleEvents(
-      receiveSubscription: { subscription in
-        self.subscribeCounter.wrappingIncrement(ordering: .acquiringAndReleasing)
-        DataConnectLogger.debug("Added new subscription for operationId: \(self.operationId)")
-      },
-      receiveCancel: {
-        self.subscribeCounter.wrappingDecrement(ordering: .acquiringAndReleasing)
-        DataConnectLogger.debug("Removed a subscription for operationId: \(self.operationId)")
-        if self.subscribeCounter.load(ordering: .acquiring) == 0 {
-          self.resultsCancellable?.cancel()
-          self.resultsCancellable = nil
         }
-      }
-    ).eraseToAnyPublisher()
+    }
+
+    let resultsSub = await baseRef.subscribe()
+    return resultsSub
   }
 }
 
 @available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
 public extension QueryRefObservation {
-  nonisolated func hash(into hasher: inout Hasher) {
+  func hash(into hasher: inout Hasher) {
     hasher.combine(baseRef)
   }
 
@@ -299,7 +258,7 @@ public extension QueryRefObservation {
 
 @available(macOS 14, iOS 17, tvOS 17, watchOS 10, *)
 extension QueryRefObservation: CustomStringConvertible {
-  public nonisolated var description: String {
+  public var description: String {
     "QueryRefObservation(\(String(describing: baseRef)))"
   }
 }

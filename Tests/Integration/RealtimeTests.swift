@@ -18,7 +18,8 @@ import FirebaseCore
 import XCTest
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-final class RealtimeTests: IntegrationTestBase {
+
+@MainActor final class RealtimeTests: IntegrationTestBase {
   override func setUp(completion: @escaping ((any Error)?) -> Void) {
     Task {
       do {
@@ -92,7 +93,7 @@ final class RealtimeTests: IntegrationTestBase {
   }
 
   // 2. Query should automatically refresh every N seconds.
-  // The GetLargeNum query has been configured to refresh every 2 seconds.
+  // The GetLargeNum query has been configured to refresh every 10 seconds.
   func testPeriodicRefresh() async throws {
     let connector = makeConnector()
     let id = UUID()

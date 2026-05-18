@@ -32,6 +32,10 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
 
   private var subscriptionStream: AsyncStream<ServerResponse>?
 
+  private var connectionTask: Task<Void, Never>?
+
+  private var subscriberCount = 0
+
   // Ideally we would like this to be part of the QueryRef protocol
   // Not adding for now since the protocol is Public
   // This property is for now an internal property.
@@ -46,60 +50,96 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
 
   // This call starts query execution and publishes data to data var
   // In v0, it simply reloads query results
+  public func internalSubscribe()
+    -> AnyPublisher<Result<OperationResult<ResultData>, AnyDataConnectError>, Never> {
+    return resultsPublisher.eraseToAnyPublisher()
+  }
+
   public func subscribe()
     -> AnyPublisher<Result<OperationResult<ResultData>, AnyDataConnectError>, Never> {
+    subscriberCount += 1
+
+    // 1. Immediately fetch and publish cached results in parallel for every subscriber
     Task {
       do {
-        do {
-          _ = try await fetchCachedResults(allowStale: true)
-        } catch {
-          DataConnectLogger
-            .debug("Error fetching cached results. Proceeding with server subscribe: \(error)")
+        _ = try await fetchCachedResults(allowStale: true)
+      } catch {
+        DataConnectLogger.debug("Error fetching cached results: \(error)")
+      }
+    }
+
+    // 2. If no stream or handshake is active, establish connection immediately in parallel
+    if subscriptionStream == nil && connectionTask == nil {
+      connectionTask = Task {
+        defer {
+          if !Task.isCancelled {
+            self.connectionTask = nil
+          }
         }
+        do {
+          // If we already have a stream return
+          guard self.subscriptionStream == nil && self.subscriberCount > 0 else { return }
 
-        // If we already have a stream return
-        guard self.subscriptionStream == nil else { return }
+          let stream = try await grpcClient
+            .subscribe(request: self.request, resultType: ResultData.self)
 
-        subscriptionStream = try await grpcClient
-          .subscribe(request: self.request, resultType: ResultData.self)
+          try Task.checkCancellation()
 
-        guard let subscriptionStream else { return }
+          self.subscriptionStream = stream
 
-        for await response in subscriptionStream {
-          do {
-            DataConnectLogger.debug("Received response in sub stream in GenericQueryRef")
-            _ = try await self.handleServerResponse(response: response)
-          } catch {
-            // failures in handling response
+          for await response in stream {
+            if Task.isCancelled { break }
+            do {
+              DataConnectLogger.debug("Received response in sub stream in GenericQueryRef")
+              _ = try await self.handleServerResponse(response: response)
+            } catch {
+              // failures in handling response
+              if !Task.isCancelled {
+                resultsPublisher
+                  .send(.failure(AnyDataConnectError(dataConnectError: DataConnectInternalError
+                      .internalError(
+                        message: "Failed to handle response",
+                        cause: error
+                      ))))
+              }
+            }
+          }
+          // Exiting the loop indicates the stream has finished.
+          if !Task.isCancelled {
+            self.subscriptionStream = nil
+          }
+        } catch {
+          // Stream failures
+          if !Task.isCancelled {
             resultsPublisher
               .send(.failure(AnyDataConnectError(dataConnectError: DataConnectInternalError
                   .internalError(
-                    message: "Failed to handle response",
+                    message: "Failed to subscribe to query",
                     cause: error
                   ))))
           }
         }
-        // Exiting the loop indicates the stream has finished.
-        self.subscriptionStream = nil
-      } catch {
-        // Stream failures
-        resultsPublisher
-          .send(.failure(AnyDataConnectError(dataConnectError: DataConnectInternalError
-              .internalError(
-                message: "Failed to subscribe to query",
-                cause: error
-              ))))
       }
     }
     return resultsPublisher.handleEvents(receiveCancel: {
       Task {
-        do {
-          try await self.grpcClient.unsubscribe(request: self.request)
-        } catch {
-          DataConnectLogger.error("Failed to unsubscribe from request \(self.request)")
-        }
+        await self.handleUnsubscribe()
       }
     }).eraseToAnyPublisher()
+  }
+
+  private func handleUnsubscribe() async {
+    subscriberCount -= 1
+    if subscriberCount == 0 {
+      connectionTask?.cancel()
+      connectionTask = nil
+      subscriptionStream = nil
+      do {
+        try await grpcClient.unsubscribe(request: request)
+      } catch {
+        DataConnectLogger.error("Failed to unsubscribe from request \(request)")
+      }
+    }
   }
 
   // one-shot execution. It will fetch latest data, update any caches
