@@ -84,6 +84,10 @@ protocol GrpcClient: Sendable {
     VariableType: OperationVariable
   >(request: QueryRequest<VariableType>) async throws
 
+  func hasActiveSubscriptions() async -> Bool
+
+  func isStreamingConnected() async -> Bool
+
   func createCallOptions() async -> CallOptions
 }
 
@@ -218,6 +222,14 @@ actor DataConnectGrpcClient: GrpcClient, CustomStringConvertible {
     VariableType: OperationVariable
   >(request: QueryRequest<VariableType>) async throws {
     return try await streamingClient.unsubscribe(request: request)
+  }
+
+  func hasActiveSubscriptions() async -> Bool {
+    return await streamingClient.hasActiveSubscriptions()
+  }
+
+  func isStreamingConnected() async -> Bool {
+    return await streamingClient.isStreamingConnected()
   }
 
   func createCallOptions() async -> CallOptions {

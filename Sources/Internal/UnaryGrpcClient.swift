@@ -253,6 +253,14 @@ actor UnaryGrpcClient: GrpcClient {
       .internalError(message: "Unsubscribe not supported in UnaryGrpcClient")
   }
 
+  func hasActiveSubscriptions() async -> Bool {
+    return false
+  }
+
+  func isStreamingConnected() async -> Bool {
+    return false
+  }
+
   func createCallOptions() async -> CallOptions {
     return await DataConnectGrpcClient.createCallOptions(
       app: app,

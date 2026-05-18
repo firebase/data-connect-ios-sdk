@@ -12,7 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-query GetStandardScalar($id: UUID!) @auth(level: PUBLIC) {
+query GetStandardScalar($id: UUID!) @auth(level: PUBLIC)
+@refresh(onMutationExecuted: [ {
+   operation: "CreateStandardScalar"
+   condition: "request.variables.id == mutation.variables.id"
+}])
+{
     standardScalars(id: $id) {
         id
         number
@@ -30,7 +35,8 @@ query GetScalarBoundary($id: UUID!) @auth(level: PUBLIC) {
     }
 }
 
-query GetLargeNum($id: UUID!) @auth(level: PUBLIC) {
+query GetLargeNum($id: UUID!) @auth(level: PUBLIC) @refresh(every:  { seconds: 10
+}) {
     largeIntType(id: $id) {
         num
         maxNum
