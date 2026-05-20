@@ -1,4 +1,4 @@
-# Unreleased
+# 11.12.2
 - [fixed] Improved handling of stream disconnect and reconnect scenarios.
 
 # 11.12.1
