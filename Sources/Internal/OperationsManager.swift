@@ -20,21 +20,22 @@ class OperationsManager {
 
   private var cache: Cache?
 
-  private let queryRefAccessQueue = DispatchQueue(
-    label: "firebase.dataconnect.queryRef.AccessQ",
+  private let accessQueue = DispatchQueue(
+    label: "firebase.dataconnect.operationsManager.AccessQ",
     autoreleaseFrequency: .workItem
   )
   private var queryRefs = [String: any ObservableQueryRef]()
-
-  private let mutationRefAccessQueue = DispatchQueue(
-    label: "firebase.dataconnect.mutRef.AccessQ",
-    autoreleaseFrequency: .workItem
-  )
   private var mutationRefs = [AnyHashable: any OperationRef]()
 
   init(grpcClient: GrpcClient, cache: Cache? = nil) {
     self.grpcClient = grpcClient
     self.cache = cache
+  }
+
+  func updateCache(cache: Cache?) {
+    accessQueue.sync {
+      self.cache = cache
+    }
   }
 
   func queryRef<ResultDataType: Decodable & Sendable,
@@ -43,7 +44,7 @@ class OperationsManager {
                                        .Type,
                                      publisher: ResultsPublisherType = .auto)
     -> any ObservableQueryRef {
-    queryRefAccessQueue.sync {
+    accessQueue.sync {
       var req = request // requestId is a mutating call.
       let requestId = req.requestId
 
@@ -76,7 +77,7 @@ class OperationsManager {
   }
 
   func queryRef(for operationId: String) -> (any ObservableQueryRef)? {
-    queryRefAccessQueue.sync {
+    accessQueue.sync {
       queryRefs[operationId]
     }
   }
@@ -85,7 +86,7 @@ class OperationsManager {
     VariableType: OperationVariable>(for request: MutationRequest<VariableType>,
                                      with resultType: ResultDataType
                                        .Type) -> MutationRef<ResultDataType, VariableType> {
-    mutationRefAccessQueue.sync {
+    accessQueue.sync {
       if let ref = mutationRefs[
         AnyHashable(
           request
