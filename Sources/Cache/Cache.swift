@@ -66,11 +66,12 @@ actor Cache {
       return
     }
 
-    authChangeListenerProtocol = Auth.auth(app: dataConnect.app).addStateDidChangeListener { [weak self] _, _ in
-      Task {
-        await self?.initializeCacheProvider()
+    authChangeListenerProtocol = Auth.auth(app: dataConnect.app)
+      .addStateDidChangeListener { [weak self] _, _ in
+        Task {
+          await self?.initializeCacheProvider()
+        }
       }
-    }
   }
 
   // Create an identifier for the cache that the Provider will use for cache scoping
