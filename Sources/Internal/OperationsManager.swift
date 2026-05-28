@@ -35,14 +35,14 @@ class OperationsManager {
   /// Updates the cache instance used by the operations manager.
   ///
   /// Note: This method must only be called during initialization before any query references are
-  /// created.
-  ///         Existing query references capture the cache reference at creation time and will not be
+  /// created. Existing query references capture the cache reference at creation time and will not
+  /// be
   /// updated.
   func updateCache(cache: Cache?) {
     accessQueue.sync {
       if queryRefs.count > 0 || mutationRefs.count > 0 {
         DataConnectLogger
-          .warning("WARNING: updateCache must be called before fetching any queries or mutations.")
+          .warning("WARNING: updateCache must be called before creating any queries or mutations.")
       }
 
       self.cache = cache
