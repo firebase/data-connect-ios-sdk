@@ -296,4 +296,66 @@ class InstanceTests: XCTestCase {
 
     XCTAssertTrue(refOne !== refTwo)
   }
+
+  // we configure a separate app, connector config for caching
+  // otherwise it returns a FDC instance configured elsewhere in tests
+  // which has no cache.
+  func cacheApp() -> FirebaseApp {
+    let appName = "cache-app"
+
+    guard FirebaseApp.app(name: appName) == nil else {
+      return FirebaseApp.app(name: appName)!
+    }
+
+    FirebaseApp.configure(name: appName, options: optionsCache)
+    return FirebaseApp.app(name: appName)!
+  }
+
+  var optionsCache: FirebaseOptions = {
+    let optionsTwo = FirebaseOptions(
+      googleAppID: "0:0000000000003:ios:0000000000000002",
+      gcmSenderID: "00000000000000000-00000000000-000000001"
+    )
+    optionsTwo.projectID = "fdc-test-cache"
+    optionsTwo.apiKey = "testDummyApiKey2-cache"
+    return optionsTwo
+  }()
+
+  var fakeConnectorConfigCache = ConnectorConfig(
+    serviceId: "dataconnect",
+    location: "us-central1",
+    connector: "kitchensink-caching"
+  )
+
+  func testCacheInitializedAndAvailableToQueryRefsWhenEmulatorNotUsed() throws {
+    let cacheSettings = CacheSettings(storage: .memory)
+    let settings = DataConnectSettings(cacheSettings: cacheSettings)
+
+    let dc = DataConnect.dataConnect(
+      app: cacheApp(),
+      connectorConfig: fakeConnectorConfigCache,
+      settings: settings
+    )
+
+    // Confirm DataConnect cache is initialized
+    XCTAssertNotNil(dc.cache)
+
+    // Confirm OperationsManager cache is initialized and matches
+    XCTAssertNotNil(dc.operationsManager.cache)
+    XCTAssertTrue(dc.cache === dc.operationsManager.cache)
+
+    // Confirm that created QueryRefs have access to the cache
+    let queryName = "someQuery"
+    let variable = VariableTypeOne(email: "aa@g.com", handle: "aa@", someNumber: 12345)
+
+    let ref = dc.query(
+      name: queryName,
+      variables: variable,
+      resultsDataType: Int.self,
+      publisher: .observableObject
+    ) as! QueryRefObservableObject<Int, VariableTypeOne>
+
+    // Assert that QueryRef is successfully created
+    XCTAssertNotNil(ref)
+  }
 }
