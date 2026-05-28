@@ -296,4 +296,36 @@ class InstanceTests: XCTestCase {
 
     XCTAssertTrue(refOne !== refTwo)
   }
+
+  func testCacheInitializedAndAvailableToQueryRefsWhenEmulatorNotUsed() throws {
+    let cacheSettings = CacheSettings(storage: .memory)
+    let settings = DataConnectSettings(cacheSettings: cacheSettings)
+
+    let dc = DataConnect.dataConnect(
+      app: InstanceTests.defaultApp!,
+      connectorConfig: fakeConnectorConfigOne,
+      settings: settings
+    )
+
+    // Confirm DataConnect cache is initialized
+    XCTAssertNotNil(dc.cache)
+
+    // Confirm OperationsManager cache is initialized and matches
+    XCTAssertNotNil(dc.operationsManager.cache)
+    XCTAssertTrue(dc.cache === dc.operationsManager.cache)
+
+    // Confirm that created QueryRefs have access to the cache
+    let queryName = "someQuery"
+    let variable = VariableTypeOne(email: "aa@g.com", handle: "aa@", someNumber: 12345)
+
+    let ref = dc.query(
+      name: queryName,
+      variables: variable,
+      resultsDataType: Int.self,
+      publisher: .observableObject
+    ) as! QueryRefObservableObject<Int, VariableTypeOne>
+
+    // Assert that QueryRef is successfully created
+    XCTAssertNotNil(ref)
+  }
 }

@@ -24,7 +24,7 @@ public class DataConnect {
   private(set) var settings: DataConnectSettings
 
   private(set) var grpcClient: GrpcClient
-  private var operationsManager: OperationsManager
+  private(set) var operationsManager: OperationsManager
 
   private(set) var cache: Cache?
 

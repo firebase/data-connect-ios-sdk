@@ -18,7 +18,7 @@ import Foundation
 class OperationsManager {
   private var grpcClient: GrpcClient
 
-  private var cache: Cache?
+  private(set) var cache: Cache?
 
   private let accessQueue = DispatchQueue(
     label: "firebase.dataconnect.operationsManager.AccessQ",
@@ -32,8 +32,19 @@ class OperationsManager {
     self.cache = cache
   }
 
+  /// Updates the cache instance used by the operations manager.
+  ///
+  /// Note: This method must only be called during initialization before any query references are
+  /// created.
+  ///         Existing query references capture the cache reference at creation time and will not be
+  /// updated.
   func updateCache(cache: Cache?) {
     accessQueue.sync {
+      if queryRefs.count > 0 || mutationRefs.count > 0 {
+        DataConnectLogger
+          .warning("WARNING: updateCache must be called before fetching any queries or mutations.")
+      }
+
       self.cache = cache
     }
   }
