@@ -36,8 +36,7 @@ class OperationsManager {
   ///
   /// Note: This method must only be called during initialization before any query references are
   /// created. Existing query references capture the cache reference at creation time and will not
-  /// be
-  /// updated.
+  /// be updated.
   func updateCache(cache: Cache?) {
     accessQueue.sync {
       if queryRefs.count > 0 || mutationRefs.count > 0 {
