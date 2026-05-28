@@ -25,13 +25,17 @@ actor Cache {
   // holding it to avoid dealloc
   private var authChangeListenerProtocol: NSObjectProtocol?
 
+  private class TaskHolder: @unchecked Sendable {
+    var task: Task<Void, Never>?
+  }
+
+  private let setupTaskHolder = TaskHolder()
+
   init(config: CacheSettings, dataConnect: DataConnect) {
     self.config = config
     self.dataConnect = dataConnect
 
-    // this is a potential race since update or get could get scheduled before initialize
-    // workarounds are complex since caller DataConnect APIs aren't async
-    Task {
+    setupTaskHolder.task = Task {
       await initializeCacheProvider()
       await setupChangeListeners()
     }
@@ -98,7 +102,9 @@ actor Cache {
     return identifier
   }
 
-  func resultTree(queryId: String, allowStale: Bool = false) -> ResultTree? {
+  func resultTree(queryId: String, allowStale: Bool = false) async -> ResultTree? {
+    _ = await setupTaskHolder.task?.value
+
     // result trees are stored dehydrated in the cache
     // retrieve cache, hydrate it and then return
     guard let cacheProvider else {
@@ -136,7 +142,13 @@ actor Cache {
     }
   }
 
-  func update(queryId: String, response: ServerResponse, requestor: (any QueryRefInternal)? = nil) {
+  func update(
+    queryId: String,
+    response: ServerResponse,
+    requestor: (any QueryRefInternal)? = nil
+  ) async {
+    _ = await setupTaskHolder.task?.value
+
     // server response contains hydrated trees
     // dehydrate (normalize) the results and store dehydrated trees
     guard let cacheProvider = cacheProvider else {
