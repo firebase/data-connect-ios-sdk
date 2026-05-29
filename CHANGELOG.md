@@ -1,3 +1,7 @@
+# 11.12.3
+- [fixed] Client cache does not get initialized in prod initialization flows. [16207](https://github.com/firebase/firebase-ios-sdk/issues/16207)
+- [fixed] Regression: `QueryRefObservableObject` published properties don't get updated in non-streaming scenarios.
+
 # 11.12.2
 - [fixed] Improved handling of stream disconnect and reconnect scenarios.
 
