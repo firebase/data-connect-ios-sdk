@@ -66,6 +66,7 @@ public struct LocalDate: Codable, Comparable, CustomStringConvertible, Equatable
 
   private func setupDateFormat() {
     dateFormatter.dateFormat = "yyyy-MM-dd"
+    dateFormatter.locale = Locale(identifier: "en_US_POSIX")
   }
 
   private func convert(dateString: String) throws -> Date {
