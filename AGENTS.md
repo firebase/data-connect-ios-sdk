@@ -30,7 +30,7 @@ The Agent **must** verify these items before attempting to generate the SDK:
   * Prompt the user for an iOS app bundle ID or suggest one based on app description.  
   * Register the iOS app bundle ID in the Firebase Project.  
   * Download `GoogleService-Info.plist` to the project root.  
-  * **Agent Action:** Search the local directory for `GoogleService-Info.plist`. If missing, stop and prompt: *"I cannot find GoogleService-Info.plist. I need to register the app via MCP or have you provide the file before I can initialize the SDK."*
+  * **Agent Action:** Search only the local workspace directory and subdirectories for `GoogleService-Info.plist`. If missing, stop and prompt: *"I cannot find GoogleService-Info.plist. I need to register the app via MCP or have you provide the file before I can initialize the SDK."*
 
 ## **Core Deliverable: FDC Generated Swift Package**
 
@@ -44,7 +44,7 @@ The Agent **must** verify these items before attempting to generate the SDK:
 4. **Operations:** Define logic in `queries.gql` and `mutations.gql`.   
    * Use `@refresh` directives for realtime support. Skill: `firebase-data-connect-basics / Realtime Reference`  
    * IMPORTANT: When generating queries and mutations, prefer FDC GQL over Native SQL unless the query or mutation is complex and cannot be successfully expressed in GQL (e.g. recursive CTEs, window functions, multi-table aggregate joins not supported by GQL directives, PostGIS queries).  
-5. **SDK Generation:** Set output to a **Local Swift Package** at the **root**. The generator creates its own folder; do not create a containing folder manually. Skill: `firebase-data-connect-basics / iOS SDK`
+5. **SDK Generation:** Set output to a **Local Swift Package** at the **root**. **IMPORTANT:** do not create a containing folder manually. The generator creates its own folder; Skill: `firebase-data-connect-basics / iOS SDK`
 
 ## **Modification Lifecycle**
 
