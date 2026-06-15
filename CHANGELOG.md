@@ -1,5 +1,6 @@
 # 11.12.4
 - [fixed] LocalDate produces Arabic-Indic digits on Saudi/Persian/Egyptian devices, backend rejects payload. [#16236](https://github.com/firebase/firebase-ios-sdk/issues/16236)
+- [fixed] Reduce log level to suppress noisy Timestamp decoder log. [#106](https://github.com/firebase/data-connect-ios-sdk/issues/106)
 
 # 11.12.3
 - [fixed] Client cache does not get initialized in prod initialization flows. [#16207](https://github.com/firebase/firebase-ios-sdk/issues/16207)
