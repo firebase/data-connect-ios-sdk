@@ -52,7 +52,7 @@ extension CodableTimestamp {
       .firstMatch(in: timestampString, range: NSRange(location: 0,
                                                       length: timestampString.count)) !=
       nil else {
-      DataConnectLogger.error(
+      DataConnectLogger.debug(
         "Timestamp string format \(timestampString) is not supported."
       )
       throw DataConnectCodecError.invalidTimestampFormat()
