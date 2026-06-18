@@ -13,7 +13,6 @@ The Agent must produce the following working deliverable
 - `<AppName>` — the app's short name (e.g. `Todo`). Derive `<AppName>` from the user prompt or by inspecting the root directory for a `.xcodeproj` or `.xcworkspace` file name..  
 - `<connector>` — the FDC connector name (matches `connectorId` in `connector.yaml`).  
 - Generated SDK package name: `<AppName>GenSDK`.  
-- Consolidated model package name (optional add-on): `<AppName>Data`.  
 - Swift toolchain: `// swift-tools-version:5.9`.  
 - All examples below use `<AppName> = Todo`, `<connector> = todo`.
 
@@ -26,6 +25,7 @@ The Agent **must** verify these items before attempting to generate the SDK:
   * `firebase-data-connect-basics` — schema, queries, mutations, CEL auth, connector config, sdk\_ios, SDK generation.  
   * `xcode-project-setup` — adding Swift packages and files to the `.xcodeproj`  
 * **Firebase CLI:** Ensure Firebase CLI is installed. Refer to `firebase-basics` skill  
+* **Firebase Project:** Create a new Firebase project. Skill: firebase-basics.  
 * **App Registration & Config (Mandatory):**  
   * Prompt the user for an iOS app bundle ID or suggest one based on app description.  
   * Register the iOS app bundle ID in the Firebase Project.  
@@ -49,11 +49,21 @@ The Agent **must** verify these items before attempting to generate the SDK:
 ## **Modification Lifecycle**
 
 1. **Modify GQL** — update `.gql` files; apply `@auth` directives.  
-2. **Regenerate** — `firebase dataconnect:sdk:generate`.  
-3. **Sync consumers** — read the SDK's generated `README.md` to identify type and function signature changes.   
-4. **Build** — `swift build --clean-first` in the package root; fix all errors and Sendable warnings.
+2. **Deploy Schema & Operations** — Deploy to the Firebase project using the CLI:
+   ```bash
+   firebase deploy --only dataconnect
+   ```
+   * **Interactive Deploy & GCP Issues**: If the deployment requires user input (e.g. confirming destructive schema migrations) or fails due to stopped GCP resources (e.g. stopped Cloud SQL instances), the agent should notify the user immediately and either:
+     * Guide the user to start the resources and run the deploy interactively in their own terminal, or
+     * Prompt the user in the chat for the necessary inputs/approvals to proceed.
+3. **Regenerate** — Generate the updated client SDK:
+   ```bash
+   firebase dataconnect:sdk:generate
+   ```
+4. **Sync consumers** — read the SDK's generated `README.md` to identify type and function signature changes.   
+5. **Build** — `swift build --clean-first` in the package root; fix all errors and Sendable warnings.
 
-\[\!IMPORTANT\] **Self-correction:** Analyze the error output, apply a targeted fix to the code/GQL, and then retry the failing step (regenerate, edit GQL, or rebuild as appropriate) up to **3 times**. On the 4th failure, stop and surface the full output of the failing command (`firebase dataconnect:sdk:generate` or `swift build`) to the user.
+\[\!IMPORTANT\] **Self-correction:** Analyze the error output, apply a targeted fix to the code/GQL, and then retry the failing step (deploy, regenerate, edit GQL, or rebuild as appropriate) up to **3 times**. On the 4th failure, stop and surface the full output of the failing command to the user.
 
 ## **Xcode Integration**
 
@@ -77,6 +87,7 @@ Core setup is complete when **all** of the following hold:
 
 - [ ] `GoogleService-Info.plist` present at project root.  
 - [ ] `firebase.json` `emulators` contains both `auth` and `dataconnect` blocks.  
+- [ ] Schema and operations successfully deployed to the Firebase project using `firebase deploy --only dataconnect` (or remote database status verified with the user).
 - [ ] `<AppName>GenSDK` builds clean with `swift build --clean-first`.  
 - [ ] `swift build -Xswiftc -strict-concurrency=complete` passes with no warnings.  
 - [ ] Xcode integration steps have been provided to the user.
