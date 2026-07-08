@@ -37,9 +37,13 @@ struct ExtensionResponse: Decodable {
   }
 
   let maxAge: TimeInterval?
-  let dataConnect: [PathMetadataResponse]
+  let dataConnect: [PathMetadataResponse]?
 
   func flattenPathMetadata() -> [DataConnectPath: PathMetadata] {
+    guard let dataConnect else {
+      return [:]
+    }
+
     var result: [DataConnectPath: PathMetadata] = [:]
     for pmr in dataConnect {
       if let entityId = pmr.entityId {
