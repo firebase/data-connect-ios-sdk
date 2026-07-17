@@ -72,7 +72,8 @@ let package = Package(
     .testTarget(
       name: "FirebaseDataConnectUnit",
       dependencies: ["FirebaseDataConnect"],
-      path: "Tests/Unit"
+      path: "Tests/Unit",
+      resources: [.process("Resources")]
     ),
     .testTarget(
       name: "FirebaseDataConnectIntegration",
