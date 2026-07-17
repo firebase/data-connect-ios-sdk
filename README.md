@@ -3,7 +3,7 @@
 
 **Connect your Swift & SwiftUI apps directly to a managed Google CloudSQL (PostgreSQL) database.**
 
-This repository contains the official open-source Swift SDK for [Firebase Data Connect](https://firebase.google.com/docs/data-connect), a service that lets you build modern, data-driven applications on Apple platforms (iOS, macOS, etc.) with the power and scalability of a SQL database.
+This repository contains the official open-source Swift SDK for [Firebase SQL Connect](https://firebase.google.com/docs/sql-connect), a service that lets you build modern, data-driven applications on Apple platforms (iOS, macOS, etc.) with the power and scalability of a SQL database.
 
 This SDK is perfect for those:
 * Who need a robust SQL database for their app but want to avoid writing and managing a separate backend.
