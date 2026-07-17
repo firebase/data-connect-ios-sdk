@@ -109,6 +109,7 @@ class SQLiteCacheProvider: CacheProvider {
         }
         try prepareStatements()
       } catch {
+        finalizeStatements()
         sqlite3_close(db)
         db = nil
         throw error
@@ -303,7 +304,10 @@ class SQLiteCacheProvider: CacheProvider {
 
       if needsTransaction {
         if stepResult == SQLITE_DONE {
-          sqlite3_exec(db, "COMMIT;", nil, nil, nil)
+          if sqlite3_exec(db, "COMMIT;", nil, nil, nil) != SQLITE_OK {
+            sqlite3_exec(db, "ROLLBACK;", nil, nil, nil)
+            throw DataConnectInternalError.sqliteError(message: "Failed to commit transaction")
+          }
         } else {
           sqlite3_exec(db, "ROLLBACK;", nil, nil, nil)
         }
@@ -388,7 +392,10 @@ class SQLiteCacheProvider: CacheProvider {
 
     if needsTransaction {
       if stepResult == SQLITE_DONE {
-        sqlite3_exec(db, "COMMIT;", nil, nil, nil)
+        if sqlite3_exec(db, "COMMIT;", nil, nil, nil) != SQLITE_OK {
+          sqlite3_exec(db, "ROLLBACK;", nil, nil, nil)
+          throw DataConnectInternalError.sqliteError(message: "Failed to commit transaction")
+        }
       } else {
         sqlite3_exec(db, "ROLLBACK;", nil, nil, nil)
       }
@@ -416,6 +423,7 @@ class SQLiteCacheProvider: CacheProvider {
       do {
         let result = try action()
         if sqlite3_exec(db, "COMMIT;", nil, nil, nil) != SQLITE_OK {
+          sqlite3_exec(db, "ROLLBACK;", nil, nil, nil)
           throw DataConnectInternalError.sqliteError(message: "Failed to commit transaction")
         }
         return result

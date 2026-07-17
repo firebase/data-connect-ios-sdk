@@ -723,8 +723,6 @@ final class CacheTests: XCTestCase {
   func testRunInTransactionRollback() throws {
     let cp = try XCTUnwrap(cacheProvider)
 
-    struct DummyError: Error {}
-
     // Perform writes and then throw an error to trigger rollback
     do {
       try cp.runInTransaction {
@@ -763,6 +761,62 @@ final class CacheTests: XCTestCase {
     XCTAssertEqual(cp.entityData("nested_id_1").value(forKey: "key1"), .string("val1"))
     XCTAssertEqual(cp.entityData("nested_id_2").value(forKey: "key2"), .string("val2"))
   }
+
+  func testNestedTransactionsRollback_InnerThrowsPropagates() throws {
+    let cp = try XCTUnwrap(cacheProvider)
+
+    do {
+      try cp.runInTransaction {
+        let object = EntityDataObject(guid: "nested_id_1")
+        object.updateServerValue("key1", .string("val1"), nil)
+        try cp.updateEntityData(object)
+
+        try cp.runInTransaction {
+          let object2 = EntityDataObject(guid: "nested_id_2")
+          object2.updateServerValue("key2", .string("val2"), nil)
+          try cp.updateEntityData(object2)
+
+          throw DummyError()
+        }
+      }
+      XCTFail("Should have thrown error")
+    } catch is DummyError {
+      // expected
+    }
+
+    // Verify that BOTH changes were rolled back
+    XCTAssertNil(cp.entityData("nested_id_1").value(forKey: "key1"))
+    XCTAssertNil(cp.entityData("nested_id_2").value(forKey: "key2"))
+  }
+
+  func testNestedTransactionsRollback_InnerThrowsSwallowed() throws {
+    let cp = try XCTUnwrap(cacheProvider)
+
+    try cp.runInTransaction {
+      let object = EntityDataObject(guid: "nested_id_1")
+      object.updateServerValue("key1", .string("val1"), nil)
+      try cp.updateEntityData(object)
+
+      do {
+        try cp.runInTransaction {
+          let object2 = EntityDataObject(guid: "nested_id_2")
+          object2.updateServerValue("key2", .string("val2"), nil)
+          try cp.updateEntityData(object2)
+
+          throw DummyError()
+        }
+      } catch is DummyError {
+        // Swallowing the inner error
+      }
+    }
+
+    // Since we don't use SQLite SAVEPOINTs, our pseudo-nested transactions do not isolate
+    // rollbacks.
+    XCTAssertEqual(cp.entityData("nested_id_1").value(forKey: "key1"), .string("val1"))
+    XCTAssertEqual(cp.entityData("nested_id_2").value(forKey: "key2"), .string("val2"))
+  }
+
+  private struct DummyError: Error {}
 }
 
 @MainActor
