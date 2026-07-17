@@ -38,9 +38,28 @@ class SQLiteCacheProvider: CacheProvider {
     label: "com.google.firebase.dataconnect.sqlitecacheprovider",
     autoreleaseFrequency: .workItem
   )
+  private static let queueKey = DispatchSpecificKey<Void>()
+  private var inTransaction = false
+
+  private var selectResultTreeStmt: OpaquePointer?
+  private var insertResultTreeStmt: OpaquePointer?
+  private var selectEntityDataStmt: OpaquePointer?
+  private var insertEntityDataStmt: OpaquePointer?
+  private var updateLastAccessedStmt: OpaquePointer?
+
+  private func perform<T>(_ action: () throws -> T) rethrows -> T {
+    if DispatchQueue.getSpecific(key: Self.queueKey) != nil {
+      return try action()
+    } else {
+      return try queue.sync {
+        try action()
+      }
+    }
+  }
 
   init(_ cacheIdentifier: String, ephemeral: Bool = false) throws {
     identifier = cacheIdentifier
+    queue.setSpecific(key: Self.queueKey, value: ())
 
     try queue.sync {
       var dbIdentifier = ":memory:"
@@ -84,6 +103,7 @@ class SQLiteCacheProvider: CacheProvider {
               message: "Unsupported schema major version \(curVersion.major) detected. Expected 1"
             )
         }
+        try prepareStatements()
       } catch {
         sqlite3_close(db)
         db = nil
@@ -93,7 +113,52 @@ class SQLiteCacheProvider: CacheProvider {
   }
 
   deinit {
+    finalizeStatements()
     sqlite3_close(db)
+  }
+
+  private func prepareStatements() throws {
+    dispatchPrecondition(condition: .onQueue(queue))
+
+    let selectResultTreeSql =
+      "SELECT \(ColumnName.data) FROM \(TableName.resultTree) WHERE \(ColumnName.queryId) = ?;"
+    if sqlite3_prepare_v2(db, selectResultTreeSql, -1, &selectResultTreeStmt, nil) != SQLITE_OK {
+      throw DataConnectInternalError.sqliteError(message: "Failed to prepare selectResultTreeStmt")
+    }
+
+    let insertResultTreeSql =
+      "INSERT OR REPLACE INTO \(TableName.resultTree) (\(ColumnName.queryId), \(ColumnName.lastAccessed), \(ColumnName.data)) VALUES (?, ?, ?);"
+    if sqlite3_prepare_v2(db, insertResultTreeSql, -1, &insertResultTreeStmt, nil) != SQLITE_OK {
+      throw DataConnectInternalError.sqliteError(message: "Failed to prepare insertResultTreeStmt")
+    }
+
+    let selectEntityDataSql =
+      "SELECT \(ColumnName.data) FROM \(TableName.entityDataObjects) WHERE \(ColumnName.entityId) = ?;"
+    if sqlite3_prepare_v2(db, selectEntityDataSql, -1, &selectEntityDataStmt, nil) != SQLITE_OK {
+      throw DataConnectInternalError.sqliteError(message: "Failed to prepare selectEntityDataStmt")
+    }
+
+    let insertEntityDataSql =
+      "INSERT OR REPLACE INTO \(TableName.entityDataObjects) (\(ColumnName.entityId), \(ColumnName.data)) VALUES (?, ?);"
+    if sqlite3_prepare_v2(db, insertEntityDataSql, -1, &insertEntityDataStmt, nil) != SQLITE_OK {
+      throw DataConnectInternalError.sqliteError(message: "Failed to prepare insertEntityDataStmt")
+    }
+
+    let updateLastAccessedSql =
+      "UPDATE \(TableName.resultTree) SET \(ColumnName.lastAccessed) = ? WHERE \(ColumnName.queryId) = ?;"
+    if sqlite3_prepare_v2(db, updateLastAccessedSql, -1, &updateLastAccessedStmt, nil) !=
+      SQLITE_OK {
+      throw DataConnectInternalError
+        .sqliteError(message: "Failed to prepare updateLastAccessedStmt")
+    }
+  }
+
+  private func finalizeStatements() {
+    sqlite3_finalize(selectResultTreeStmt)
+    sqlite3_finalize(insertResultTreeStmt)
+    sqlite3_finalize(selectEntityDataStmt)
+    sqlite3_finalize(insertEntityDataStmt)
+    sqlite3_finalize(updateLastAccessedStmt)
   }
 
   private func createTables() throws {
@@ -170,17 +235,9 @@ class SQLiteCacheProvider: CacheProvider {
 
   private func updateLastAccessedTime(forQueryId queryId: String) {
     dispatchPrecondition(condition: .onQueue(queue))
-    let updateQuery =
-      "UPDATE \(TableName.resultTree) SET \(ColumnName.lastAccessed) = ? WHERE \(ColumnName.queryId) = ?;"
-    var statement: OpaquePointer?
-
-    guard sqlite3_prepare_v2(db, updateQuery, -1, &statement, nil) == SQLITE_OK else {
-      DataConnectLogger.error("Error preparing update statement for result_tree")
-      return
-    }
-    defer {
-      sqlite3_finalize(statement)
-    }
+    let statement = updateLastAccessedStmt
+    sqlite3_reset(statement)
+    sqlite3_clear_bindings(statement)
 
     sqlite3_bind_double(statement, 1, Date().timeIntervalSince1970)
     sqlite3_bind_text(statement, 2, (queryId as NSString).utf8String, -1, nil)
@@ -191,18 +248,10 @@ class SQLiteCacheProvider: CacheProvider {
   }
 
   func resultTree(queryId: String) -> ResultTree? {
-    return queue.sync {
-      let query =
-        "SELECT \(ColumnName.data) FROM \(TableName.resultTree) WHERE \(ColumnName.queryId) = ?;"
-      var statement: OpaquePointer?
-
-      guard sqlite3_prepare_v2(db, query, -1, &statement, nil) == SQLITE_OK else {
-        DataConnectLogger.error("Error preparing select statement for \(TableName.resultTree)")
-        return nil
-      }
-      defer {
-        sqlite3_finalize(statement)
-      }
+    return perform {
+      let statement = selectResultTreeStmt
+      sqlite3_reset(statement)
+      sqlite3_clear_bindings(statement)
 
       sqlite3_bind_text(statement, 1, (queryId as NSString).utf8String, -1, nil)
 
@@ -226,58 +275,50 @@ class SQLiteCacheProvider: CacheProvider {
     }
   }
 
-  func setResultTree(queryId: String, tree: ResultTree) {
-    queue.sync {
-      do {
-        let data = try JSONEncoder().encode(tree)
-        let insert =
-          "INSERT OR REPLACE INTO \(TableName.resultTree) (\(ColumnName.queryId), \(ColumnName.lastAccessed), \(ColumnName.data)) VALUES (?, ?, ?);"
-        var statement: OpaquePointer?
+  func setResultTree(queryId: String, tree: ResultTree) throws {
+    try perform {
+      let data = try JSONEncoder().encode(tree)
+      let statement = insertResultTreeStmt
+      sqlite3_reset(statement)
+      sqlite3_clear_bindings(statement)
 
-        guard sqlite3_prepare_v2(db, insert, -1, &statement, nil) == SQLITE_OK else {
-          DataConnectLogger.error("Error preparing insert statement for \(TableName.resultTree)")
-          return
-        }
-        defer {
-          sqlite3_finalize(statement)
-        }
-
-        sqlite3_bind_text(statement, 1, (queryId as NSString).utf8String, -1, nil)
-        sqlite3_bind_double(statement, 2, Date().timeIntervalSince1970)
-        _ = data.withUnsafeBytes { (bytes: UnsafeRawBufferPointer) in
-          sqlite3_bind_blob(statement, 3, bytes.baseAddress, Int32(bytes.count), nil)
-        }
-
-        if sqlite3_step(statement) != SQLITE_DONE {
-          DataConnectLogger.error("Error inserting result tree for queryId \(queryId)")
-        }
-
-        DataConnectLogger.debug("\(#function) - query \(queryId), tree \(tree)")
-      } catch {
-        DataConnectLogger.error("Error encoding result tree for queryId \(queryId): \(error)")
+      sqlite3_bind_text(statement, 1, (queryId as NSString).utf8String, -1, nil)
+      sqlite3_bind_double(statement, 2, Date().timeIntervalSince1970)
+      _ = data.withUnsafeBytes { (bytes: UnsafeRawBufferPointer) in
+        sqlite3_bind_blob(statement, 3, bytes.baseAddress, Int32(bytes.count), nil)
       }
+
+      let needsTransaction = !inTransaction
+      if needsTransaction {
+        if sqlite3_exec(db, "BEGIN TRANSACTION;", nil, nil, nil) != SQLITE_OK {
+          throw DataConnectInternalError.sqliteError(message: "Failed to begin transaction")
+        }
+      }
+
+      let stepResult = sqlite3_step(statement)
+
+      if needsTransaction {
+        if stepResult == SQLITE_DONE {
+          sqlite3_exec(db, "COMMIT;", nil, nil, nil)
+        } else {
+          sqlite3_exec(db, "ROLLBACK;", nil, nil, nil)
+        }
+      }
+
+      if stepResult != SQLITE_DONE {
+        throw DataConnectInternalError
+          .sqliteError(message: "Error inserting result tree for queryId \(queryId)")
+      }
+
+      DataConnectLogger.debug("\(#function) - query \(queryId), tree \(tree)")
     }
   }
 
   func entityData(_ entityGuid: String) -> EntityDataObject {
-    return queue.sync {
-      let query =
-        "SELECT \(ColumnName.data) FROM \(TableName.entityDataObjects) WHERE \(ColumnName.entityId) = ?;"
-      var statement: OpaquePointer?
-
-      guard sqlite3_prepare_v2(db, query, -1, &statement, nil) == SQLITE_OK else {
-        DataConnectLogger
-          .error("Error preparing select statement for \(TableName.entityDataObjects)")
-        // if we reach here it means we don't have a EDO in our database.
-        // So we create one.
-        let edo = EntityDataObject(guid: entityGuid)
-        _setObject(entityGuid: entityGuid, object: edo)
-        DataConnectLogger.debug("Created EDO for \(entityGuid)")
-        return edo
-      }
-      defer {
-        sqlite3_finalize(statement)
-      }
+    return perform {
+      let statement = selectEntityDataStmt
+      sqlite3_reset(statement)
+      sqlite3_clear_bindings(statement)
 
       sqlite3_bind_text(statement, 1, (entityGuid as NSString).utf8String, -1, nil)
 
@@ -301,48 +342,83 @@ class SQLiteCacheProvider: CacheProvider {
       // if we reach here it means we don't have a EDO in our database.
       // So we create one.
       let edo = EntityDataObject(guid: entityGuid)
-      _setObject(entityGuid: entityGuid, object: edo)
+      do {
+        try _setObject(entityGuid: entityGuid, object: edo)
+      } catch {
+        DataConnectLogger.error("Failed to insert initial EDO for \(entityGuid): \(error)")
+      }
       DataConnectLogger.debug("Created EDO for \(entityGuid)")
       return edo
     }
   }
 
-  func updateEntityData(_ object: EntityDataObject) {
-    queue.sync {
-      _setObject(entityGuid: object.guid, object: object)
+  func updateEntityData(_ object: EntityDataObject) throws {
+    try perform {
+      try _setObject(entityGuid: object.guid, object: object)
     }
   }
 
   // MARK: Private
 
   // These should run on queue but not call sync otherwise we deadlock
-  private func _setObject(entityGuid: String, object: EntityDataObject) {
+  private func _setObject(entityGuid: String, object: EntityDataObject) throws {
     dispatchPrecondition(condition: .onQueue(queue))
-    do {
-      let data = try JSONEncoder().encode(object)
-      let insert =
-        "INSERT OR REPLACE INTO \(TableName.entityDataObjects) (\(ColumnName.entityId), \(ColumnName.data)) VALUES (?, ?);"
-      var statement: OpaquePointer?
+    let data = try JSONEncoder().encode(object)
+    let statement = insertEntityDataStmt
+    sqlite3_reset(statement)
+    sqlite3_clear_bindings(statement)
 
-      guard sqlite3_prepare_v2(db, insert, -1, &statement, nil) == SQLITE_OK else {
-        DataConnectLogger.error("Error preparing insert statement for entity_data")
-        return
+    sqlite3_bind_text(statement, 1, (entityGuid as NSString).utf8String, -1, nil)
+    _ = data.withUnsafeBytes { (bytes: UnsafeRawBufferPointer) in
+      sqlite3_bind_blob(statement, 2, bytes.baseAddress, Int32(bytes.count), nil)
+    }
+
+    let needsTransaction = !inTransaction
+    if needsTransaction {
+      if sqlite3_exec(db, "BEGIN TRANSACTION;", nil, nil, nil) != SQLITE_OK {
+        throw DataConnectInternalError.sqliteError(message: "Failed to begin transaction")
       }
+    }
+
+    let stepResult = sqlite3_step(statement)
+
+    if needsTransaction {
+      if stepResult == SQLITE_DONE {
+        sqlite3_exec(db, "COMMIT;", nil, nil, nil)
+      } else {
+        sqlite3_exec(db, "ROLLBACK;", nil, nil, nil)
+      }
+    }
+
+    if stepResult != SQLITE_DONE {
+      throw DataConnectInternalError
+        .sqliteError(message: "Error inserting data object for entityGuid \(entityGuid)")
+    }
+  }
+
+  func runInTransaction<T>(_ action: () throws -> T) throws -> T {
+    return try perform {
+      if inTransaction {
+        return try action()
+      }
+
+      if sqlite3_exec(db, "BEGIN TRANSACTION;", nil, nil, nil) != SQLITE_OK {
+        throw DataConnectInternalError.sqliteError(message: "Failed to begin transaction")
+      }
+      inTransaction = true
       defer {
-        sqlite3_finalize(statement)
+        inTransaction = false
       }
-
-      sqlite3_bind_text(statement, 1, (entityGuid as NSString).utf8String, -1, nil)
-      _ = data.withUnsafeBytes { (bytes: UnsafeRawBufferPointer) in
-        sqlite3_bind_blob(statement, 2, bytes.baseAddress, Int32(bytes.count), nil)
+      do {
+        let result = try action()
+        if sqlite3_exec(db, "COMMIT;", nil, nil, nil) != SQLITE_OK {
+          throw DataConnectInternalError.sqliteError(message: "Failed to commit transaction")
+        }
+        return result
+      } catch {
+        sqlite3_exec(db, "ROLLBACK;", nil, nil, nil)
+        throw error
       }
-
-      if sqlite3_step(statement) != SQLITE_DONE {
-        DataConnectLogger.error("Error inserting data object for entityGuid \(entityGuid)")
-      }
-
-    } catch {
-      DataConnectLogger.error("Error encoding data object for entityGuid \(entityGuid): \(error)")
     }
   }
 }
