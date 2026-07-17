@@ -608,4 +608,221 @@ final class CacheTests: XCTestCase {
     let initializedVersion = DBSemanticVersion(1, 0, 0)
     XCTAssertEqual(initializedVersion, cp.getSchemaVersion())
   }
+
+  func testLargeResultTreeNormalizationPerformance() throws {
+    guard let treeURL = Bundle.module.url(forResource: "large_result_tree", withExtension: "json"),
+          let extURL = Bundle.module
+          .url(forResource: "large_result_tree_ext", withExtension: "json") else {
+      XCTFail("Failed to find JSON resources")
+      return
+    }
+
+    let treeData = try Data(contentsOf: treeURL)
+    let extData = try Data(contentsOf: extURL)
+
+    let cp = try XCTUnwrap(cacheProvider)
+    let resultsProcessor = ResultTreeProcessor()
+
+    let jsonDecoder = JSONDecoder()
+    let extensions = try jsonDecoder.decode(
+      ExtensionResponse.self,
+      from: extData
+    )
+    let flattenedPaths = extensions.flattenPathMetadata()
+
+    measure {
+      do {
+        _ = try resultsProcessor.dehydrateResults(
+          "performanceQuery",
+          treeData,
+          flattenedPaths,
+          cacheProvider: cp
+        )
+      } catch {
+        XCTFail("Normalization failed: \(error)")
+      }
+    }
+  }
+
+  @MainActor
+  func testNormalizationDoesNotBlockMainThread() async throws {
+    guard let treeURL = Bundle.module.url(forResource: "large_result_tree", withExtension: "json"),
+          let extURL = Bundle.module
+          .url(forResource: "large_result_tree_ext", withExtension: "json") else {
+      XCTFail("Failed to find JSON resources")
+      return
+    }
+
+    let treeData = try Data(contentsOf: treeURL)
+    let extData = try Data(contentsOf: extURL)
+
+    let cp = try XCTUnwrap(cacheProvider)
+    let resultsProcessor = ResultTreeProcessor()
+
+    let jsonDecoder = JSONDecoder()
+    let extensions = try jsonDecoder.decode(
+      ExtensionResponse.self,
+      from: extData
+    )
+    let flattenedPaths = extensions.flattenPathMetadata()
+
+    let counter = MainActorCounter()
+
+    // Start counter loop on MainActor
+    let counterTask = Task { @MainActor in
+      while !Task.isCancelled {
+        counter.increment()
+        try? await Task.sleep(nanoseconds: 2_000_000) // sleep 2ms
+      }
+    }
+
+    // Start normalization on detached task (background cooperative pool)
+    let backgroundTask = Task.detached(priority: .userInitiated) {
+      try resultsProcessor.dehydrateResults(
+        "performanceQuery",
+        treeData,
+        flattenedPaths,
+        cacheProvider: cp
+      )
+    }
+
+    // Await background task. This suspends the main actor task, letting other MainActor tasks (like
+    // our counterTask) run.
+    _ = try await backgroundTask.value
+
+    counterTask.cancel()
+
+    let ticks = counter.count
+    XCTAssertGreaterThan(ticks, 5, "Main Actor / thread was blocked during normalization")
+  }
+
+  func testRunInTransactionCommit() throws {
+    let cp = try XCTUnwrap(cacheProvider)
+
+    // Perform writes inside a transaction
+    try cp.runInTransaction {
+      let object = EntityDataObject(guid: "txn_commit_id")
+      object.updateServerValue("key1", .string("value1"), nil)
+      try cp.updateEntityData(object)
+
+      let object2 = EntityDataObject(guid: "txn_commit_id_2")
+      object2.updateServerValue("key2", .string("value2"), nil)
+      try cp.updateEntityData(object2)
+    }
+
+    // Verify changes are committed
+    let fetched = cp.entityData("txn_commit_id")
+    XCTAssertEqual(fetched.guid, "txn_commit_id")
+    XCTAssertEqual(fetched.value(forKey: "key1"), .string("value1"))
+
+    let fetched2 = cp.entityData("txn_commit_id_2")
+    XCTAssertEqual(fetched2.guid, "txn_commit_id_2")
+    XCTAssertEqual(fetched2.value(forKey: "key2"), .string("value2"))
+  }
+
+  func testRunInTransactionRollback() throws {
+    let cp = try XCTUnwrap(cacheProvider)
+
+    // Perform writes and then throw an error to trigger rollback
+    do {
+      try cp.runInTransaction {
+        let object = EntityDataObject(guid: "txn_rollback_id")
+        object.updateServerValue("key1", .string("value1"), nil)
+        try cp.updateEntityData(object)
+
+        throw DummyError()
+      }
+      XCTFail("Should have thrown error")
+    } catch is DummyError {
+      // expected
+    }
+
+    // Verify that the change was rolled back
+    let fetched = cp.entityData("txn_rollback_id")
+    XCTAssertEqual(fetched.guid, "txn_rollback_id")
+    XCTAssertNil(fetched.value(forKey: "key1"))
+  }
+
+  func testNestedTransactions() throws {
+    let cp = try XCTUnwrap(cacheProvider)
+
+    try cp.runInTransaction {
+      let object = EntityDataObject(guid: "nested_id_1")
+      object.updateServerValue("key1", .string("val1"), nil)
+      try cp.updateEntityData(object)
+
+      try cp.runInTransaction {
+        let object2 = EntityDataObject(guid: "nested_id_2")
+        object2.updateServerValue("key2", .string("val2"), nil)
+        try cp.updateEntityData(object2)
+      }
+    }
+
+    XCTAssertEqual(cp.entityData("nested_id_1").value(forKey: "key1"), .string("val1"))
+    XCTAssertEqual(cp.entityData("nested_id_2").value(forKey: "key2"), .string("val2"))
+  }
+
+  func testNestedTransactionsRollback_InnerThrowsPropagates() throws {
+    let cp = try XCTUnwrap(cacheProvider)
+
+    do {
+      try cp.runInTransaction {
+        let object = EntityDataObject(guid: "nested_id_1")
+        object.updateServerValue("key1", .string("val1"), nil)
+        try cp.updateEntityData(object)
+
+        try cp.runInTransaction {
+          let object2 = EntityDataObject(guid: "nested_id_2")
+          object2.updateServerValue("key2", .string("val2"), nil)
+          try cp.updateEntityData(object2)
+
+          throw DummyError()
+        }
+      }
+      XCTFail("Should have thrown error")
+    } catch is DummyError {
+      // expected
+    }
+
+    // Verify that BOTH changes were rolled back
+    XCTAssertNil(cp.entityData("nested_id_1").value(forKey: "key1"))
+    XCTAssertNil(cp.entityData("nested_id_2").value(forKey: "key2"))
+  }
+
+  func testNestedTransactionsRollback_InnerThrowsSwallowed() throws {
+    let cp = try XCTUnwrap(cacheProvider)
+
+    try cp.runInTransaction {
+      let object = EntityDataObject(guid: "nested_id_1")
+      object.updateServerValue("key1", .string("val1"), nil)
+      try cp.updateEntityData(object)
+
+      do {
+        try cp.runInTransaction {
+          let object2 = EntityDataObject(guid: "nested_id_2")
+          object2.updateServerValue("key2", .string("val2"), nil)
+          try cp.updateEntityData(object2)
+
+          throw DummyError()
+        }
+      } catch is DummyError {
+        // Swallowing the inner error
+      }
+    }
+
+    // Since we don't use SQLite SAVEPOINTs, our pseudo-nested transactions do not isolate
+    // rollbacks.
+    XCTAssertEqual(cp.entityData("nested_id_1").value(forKey: "key1"), .string("val1"))
+    XCTAssertEqual(cp.entityData("nested_id_2").value(forKey: "key2"), .string("val2"))
+  }
+
+  private struct DummyError: Error {}
+}
+
+@MainActor
+private class MainActorCounter {
+  var count = 0
+  func increment() {
+    count += 1
+  }
 }

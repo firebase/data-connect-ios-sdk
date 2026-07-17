@@ -110,7 +110,6 @@ actor DataConnectGrpcClient: GrpcClient, CustomStringConvertible {
 
     let connectorName =
       "projects/\(projectId)/locations/\(connectorConfig.location)/services/\(connectorConfig.serviceId)/connectors/\(connectorConfig.connector)"
-
     let googRequestHeaderValue = "location=\(connectorConfig.location)&frontend=data"
 
     let header =

@@ -24,8 +24,10 @@ protocol CacheProvider {
   var identifier: String { get }
 
   func resultTree(queryId: String) -> ResultTree?
-  func setResultTree(queryId: String, tree: ResultTree)
+  func setResultTree(queryId: String, tree: ResultTree) throws
 
   func entityData(_ entityGuid: String) -> EntityDataObject
-  func updateEntityData(_ object: EntityDataObject)
+  func updateEntityData(_ object: EntityDataObject) throws
+
+  func runInTransaction<T>(_ action: () throws -> T) throws -> T
 }

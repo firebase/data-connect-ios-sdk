@@ -145,29 +145,32 @@ actor Cache {
       return
     }
     do {
-      let processor = ResultTreeProcessor()
-      let (dehydratedResults, rootObj, impactedRefs) = try processor.dehydrateResults(
-        queryId,
-        response
-          .data,
-        response
-          .extensions?
-          .flattenPathMetadata() ?? [:],
-        cacheProvider: cacheProvider
-      )
-
-      let maxAge = response.extensions?.maxAge ?? config.maxAge
-      cacheProvider
-        .setResultTree(
-          queryId: queryId,
-          tree: .init(
-            data: dehydratedResults,
-            cachedAt: Date(),
-            lastAccessed: Date(),
-            maxAge: maxAge,
-            rootObject: rootObj
-          )
+      let impactedRefs = try cacheProvider.runInTransaction {
+        let processor = ResultTreeProcessor()
+        let (dehydratedResults, rootObj, impactedRefs) = try processor.dehydrateResults(
+          queryId,
+          response
+            .data,
+          response
+            .extensions?
+            .flattenPathMetadata() ?? [:],
+          cacheProvider: cacheProvider
         )
+
+        let maxAge = response.extensions?.maxAge ?? config.maxAge
+        try cacheProvider
+          .setResultTree(
+            queryId: queryId,
+            tree: .init(
+              data: dehydratedResults,
+              cachedAt: Date(),
+              lastAccessed: Date(),
+              maxAge: maxAge,
+              rootObject: rootObj
+            )
+          )
+        return impactedRefs
+      }
 
       if let dataConnect {
         for refId in impactedRefs {

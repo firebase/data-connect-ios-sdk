@@ -41,7 +41,7 @@ struct EntityNode {
         path: DataConnectPath,
         cacheProvider: CacheProvider,
         paths: [DataConnectPath: PathMetadata],
-        impactedRefsAccumulator: ImpactedQueryRefsAccumulator? = nil) {
+        impactedRefsAccumulator: ImpactedQueryRefsAccumulator? = nil) throws {
     guard case let .dictionary(objectValues) = value else {
       DataConnectLogger.error("EntityNode inited with a non-dictionary type")
       return nil
@@ -58,7 +58,7 @@ struct EntityNode {
       case .dictionary:
         // a dictionary is treated as a composite object
         // and converted to another node
-        if let st = EntityNode(
+        if let st = try EntityNode(
           value: value,
           path: path.appending(.field(key)),
           cacheProvider: cacheProvider,
@@ -73,7 +73,7 @@ struct EntityNode {
         var refArray = [EntityNode]()
         var scalarArray = [AnyCodableValue]()
         for (index, obj) in objs.enumerated() {
-          if let st = EntityNode(
+          if let st = try EntityNode(
             value: obj,
             path: path.appending(.field(key)).appending(.listIndex(index)),
             // path + key + index /movies/reviews/3
@@ -154,7 +154,7 @@ struct EntityNode {
       for refId in entityData.referencedFromRefs() {
         impactedRefsAccumulator?.append(refId)
       }
-      cacheProvider.updateEntityData(entityData)
+      try cacheProvider.updateEntityData(entityData)
     }
   }
 }
@@ -185,7 +185,7 @@ extension EntityNode: Decodable {
 
       let paths = decoder.userInfo[EntityPathsCodingKey] as? [DataConnectPath: PathMetadata] ?? [:]
 
-      let enode = EntityNode(
+      let enode = try EntityNode(
         value: value,
         path: DataConnectPath(),
         cacheProvider: cacheProvider,
