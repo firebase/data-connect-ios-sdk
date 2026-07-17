@@ -12,7 +12,7 @@ This SDK is perfect for those:
 
 ---
 
-## ✨ Why Use Firebase Data Connect?
+## ✨ Why Use Firebase SQL Connect?
 
 * **Use power of SQL:** Get the power of a managed PostgreSQL database without the hassle of managing servers. Focus on your app's frontend experience.
 * **Type-Safe & Modern Swift:** Interact with your database using a strongly-typed, auto-generated Swift SDK. It's built with modern `async/await` for clean, concurrent code.
