@@ -40,6 +40,10 @@ class SQLiteCacheProvider: CacheProvider {
   )
   private static let queueKey = DispatchSpecificKey<Void>()
   private var inTransaction = false
+  private let SQLITE_TRANSIENT = unsafeBitCast(
+    OpaquePointer(bitPattern: -1),
+    to: sqlite3_destructor_type.self
+  )
 
   private var selectResultTreeStmt: OpaquePointer?
   private var insertResultTreeStmt: OpaquePointer?
@@ -240,7 +244,7 @@ class SQLiteCacheProvider: CacheProvider {
     sqlite3_clear_bindings(statement)
 
     sqlite3_bind_double(statement, 1, Date().timeIntervalSince1970)
-    sqlite3_bind_text(statement, 2, (queryId as NSString).utf8String, -1, nil)
+    sqlite3_bind_text(statement, 2, (queryId as NSString).utf8String, -1, SQLITE_TRANSIENT)
 
     if sqlite3_step(statement) != SQLITE_DONE {
       DataConnectLogger.error("Error updating \(ColumnName.lastAccessed) for query \(queryId)")
@@ -253,7 +257,7 @@ class SQLiteCacheProvider: CacheProvider {
       sqlite3_reset(statement)
       sqlite3_clear_bindings(statement)
 
-      sqlite3_bind_text(statement, 1, (queryId as NSString).utf8String, -1, nil)
+      sqlite3_bind_text(statement, 1, (queryId as NSString).utf8String, -1, SQLITE_TRANSIENT)
 
       if sqlite3_step(statement) == SQLITE_ROW {
         if let dataBlob = sqlite3_column_blob(statement, 0) {
@@ -282,10 +286,10 @@ class SQLiteCacheProvider: CacheProvider {
       sqlite3_reset(statement)
       sqlite3_clear_bindings(statement)
 
-      sqlite3_bind_text(statement, 1, (queryId as NSString).utf8String, -1, nil)
+      sqlite3_bind_text(statement, 1, (queryId as NSString).utf8String, -1, SQLITE_TRANSIENT)
       sqlite3_bind_double(statement, 2, Date().timeIntervalSince1970)
       _ = data.withUnsafeBytes { (bytes: UnsafeRawBufferPointer) in
-        sqlite3_bind_blob(statement, 3, bytes.baseAddress, Int32(bytes.count), nil)
+        sqlite3_bind_blob(statement, 3, bytes.baseAddress, Int32(bytes.count), SQLITE_TRANSIENT)
       }
 
       let needsTransaction = !inTransaction
@@ -320,7 +324,7 @@ class SQLiteCacheProvider: CacheProvider {
       sqlite3_reset(statement)
       sqlite3_clear_bindings(statement)
 
-      sqlite3_bind_text(statement, 1, (entityGuid as NSString).utf8String, -1, nil)
+      sqlite3_bind_text(statement, 1, (entityGuid as NSString).utf8String, -1, SQLITE_TRANSIENT)
 
       if sqlite3_step(statement) == SQLITE_ROW {
         if let dataBlob = sqlite3_column_blob(statement, 0) {
@@ -368,9 +372,9 @@ class SQLiteCacheProvider: CacheProvider {
     sqlite3_reset(statement)
     sqlite3_clear_bindings(statement)
 
-    sqlite3_bind_text(statement, 1, (entityGuid as NSString).utf8String, -1, nil)
+    sqlite3_bind_text(statement, 1, (entityGuid as NSString).utf8String, -1, SQLITE_TRANSIENT)
     _ = data.withUnsafeBytes { (bytes: UnsafeRawBufferPointer) in
-      sqlite3_bind_blob(statement, 2, bytes.baseAddress, Int32(bytes.count), nil)
+      sqlite3_bind_blob(statement, 2, bytes.baseAddress, Int32(bytes.count), SQLITE_TRANSIENT)
     }
 
     let needsTransaction = !inTransaction
