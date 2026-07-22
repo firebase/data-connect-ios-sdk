@@ -24,8 +24,8 @@ This SDK is perfect for those:
 
 ## Next Steps
 * **Get Started:** [Build your first App](https://firebase.google.com/docs/sql-connect/quickstart/ios).
-* **Schema Design:** Try creating your own Schema and Queries. Learn more about designing schemas, queries, and mutations in the [official documentation](https://firebase.google.com/docs/data-connect/schemas-guide).  
-* **Codelab:** Follow our detailed [Firebase Data Connect for iOS Codelab](https://firebase.google.com/codelabs/firebase-dataconnect-ios#0).  
+* **Schema Design:** Learn more about designing schemas, queries, and mutations in the [official documentation](https://firebase.google.com/docs/data-connect/schemas-guide).
+* **Codelab:** Follow our detailed [Firebase SQL Connect for iOS Codelab](https://firebase.google.com/codelabs/firebase-dataconnect-ios#0).
 * **Sample App:** Explore a complete sample application, [FriendlyFlix](https://github.com/firebase/data-connect-ios-sdk/tree/main/Examples/FriendlyFlix), to see more advanced usage patterns.
 
 
