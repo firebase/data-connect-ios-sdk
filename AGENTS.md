@@ -1,4 +1,6 @@
-# **🤖 Agent Guide: Swift \+ Firebase Data Connect (a.k.a. Firebase SQL Connect)**
+# **🤖 Agent Guide: Swift \+ Firebase SQL Connect (formerly called Firebase Data Connect a.k.a. FDC)**
+
+This guide describes how to use Firebase SQL Connect Swift SDK in your Swift / SwiftUI app to build a data layer for a user's app.
 
 ## **Agent Goals**
 
@@ -70,7 +72,7 @@ The Agent **must** verify these items before attempting to generate the SDK:
 Provide the user with these steps:
 
 1. Add `<AppName>GenSDK` as local package dependencies.  
-2. Add `GoogleService-Info.plist` to the app target.  
+2. Add `GoogleService-Info.plist` to the app target.
 3. Import `FirebaseCore` (and `<AppName>Data` if enabled) in the app entry point.  
 4. Call `FirebaseApp.configure()` in `init()` of the `App` struct.  
 5. Optionally call `useEmulator(...)` during local development.
@@ -78,8 +80,7 @@ Provide the user with these steps:
 ## **Core Execution Rules**
 
 1. **Strict concurrency** — build must pass `swift build -Xswiftc -strict-concurrency=complete` with zero warnings.  
-2. **Clean builds gate completion** — packages must compile with `swift build --clean-first` before a task is reported done.  
-3. **UI isolation** — once Part B exists, Views must not import `<AppName>GenSDK` directly; they interact only with the consolidated model store.
+2. **Clean builds gate completion** — packages must compile with `swift build --clean-first` before a task is reported done.
 
 ## **Definition of Done**
 
