@@ -1,3 +1,6 @@
+# Unreleased
+- [added] Add grpc request headers for platform name and sdk version to enable metrics collection in cloud monitoring.
+
 # 11.12.5
 - [fixed] Improved caching performance especially for large result sets.
 
