@@ -1,5 +1,6 @@
 # Unreleased
 - [added] Add grpc request headers for platform name and sdk version to enable metrics collection in cloud monitoring.
+- [added] Add grpc request headers for SQL Connect server affinity, to improve server resource usage efficiency and performance.
 
 # 11.12.5
 - [fixed] Improved caching performance especially for large result sets.

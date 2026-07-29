@@ -108,4 +108,14 @@ final class HeaderTests: XCTestCase {
     let contains = values.contains { $0 == Version.sdkVersion }
     XCTAssertTrue(contains)
   }
+
+  func testSqlConnectAffinityHeader() async throws {
+    let dcOne = DataConnect.dataConnect(connectorConfig: fakeConnectorConfigOne)
+    let callOptions = await dcOne.grpcClient.createCallOptions()
+    let values = callOptions.customMetadata.values(
+      forHeader: GrpcClientRequestHeaders.sqlConnectAffinity, canonicalForm: false
+    )
+    let contains = values.contains { $0 == "fdc-testdataconnect" }
+    XCTAssertTrue(contains)
+  }
 }

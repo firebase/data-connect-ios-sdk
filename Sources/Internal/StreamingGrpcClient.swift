@@ -31,6 +31,7 @@ actor StreamingGrpcClient: GrpcClient {
   private let callerSDKType: CallerSDKType
   private let googRequestHeaderValue: String
   private let googApiClientHeaderValue: String
+  private let sqlConnectAffinityHeaderValue: String
 
   private var streamingCall: FirebaseDataConnectStreamingCall?
   private let subManager = StreamSubscriptionManager()
@@ -80,7 +81,8 @@ actor StreamingGrpcClient: GrpcClient {
        appCheck: AppCheckInterop?,
        callerSDKType: CallerSDKType,
        googRequestHeaderValue: String,
-       googApiClientHeaderValue: String) {
+       googApiClientHeaderValue: String,
+       sqlConnectAffinityHeaderValue: String) {
     self.app = app
     self.connectorName = connectorName
     self.serverSettings = serverSettings
@@ -89,6 +91,7 @@ actor StreamingGrpcClient: GrpcClient {
     self.callerSDKType = callerSDKType
     self.googRequestHeaderValue = googRequestHeaderValue
     self.googApiClientHeaderValue = googApiClientHeaderValue
+    self.sqlConnectAffinityHeaderValue = sqlConnectAffinityHeaderValue
 
     currentUid = auth.currentUser?.uid
 
@@ -480,7 +483,8 @@ actor StreamingGrpcClient: GrpcClient {
       auth: auth,
       appCheck: appCheck,
       googRequestHeaderValue: googRequestHeaderValue,
-      googApiClientHeaderValue: googApiClientHeaderValue
+      googApiClientHeaderValue: googApiClientHeaderValue,
+      sqlConnectAffinityHeaderValue: sqlConnectAffinityHeaderValue
     )
   }
 }
