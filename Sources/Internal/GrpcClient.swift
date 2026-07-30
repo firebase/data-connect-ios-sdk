@@ -57,6 +57,7 @@ enum GrpcClientRequestHeaders {
   static let firebaseAppId = "x-firebase-gmpid"
   static let googApiClient = "x-goog-api-client"
   static let clientVersion = "x-client-version"
+  static let sqlConnectAffinity = "x-firebase-sqlconnect-affinity"
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -112,6 +113,7 @@ actor DataConnectGrpcClient: GrpcClient, CustomStringConvertible {
     let connectorName =
       "projects/\(projectId)/locations/\(connectorConfig.location)/services/\(connectorConfig.serviceId)/connectors/\(connectorConfig.connector)"
     let googRequestHeaderValue = "location=\(connectorConfig.location)&frontend=data"
+    let sqlConnectAffinityHeaderValue = "\(projectId)\(connectorConfig.serviceId)"
 
     let header =
       "gl-swift/\(Version.swiftVersion()) fire/\(Version.sdkVersion) \(Version.platformVersionHeader()) grpc-swift/"
@@ -145,7 +147,8 @@ actor DataConnectGrpcClient: GrpcClient, CustomStringConvertible {
       appCheck: appCheck,
       callerSDKType: callerSDKType,
       googRequestHeaderValue: googRequestHeaderValue,
-      googApiClientHeaderValue: googApiClientHeaderValue
+      googApiClientHeaderValue: googApiClientHeaderValue,
+      sqlConnectAffinityHeaderValue: sqlConnectAffinityHeaderValue
     )
 
     streamingClient = StreamingGrpcClient(
@@ -156,7 +159,8 @@ actor DataConnectGrpcClient: GrpcClient, CustomStringConvertible {
       appCheck: appCheck,
       callerSDKType: callerSDKType,
       googRequestHeaderValue: googRequestHeaderValue,
-      googApiClientHeaderValue: googApiClientHeaderValue
+      googApiClientHeaderValue: googApiClientHeaderValue,
+      sqlConnectAffinityHeaderValue: sqlConnectAffinityHeaderValue
     )
   }
 
@@ -275,7 +279,8 @@ actor DataConnectGrpcClient: GrpcClient, CustomStringConvertible {
                                 auth: Auth,
                                 appCheck: AppCheckInterop?,
                                 googRequestHeaderValue: String,
-                                googApiClientHeaderValue: String) async -> CallOptions {
+                                googApiClientHeaderValue: String,
+                                sqlConnectAffinityHeaderValue: String) async -> CallOptions {
     var headers = HPACKHeaders()
 
     if app.isDataCollectionDefaultEnabled {
@@ -288,6 +293,10 @@ actor DataConnectGrpcClient: GrpcClient, CustomStringConvertible {
       headers.add(
         name: GrpcClientRequestHeaders.clientVersion,
         value: "ios/\(Version.sdkVersion)"
+      )
+      headers.add(
+        name: GrpcClientRequestHeaders.sqlConnectAffinity,
+        value: sqlConnectAffinityHeaderValue
       )
     }
 
