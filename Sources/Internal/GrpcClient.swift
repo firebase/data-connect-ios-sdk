@@ -56,7 +56,6 @@ enum GrpcClientRequestHeaders {
   static let firebaseAppCheckToken = "x-firebase-appcheck"
   static let firebaseAppId = "x-firebase-gmpid"
   static let googApiClient = "x-goog-api-client"
-  static let clientPlatform = "x-client-platform"
   static let clientVersion = "x-client-version"
 }
 
@@ -286,8 +285,10 @@ actor DataConnectGrpcClient: GrpcClient, CustomStringConvertible {
       )
       headers.add(name: GrpcClientRequestHeaders.firebaseAppId, value: app.options.googleAppID)
       headers.add(name: GrpcClientRequestHeaders.googApiClient, value: googApiClientHeaderValue)
-      headers.add(name: GrpcClientRequestHeaders.clientPlatform, value: "ios")
-      headers.add(name: GrpcClientRequestHeaders.clientVersion, value: Version.sdkVersion)
+      headers.add(
+        name: GrpcClientRequestHeaders.clientVersion,
+        value: "ios/\(Version.sdkVersion)"
+      )
     }
 
     // Add Auth token if available

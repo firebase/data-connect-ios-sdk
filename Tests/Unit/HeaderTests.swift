@@ -89,23 +89,13 @@ final class HeaderTests: XCTestCase {
     XCTAssertTrue(contains)
   }
 
-  func testClientPlatformHeader() async throws {
-    let dcOne = DataConnect.dataConnect(connectorConfig: fakeConnectorConfigOne)
-    let callOptions = await dcOne.grpcClient.createCallOptions()
-    let values = callOptions.customMetadata.values(
-      forHeader: GrpcClientRequestHeaders.clientPlatform, canonicalForm: false
-    )
-    let contains = values.contains { $0 == "ios" }
-    XCTAssertTrue(contains)
-  }
-
   func testClientVersionHeader() async throws {
     let dcOne = DataConnect.dataConnect(connectorConfig: fakeConnectorConfigOne)
     let callOptions = await dcOne.grpcClient.createCallOptions()
     let values = callOptions.customMetadata.values(
       forHeader: GrpcClientRequestHeaders.clientVersion, canonicalForm: false
     )
-    let contains = values.contains { $0 == Version.sdkVersion }
+    let contains = values.contains { $0 == "ios/\(Version.sdkVersion)" }
     XCTAssertTrue(contains)
   }
 }
