@@ -553,9 +553,12 @@ actor StreamSubscriptionManager {
   private var activeMutationExecuteRequests: Set<RequestIdentifier> = []
 
   private var onIdle: (@Sendable () async -> Void)?
+  private let tracker: ConnectionGracePeriodTracker
 
-  init(onIdle: (@Sendable () async -> Void)? = nil) {
+  init(onIdle: (@Sendable () async -> Void)? = nil,
+       clock: any DataConnectClock = ContinuousDataConnectClock()) {
     self.onIdle = onIdle
+    self.tracker = ConnectionGracePeriodTracker(clock: clock)
   }
 
   func setOnIdle(_ onIdle: @Sendable @escaping () async -> Void) {
@@ -563,6 +566,29 @@ actor StreamSubscriptionManager {
   }
 
   private func checkIdle() async {
+    if subscribeContinuations.isEmpty {
+      if tracker.gracePeriodExpired, executeContinuations.isEmpty {
+        await executeIdleDisconnectIfIdle()
+        return
+      }
+
+      tracker.startGracePeriod { [weak self] in
+        guard let self = self else { return }
+        await self.handleGracePeriodExpiration()
+      }
+    } else {
+      tracker.cancelGracePeriod()
+    }
+  }
+
+  private func handleGracePeriodExpiration() async {
+    if executeContinuations.isEmpty {
+      await executeIdleDisconnectIfIdle()
+    }
+  }
+
+  private func executeIdleDisconnectIfIdle() async {
+    tracker.cancelGracePeriod()
     if subscribeContinuations.isEmpty, executeContinuations.isEmpty {
       await onIdle?()
     }
@@ -571,6 +597,9 @@ actor StreamSubscriptionManager {
   func saveRequest(_ request: FirebaseDataConnectStreamRequest,
                    for requestID: RequestIdentifier,
                    type: RequestType) {
+    if type == .subscribe {
+      tracker.cancelGracePeriod()
+    }
     switch type {
     case .query:
       activeQueryExecuteRequests[requestID] = request
@@ -586,7 +615,7 @@ actor StreamSubscriptionManager {
   }
 
   func waitForResponse(for requestID: RequestIdentifier) async throws -> ServerResponse {
-    try await withTaskCancellationHandler {
+    return try await withTaskCancellationHandler {
       try await withCheckedThrowingContinuation { continuation in
         guard !Task.isCancelled else {
           continuation.resume(throwing: CancellationError())
@@ -611,6 +640,7 @@ actor StreamSubscriptionManager {
   }
 
   func createStream(for requestID: RequestIdentifier) throws -> AsyncStream<ServerResponse> {
+    tracker.cancelGracePeriod()
     if let continuation = subscribeContinuations[requestID] {
       // This shouldn't occur, as subscribes should be de-duplicated earlier, but we want to handle
       // it gracefully in case.

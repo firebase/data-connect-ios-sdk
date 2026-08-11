@@ -39,6 +39,10 @@ let package = Package(
       url: "https://github.com/google/GoogleUtilities.git",
       "8.0.0" ..< "9.0.0"
     ),
+    .package(
+      url: "https://github.com/pointfreeco/swift-clocks.git",
+      from: "1.0.0"
+    ),
   ],
   targets: [
     .target(
@@ -71,7 +75,10 @@ let package = Package(
     ),
     .testTarget(
       name: "FirebaseDataConnectUnit",
-      dependencies: ["FirebaseDataConnect"],
+      dependencies: [
+        "FirebaseDataConnect",
+        .product(name: "Clocks", package: "swift-clocks"),
+      ],
       path: "Tests/Unit",
       resources: [.process("Resources")]
     ),
