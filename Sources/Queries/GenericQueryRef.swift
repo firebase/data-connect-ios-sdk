@@ -30,7 +30,7 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
 
   private let cache: Cache?
 
-  private var subscriptionStream: AsyncStream<ServerResponse>?
+  private var subscriptionStream: AsyncThrowingStream<ServerResponse, any Error>?
 
   private var connectionTask: Task<Void, Never>?
 
@@ -87,7 +87,7 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
 
           self.subscriptionStream = stream
 
-          for await response in stream {
+          for try await response in stream {
             if Task.isCancelled { break }
             do {
               DataConnectLogger.debug("Received response in sub stream in GenericQueryRef")
@@ -111,12 +111,10 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
         } catch {
           // Stream failures
           if !Task.isCancelled {
+            let dcError = error as? DataConnectError ?? DataConnectInternalError
+              .internalError(message: "Failed to subscribe to query", cause: error)
             resultsPublisher
-              .send(.failure(AnyDataConnectError(dataConnectError: DataConnectInternalError
-                  .internalError(
-                    message: "Failed to subscribe to query",
-                    cause: error
-                  ))))
+              .send(.failure(AnyDataConnectError(dataConnectError: dcError)))
           }
         }
       }

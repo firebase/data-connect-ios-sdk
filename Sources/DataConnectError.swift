@@ -272,6 +272,38 @@ public struct OperationFailureResponse: Sendable {
   }
 }
 
+// MARK: - Data Connect Authentication Errors
+
+/// An error that occurs due to authentication or user identity changes.
+public struct DataConnectAuthError: DataConnectDomainError {
+  public struct Code: DataConnectErrorCode {
+    private let code: String
+    private init(_ code: String) { self.code = code }
+
+    public static let firebaseUserChanged = Code("firebaseUserChanged")
+
+    public static var allCases: [DataConnectAuthError.Code] {
+      return [firebaseUserChanged]
+    }
+
+    public var description: String { return code }
+  }
+
+  public let code: Code
+  public let message: String?
+  public let underlyingError: (any Error)?
+
+  private init(code: Code, message: String? = nil, cause: (any Error)? = nil) {
+    self.code = code
+    self.message = message
+    underlyingError = cause
+  }
+
+  static func firebaseUserChanged(message: String? = nil, cause: (any Error)? = nil) -> DataConnectAuthError {
+    return DataConnectAuthError(code: .firebaseUserChanged, message: message, cause: cause)
+  }
+}
+
 // MARK: - Internal Errors
 
 public struct DataConnectInternalError: DataConnectDomainError {

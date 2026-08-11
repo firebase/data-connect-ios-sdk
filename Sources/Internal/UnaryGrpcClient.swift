@@ -244,7 +244,7 @@ actor UnaryGrpcClient: GrpcClient {
     ResultType: Decodable,
     VariableType: OperationVariable
   >(request: QueryRequest<VariableType>,
-    resultType: ResultType.Type) async throws -> AsyncStream<ServerResponse> {
+    resultType: ResultType.Type) async throws -> AsyncThrowingStream<ServerResponse, any Error> {
     throw DataConnectInternalError
       .internalError(message: "Subscribe not supported in UnaryGrpcClient")
   }

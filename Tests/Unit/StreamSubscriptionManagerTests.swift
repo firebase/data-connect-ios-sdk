@@ -159,4 +159,65 @@ final class StreamSubscriptionManagerTests: XCTestCase {
 
     _ = stream
   }
+
+  func testAuthStateChangeTerminatesSubscriptionsAndFailsExecutes() async throws {
+    let subManager = StreamSubscriptionManager()
+    let queryRequestID = RequestIdentifier(operationId: "test-query", sequenceNumber: 1)
+    let subRequestID = RequestIdentifier(operationId: "test-sub", sequenceNumber: 2)
+
+    // 1. Setup subscription and listen to it
+    let stream = try await subManager.createStream(for: subRequestID)
+    let subscriptionFinishedExpectation = XCTestExpectation(description: "Subscription stream finished")
+    let subscriptionTask = Task {
+      do {
+        for try await _ in stream {
+          XCTFail("Should not receive any response on auth change")
+        }
+        XCTFail("Stream should have completed with an error")
+      } catch let error as DataConnectAuthError {
+        XCTAssertEqual(error.code, .firebaseUserChanged)
+        XCTAssertEqual(
+          error.message,
+          "Authentication state change occured while waiting for stream response"
+        )
+        subscriptionFinishedExpectation.fulfill()
+      } catch {
+        XCTFail("Unexpected stream error type: \(error)")
+      }
+    }
+
+    // 2. Setup a pending query execution
+    let queryTask = Task {
+      try await subManager.waitForResponse(for: queryRequestID)
+    }
+
+    // Allow tasks to spin up
+    try await Task.sleep(nanoseconds: 50_000_000)
+
+    // 3. Trigger auth state change
+    await subManager.handleAuthStateChange()
+
+    // 4. Verify subscription stream completes
+    await fulfillment(of: [subscriptionFinishedExpectation], timeout: 1.0)
+
+    // 5. Verify query execution fails with correct error
+    do {
+      _ = try await queryTask.value
+      XCTFail("Query continuation should have thrown an error")
+    } catch let error as DataConnectAuthError {
+      XCTAssertEqual(error.code, .firebaseUserChanged)
+      XCTAssertEqual(
+        error.message,
+        "Authentication state change occured while waiting for stream response"
+      )
+    } catch {
+      XCTFail("Unexpected error type: \(error)")
+    }
+
+    // 6. Verify internal state is cleared
+    let hasSubs = await subManager.hasAnySubscription()
+    let hasPending = await subManager.hasPendingExecutes()
+    XCTAssertFalse(hasSubs, "Expected no active subscriptions")
+    XCTAssertFalse(hasPending, "Expected no pending executes")
+  }
 }

@@ -80,7 +80,7 @@ protocol GrpcClient: Sendable {
     ResultType: Decodable,
     VariableType: OperationVariable
   >(request: QueryRequest<VariableType>,
-    resultType: ResultType.Type) async throws -> AsyncStream<ServerResponse>
+    resultType: ResultType.Type) async throws -> AsyncThrowingStream<ServerResponse, any Error>
 
   func unsubscribe<
     VariableType: OperationVariable
@@ -218,7 +218,7 @@ actor DataConnectGrpcClient: GrpcClient, CustomStringConvertible {
     ResultType: Decodable,
     VariableType: OperationVariable
   >(request: QueryRequest<VariableType>,
-    resultType: ResultType.Type) async throws -> AsyncStream<ServerResponse> {
+    resultType: ResultType.Type) async throws -> AsyncThrowingStream<ServerResponse, any Error> {
     return try await streamingClient.subscribe(request: request, resultType: resultType)
   }
 
