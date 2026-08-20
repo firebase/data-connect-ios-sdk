@@ -1,6 +1,8 @@
 # 11.12.6
 - [added] Add grpc request header for platform name and sdk version to enable metrics collection in cloud monitoring.
 - [added] Add grpc request header for SQL Connect server affinity, to improve server resource usage efficiency and performance.
+- [fixed] Fixed an issue where remote queries using `@refresh` with long intervals (e.g., 5 minutes) would
+  silently stop receiving updates. [#16538](https://github.com/firebase/firebase-ios-sdk/issues/16538)
 
 # 11.12.5
 - [fixed] Improved caching performance especially for large result sets.
