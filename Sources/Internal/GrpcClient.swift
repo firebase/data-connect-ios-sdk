@@ -256,7 +256,7 @@ actor DataConnectGrpcClient: GrpcClient, CustomStringConvertible {
       configuration.keepalive = ClientConnectionKeepalive(
         interval: .seconds(30),
         timeout: .seconds(10),
-        permitWithoutCalls: true
+        permitWithoutCalls: false
       )
     }
     return channel
