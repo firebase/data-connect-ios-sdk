@@ -252,7 +252,13 @@ actor DataConnectGrpcClient: GrpcClient, CustomStringConvertible {
         .sslEnabled
         ? .tls(GRPCTLSConfiguration.makeClientDefault(compatibleWith: group)) : .plaintext,
       eventLoopGroup: group
-    )
+    ) { configuration in
+      configuration.keepalive = ClientConnectionKeepalive(
+        interval: .seconds(30),
+        timeout: .seconds(10),
+        permitWithoutCalls: true
+      )
+    }
     return channel
   }
 
