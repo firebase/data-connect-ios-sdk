@@ -61,4 +61,52 @@ final class ErrorTypesTests: XCTestCase {
 
     wait(for: [errExpectation], timeout: 1.0)
   }
+
+  func testAuthErrorProperties() throws {
+    let authError = DataConnectAuthError.userChanged(
+      message: "Firebase user changed from uid=user1 to uid=user2"
+    )
+
+    XCTAssertEqual(authError.code, .userChanged)
+    XCTAssertEqual(authError.code.description, "userChanged")
+    XCTAssertEqual(DataConnectAuthError.Code.allCases, [.userChanged])
+    XCTAssertEqual(authError.message, "Firebase user changed from uid=user1 to uid=user2")
+    XCTAssertNil(authError.underlyingError)
+    XCTAssertTrue(authError.description.contains("userChanged"))
+
+    // Test conformance to DataConnectError and DataConnectDomainError
+    let dcError: any DataConnectError = authError
+    XCTAssertEqual(dcError.message, "Firebase user changed from uid=user1 to uid=user2")
+    let domainError: any DataConnectDomainError = authError
+    XCTAssertEqual("\(domainError.code)", "userChanged")
+  }
+
+  func testPublisherAuthUserChangedError() throws {
+    let errExpectation = XCTestExpectation(description: "Expect DataConnectAuthError.userChanged")
+
+    pubCancellable = errPublisher.sink(receiveValue: { result in
+      switch result {
+      case .success:
+        XCTFail("Unexpectedly got success. We expect a failure with error")
+      case let .failure(dcerror):
+        let unwrapped = dcerror.dataConnectError
+        if let authError = unwrapped as? DataConnectAuthError {
+          switch authError.code {
+          case .userChanged:
+            errExpectation.fulfill()
+          default:
+            XCTFail("Unexpected code: \(authError.code)")
+          }
+        } else {
+          XCTFail("Did not get DataConnectAuthError as expected")
+        }
+      }
+    })
+
+    let authError = DataConnectAuthError.userChanged(message: "User changed")
+    errPublisher.send(.failure(AnyDataConnectError(dataConnectError: authError)))
+
+    wait(for: [errExpectation], timeout: 1.0)
+  }
 }
+

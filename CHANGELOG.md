@@ -1,3 +1,7 @@
+# 12.0.0
+- [changed] **Breaking Change:** Query subscriptions now terminate with a `DataConnectAuthError` (`userChanged` code) when the Firebase Auth user changes (such as via sign-in, sign-out, or switching accounts) instead of closing silently.
+- [added] Added `DataConnectAuthError` with code `userChanged` to enable reliably detecting when a realtime streaming connection fails due to a change in the Firebase Auth user.
+
 # 11.12.6
 - [added] Add grpc request header for platform name and sdk version to enable metrics collection in cloud monitoring.
 - [added] Add grpc request header for SQL Connect server affinity, to improve server resource usage efficiency and performance.

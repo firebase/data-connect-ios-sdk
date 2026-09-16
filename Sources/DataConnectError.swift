@@ -309,3 +309,44 @@ public struct DataConnectInternalError: DataConnectDomainError {
     return DataConnectInternalError(code: .sqliteError, message: message, cause: cause)
   }
 }
+
+// MARK: - Auth Errors
+
+/// An error that occurs due to Firebase Auth events within the Data Connect service.
+///
+/// This error can arise when the authenticated user changes while a realtime streaming
+/// connection is active. It provides specific error codes to pinpoint the cause of the failure.
+///
+/// - SeeAlso: ``DataConnectDomainError`` for the base error type.
+public struct DataConnectAuthError: DataConnectDomainError {
+  public struct Code: DataConnectErrorCode {
+    private let code: String
+    private init(_ code: String) { self.code = code }
+
+    public static let userChanged = Code("userChanged")
+
+    public static var allCases: [DataConnectAuthError.Code] {
+      return [userChanged]
+    }
+
+    public var description: String { return code }
+  }
+
+  public let code: Code
+  public let message: String?
+  public let underlyingError: (any Error)?
+
+  private init(code: Code, message: String? = nil, cause: (any Error)? = nil) {
+    self.code = code
+    self.message = message
+    self.underlyingError = cause
+  }
+
+  static func userChanged(
+    message: String? = nil,
+    cause: (any Error)? = nil
+  ) -> DataConnectAuthError {
+    return DataConnectAuthError(code: .userChanged, message: message, cause: cause)
+  }
+}
+

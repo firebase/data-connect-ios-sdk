@@ -80,7 +80,7 @@ protocol GrpcClient: Sendable {
     ResultType: Decodable,
     VariableType: OperationVariable
   >(request: QueryRequest<VariableType>,
-    resultType: ResultType.Type) async throws -> AsyncStream<ServerResponse>
+    resultType: ResultType.Type) async throws -> AsyncThrowingStream<ServerResponse, Error>
 
   func unsubscribe<
     VariableType: OperationVariable
@@ -175,6 +175,8 @@ actor DataConnectGrpcClient: GrpcClient, CustomStringConvertible {
         return try await streamingClient.executeQuery(request: request, resultType: resultType)
       } catch let operationErr as DataConnectOperationError {
         throw operationErr
+      } catch let authErr as DataConnectAuthError {
+        throw authErr
       } catch let internalErr as DataConnectInternalError {
         DataConnectLogger
           .error(
@@ -200,6 +202,8 @@ actor DataConnectGrpcClient: GrpcClient, CustomStringConvertible {
         return try await streamingClient.executeMutation(request: request, resultType: resultType)
       } catch let operationErr as DataConnectOperationError {
         throw operationErr
+      } catch let authErr as DataConnectAuthError {
+        throw authErr
       } catch let internalErr as DataConnectInternalError {
         DataConnectLogger
           .error(
@@ -218,7 +222,7 @@ actor DataConnectGrpcClient: GrpcClient, CustomStringConvertible {
     ResultType: Decodable,
     VariableType: OperationVariable
   >(request: QueryRequest<VariableType>,
-    resultType: ResultType.Type) async throws -> AsyncStream<ServerResponse> {
+    resultType: ResultType.Type) async throws -> AsyncThrowingStream<ServerResponse, Error> {
     return try await streamingClient.subscribe(request: request, resultType: resultType)
   }
 

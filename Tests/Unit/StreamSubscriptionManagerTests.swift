@@ -159,4 +159,62 @@ final class StreamSubscriptionManagerTests: XCTestCase {
 
     _ = stream
   }
+
+  func testHandleAuthStateChangeTerminatesSubscriptionsWithAuthUserChangedError() async throws {
+    let subManager = StreamSubscriptionManager()
+    let subRequestID = RequestIdentifier(operationId: "test-sub-auth", sequenceNumber: 1)
+
+    let stream = try await subManager.createStream(for: subRequestID)
+    let streamCollectorTask = Task {
+      var count = 0
+      for try await _ in stream {
+        count += 1
+      }
+      return count
+    }
+
+    try await Task.sleep(nanoseconds: 50_000_000)
+
+    await subManager.handleAuthStateChange(oldUid: "uid-old", newUid: "uid-new")
+
+    do {
+      _ = try await streamCollectorTask.value
+      XCTFail("Stream should have thrown DataConnectAuthError")
+    } catch let authError as DataConnectAuthError {
+      XCTAssertEqual(authError.code, .userChanged)
+      XCTAssertEqual(authError.message, "Firebase user changed from uid=uid-old to uid=uid-new")
+    } catch {
+      XCTFail("Unexpected error thrown: \(error)")
+    }
+
+    let hasSubs = await subManager.hasAnySubscription()
+    XCTAssertFalse(hasSubs, "Active subscriptions should be cleared")
+  }
+
+  func testHandleAuthStateChangeFailsPendingExecutesWithAuthUserChangedError() async throws {
+    let subManager = StreamSubscriptionManager()
+    let queryRequestID = RequestIdentifier(operationId: "test-query-auth", sequenceNumber: 1)
+
+    let queryContinuation = Task {
+      try await subManager.waitForResponse(for: queryRequestID)
+    }
+
+    try await Task.sleep(nanoseconds: 50_000_000)
+
+    await subManager.handleAuthStateChange(oldUid: nil, newUid: "uid-signed-in")
+
+    do {
+      _ = try await queryContinuation.value
+      XCTFail("Query continuation should have thrown DataConnectAuthError")
+    } catch let authError as DataConnectAuthError {
+      XCTAssertEqual(authError.code, .userChanged)
+      XCTAssertEqual(authError.message, "Firebase user changed from uid=nil to uid=uid-signed-in")
+    } catch {
+      XCTFail("Unexpected error thrown: \(error)")
+    }
+
+    let hasPending = await subManager.hasPendingExecutes()
+    XCTAssertFalse(hasPending, "Pending executes should be cleared")
+  }
 }
+

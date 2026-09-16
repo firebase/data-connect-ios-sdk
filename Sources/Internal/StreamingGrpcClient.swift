@@ -146,10 +146,19 @@ actor StreamingGrpcClient: GrpcClient {
           "Auth identity changed from \(currentUid ?? "nil") to \(newUid ?? "nil"). Disconnecting stream."
         )
 
+      let oldUid = currentUid
       currentUid = newUid
       pendingNewToken = nil
 
-      await subManager.handleAuthStateChange()
+      let rTask = reconnectTask
+      reconnectTask = nil
+      rTask?.cancel()
+
+      let cTask = connectionTask
+      connectionTask = nil
+      cTask?.cancel()
+
+      await subManager.handleAuthStateChange(oldUid: oldUid, newUid: newUid)
       await streamingCall?.requestStream.finish()
     } else if let user = user {
       DataConnectLogger
@@ -386,7 +395,7 @@ actor StreamingGrpcClient: GrpcClient {
     ResultType: Decodable,
     VariableType: OperationVariable
   >(request: QueryRequest<VariableType>,
-    resultType: ResultType.Type) async throws -> AsyncStream<ServerResponse> {
+    resultType: ResultType.Type) async throws -> AsyncThrowingStream<ServerResponse, Error> {
     await connectStream()
 
     guard let streamingCall else {
@@ -539,7 +548,7 @@ actor StreamSubscriptionManager {
     Error
   >] = [:]
   private var subscribeContinuations =
-    [RequestIdentifier: AsyncStream<ServerResponse>.Continuation]()
+    [RequestIdentifier: AsyncThrowingStream<ServerResponse, Error>.Continuation]()
 
   // These structures map request IDs to request bodies, for re-sending requests if the stream
   // connection unexpectedly terminates, as well as for de-duplicating identical requests. We do not
@@ -610,7 +619,7 @@ actor StreamSubscriptionManager {
     await checkIdle()
   }
 
-  func createStream(for requestID: RequestIdentifier) throws -> AsyncStream<ServerResponse> {
+  func createStream(for requestID: RequestIdentifier) throws -> AsyncThrowingStream<ServerResponse, Error> {
     if let continuation = subscribeContinuations[requestID] {
       // This shouldn't occur, as subscribes should be de-duplicated earlier, but we want to handle
       // it gracefully in case.
@@ -618,7 +627,7 @@ actor StreamSubscriptionManager {
       continuation.finish()
     }
 
-    let stream = AsyncStream<ServerResponse> { continuation in
+    let stream = AsyncThrowingStream<ServerResponse, Error> { continuation in
       subscribeContinuations[requestID] = continuation
 
       continuation.onTermination = { _ in
@@ -704,21 +713,19 @@ actor StreamSubscriptionManager {
     await checkIdle()
   }
 
-  func handleAuthStateChange() async {
-    for value in subscribeContinuations.values {
-      value.finish()
+  func handleAuthStateChange(oldUid: String? = nil, newUid: String? = nil) async {
+    let message = "Firebase user changed from uid=\(oldUid ?? "nil") to uid=\(newUid ?? "nil")"
+    let authError = DataConnectAuthError.userChanged(message: message)
+
+    for continuation in subscribeContinuations.values {
+      continuation.onTermination = nil
+      continuation.finish(throwing: authError)
     }
     subscribeContinuations.removeAll()
     activeSubscribeRequests.removeAll()
 
-    let errStr = "Authentication state change occured while waiting for stream response"
-    let failureResponse = OperationFailureResponse(
-      rawJsonData: "",
-      errors: [.init(message: errStr, path: [])],
-      data: nil
-    )
     for value in executeContinuations.values {
-      value.resume(throwing: DataConnectOperationError.executionFailed(response: failureResponse))
+      value.resume(throwing: authError)
     }
     executeContinuations.removeAll()
     activeQueryExecuteRequests.removeAll()

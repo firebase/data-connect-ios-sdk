@@ -30,7 +30,7 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
 
   private let cache: Cache?
 
-  private var subscriptionStream: AsyncStream<ServerResponse>?
+  private var subscriptionStream: AsyncThrowingStream<ServerResponse, Error>?
 
   private var connectionTask: Task<Void, Never>?
 
@@ -87,21 +87,33 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
 
           self.subscriptionStream = stream
 
-          for await response in stream {
-            if Task.isCancelled { break }
-            do {
-              DataConnectLogger.debug("Received response in sub stream in GenericQueryRef")
-              _ = try await self.handleServerResponse(response: response)
-            } catch {
-              // failures in handling response
-              if !Task.isCancelled {
-                resultsPublisher
-                  .send(.failure(AnyDataConnectError(dataConnectError: DataConnectInternalError
-                      .internalError(
-                        message: "Failed to handle response",
-                        cause: error
-                      ))))
+          do {
+            for try await response in stream {
+              if Task.isCancelled { break }
+              do {
+                DataConnectLogger.debug("Received response in sub stream in GenericQueryRef")
+                _ = try await self.handleServerResponse(response: response)
+              } catch {
+                // failures in handling response
+                if !Task.isCancelled {
+                  let dcError = (error as? DataConnectError) ?? DataConnectInternalError
+                    .internalError(
+                      message: "Failed to handle response",
+                      cause: error
+                    )
+                  resultsPublisher.send(.failure(AnyDataConnectError(dataConnectError: dcError)))
+                }
               }
+            }
+          } catch {
+            // Stream failures (including DataConnectAuthError from auth user change)
+            if !Task.isCancelled {
+              let dcError = (error as? DataConnectError) ?? DataConnectInternalError
+                .internalError(
+                  message: "Subscription stream terminated with error",
+                  cause: error
+                )
+              resultsPublisher.send(.failure(AnyDataConnectError(dataConnectError: dcError)))
             }
           }
           // Exiting the loop indicates the stream has finished.
@@ -109,14 +121,14 @@ actor GenericQueryRef<ResultData: Decodable & Sendable, Variable: OperationVaria
             self.subscriptionStream = nil
           }
         } catch {
-          // Stream failures
+          // Stream setup failures
           if !Task.isCancelled {
-            resultsPublisher
-              .send(.failure(AnyDataConnectError(dataConnectError: DataConnectInternalError
-                  .internalError(
-                    message: "Failed to subscribe to query",
-                    cause: error
-                  ))))
+            let dcError = (error as? DataConnectError) ?? DataConnectInternalError
+              .internalError(
+                message: "Failed to subscribe to query",
+                cause: error
+              )
+            resultsPublisher.send(.failure(AnyDataConnectError(dataConnectError: dcError)))
           }
         }
       }
