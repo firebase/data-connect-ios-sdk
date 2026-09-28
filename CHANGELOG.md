@@ -1,3 +1,9 @@
+# Unreleased
+- [changed] Firebase Data Connect now requires Swift tools version 6.2.1 and
+  the Swift 6.2.3 compiler for the Swift Package. The package will no longer
+  resolve in Xcode versions older than 26.2, which remains the minimum
+  officially supported version for the SDK. [#16696](https://github.com/firebase/firebase-ios-sdk/issues/16696)
+
 # 11.12.6
 - [added] Add grpc request header for platform name and sdk version to enable metrics collection in cloud monitoring.
 - [added] Add grpc request header for SQL Connect server affinity, to improve server resource usage efficiency and performance.

@@ -1,4 +1,4 @@
-// swift-tools-version:5.9
+// swift-tools-version:6.2.1
 // The swift-tools-version declares the minimum version of Swift required to
 // build this package.
 
@@ -101,7 +101,7 @@ func firebaseDependency() -> Package.Dependency {
     return .package(url: firebaseURL, branch: "main")
   }
 
-  return .package(url: firebaseURL, "11.5.0" ..< "13.0.0")
+  return .package(url: firebaseURL, "11.5.0" ..< "14.0.0")
 }
 
 func integrationTestPath() -> String? {
