@@ -1,3 +1,7 @@
+# Unreleased
+- [fixed] Client cache no longer rewrites String values that look like Int64, UUID or Timestamp
+  (e.g. "08001" was returned as "8001" on cache hits). [#16887](https://github.com/firebase/firebase-ios-sdk/issues/16887)
+
 # 11.12.6
 - [added] Add grpc request header for platform name and sdk version to enable metrics collection in cloud monitoring.
 - [added] Add grpc request header for SQL Connect server affinity, to improve server resource usage efficiency and performance.

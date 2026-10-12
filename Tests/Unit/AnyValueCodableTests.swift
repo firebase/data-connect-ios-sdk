@@ -72,4 +72,43 @@ final class AnyValueCodableTests: XCTestCase {
     let int64Decoded = try anyValue.decodeValue(Int64.self)
     XCTAssertEqual(int64, int64Decoded)
   }
+
+  func testAnyCodableValueInfersCanonicalStrings() throws {
+    XCTAssertEqual(try decodeAnyCodableValue("42"), .int64(42))
+    XCTAssertEqual(try decodeAnyCodableValue("-42"), .int64(-42))
+
+    let uuidString = "d41d8cd98f00b204e9800998ecf8427e"
+    guard case .uuid = try decodeAnyCodableValue(uuidString) else {
+      return XCTFail("Expected .uuid for \(uuidString)")
+    }
+
+    let timestampString = "2026-05-04T09:10:45.387765Z"
+    guard case .timestamp = try decodeAnyCodableValue(timestampString) else {
+      return XCTFail("Expected .timestamp for \(timestampString)")
+    }
+  }
+
+  func testAnyCodableValuePreservesNonCanonicalStrings() throws {
+    let strings = [
+      "08001",
+      "00012688",
+      "0012345678",
+      "+5",
+      "-0",
+      "D41D8CD98F00B204E9800998ECF8427E",
+      "2026-05-04T11:10:45+02:00",
+      "2026-05-04T09:10:45.1Z",
+    ]
+    for string in strings {
+      let value = try decodeAnyCodableValue(string)
+      XCTAssertEqual(value, .string(string))
+      let reencoded = try JSONDecoder().decode(String.self, from: JSONEncoder().encode(value))
+      XCTAssertEqual(reencoded, string)
+    }
+  }
+
+  private func decodeAnyCodableValue(_ string: String) throws -> AnyCodableValue {
+    let json = try JSONEncoder().encode(string)
+    return try JSONDecoder().decode(AnyCodableValue.self, from: json)
+  }
 }
