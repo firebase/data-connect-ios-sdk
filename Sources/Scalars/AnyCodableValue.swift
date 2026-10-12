@@ -51,7 +51,7 @@ enum AnyCodableValue: Codable, Equatable, CustomStringConvertible {
     // would be rewritten as "8001" and "5" when the cached value is encoded again.
     if let stringVal = try? container.decode(String.self) {
       if let tsVal = try? container.decode(Timestamp.self),
-         CodableTimestampHelper.string(from: tsVal) == stringVal {
+         (try? CodableTimestampHelper.string(from: tsVal)) == stringVal {
         self = .timestamp(tsVal)
       } else if let int64Val = try? Int64CodableConverter().decode(input: stringVal),
                 String(int64Val) == stringVal {

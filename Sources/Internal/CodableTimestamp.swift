@@ -66,7 +66,10 @@ extension CodableTimestamp {
   public func encode(to encoder: any Swift.Encoder) throws {
     // timestamp to string
     var container = encoder.singleValueContainer()
-    let timestampString = CodableTimestampHelper.string(seconds: seconds, nanoseconds: nanoseconds)
+    let timestampString = try CodableTimestampHelper.string(
+      seconds: seconds,
+      nanoseconds: nanoseconds
+    )
     try container.encode(timestampString)
   }
 }
@@ -82,13 +85,13 @@ class CodableTimestampHelper {
     )
 
   // The string a Timestamp is encoded to.
-  static func string(seconds: Int64, nanoseconds: Int32) -> String {
-    let bufString = try! Google_Protobuf_Timestamp(seconds: seconds, nanos: nanoseconds)
+  static func string(seconds: Int64, nanoseconds: Int32) throws -> String {
+    let bufString = try Google_Protobuf_Timestamp(seconds: seconds, nanos: nanoseconds)
       .jsonString()
     return bufString.trimmingCharacters(in: CharacterSet(charactersIn: "\""))
   }
 
-  static func string(from timestamp: Timestamp) -> String {
-    return string(seconds: timestamp.seconds, nanoseconds: timestamp.nanoseconds)
+  static func string(from timestamp: Timestamp) throws -> String {
+    return try string(seconds: timestamp.seconds, nanoseconds: timestamp.nanoseconds)
   }
 }
