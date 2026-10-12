@@ -1,3 +1,8 @@
+# Unreleased
+- [fixed] Decoding a string that matches the Timestamp format but is out of range
+  (e.g. "2026-13-01T00:00:00Z") no longer crashes; it is kept as a String in cached and `AnyValue` data,
+  and decoding it as a `Timestamp` throws. [#16888](https://github.com/firebase/firebase-ios-sdk/issues/16888)
+
 # 11.12.6
 - [added] Add grpc request header for platform name and sdk version to enable metrics collection in cloud monitoring.
 - [added] Add grpc request header for SQL Connect server affinity, to improve server resource usage efficiency and performance.

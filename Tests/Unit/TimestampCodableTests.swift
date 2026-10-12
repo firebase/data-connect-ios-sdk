@@ -157,6 +157,20 @@ final class TimestampTests: XCTestCase {
     }
   }
 
+  func testOutOfRangeValuesShouldThrow() throws {
+    for outOfRangeText in outOfRangeTimestampStrs {
+      XCTAssertThrowsError(try decodeTimestamp(outOfRangeText))
+    }
+  }
+
+  func testOutOfRangeValuesInAnyValueAreKeptAsStrings() throws {
+    for outOfRangeText in outOfRangeTimestampStrs {
+      let jsonData = try JSONEncoder().encode(outOfRangeText)
+      let decoded = try JSONDecoder().decode(AnyCodableValue.self, from: jsonData)
+      XCTAssertEqual(decoded, .string(outOfRangeText))
+    }
+  }
+
   func verifyEncodeDecodeRoundTrip(_ timestamp: Timestamp) throws {
     do {
       let jsonEncoder = JSONEncoder()
@@ -246,5 +260,16 @@ final class TimestampTests: XCTestCase {
       "1985-04-12T23:20:50.123456789000000000Z",
       "1985-04-12T23:20:50.1234567890000000000Z",
       "1985-04-12T23:20:50.12345678900000000000Z",
+    ]
+
+  // Match the timestamp regex but are rejected by the protobuf parser.
+  let outOfRangeTimestampStrs: [String] =
+    [
+      "2026-13-01T00:00:00Z",
+      "2026-01-32T00:00:00Z",
+      "2026-01-01T24:00:00Z",
+      "2026-01-01T00:60:00Z",
+      "0000-01-01T00:00:00Z",
+      "9999-12-31T23:59:59-01:00",
     ]
 }

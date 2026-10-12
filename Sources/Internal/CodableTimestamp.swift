@@ -59,7 +59,7 @@ extension CodableTimestamp {
     }
 
     let buf: Google_Protobuf_Timestamp =
-      try! Google_Protobuf_Timestamp(jsonString: "\"\(timestampString)\"")
+      try Google_Protobuf_Timestamp(jsonString: "\"\(timestampString)\"")
     self.init(seconds: buf.seconds, nanoseconds: buf.nanos)
   }
 
