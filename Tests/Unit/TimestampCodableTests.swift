@@ -159,7 +159,9 @@ final class TimestampTests: XCTestCase {
 
   func testOutOfRangeValuesShouldThrow() throws {
     for outOfRangeText in outOfRangeTimestampStrs {
-      XCTAssertThrowsError(try decodeTimestamp(outOfRangeText))
+      XCTAssertThrowsError(try decodeTimestamp(outOfRangeText)) { error in
+        XCTAssertEqual((error as? DataConnectCodecError)?.code, .invalidTimestampFormat)
+      }
     }
   }
 

@@ -58,9 +58,15 @@ extension CodableTimestamp {
       throw DataConnectCodecError.invalidTimestampFormat()
     }
 
-    let buf: Google_Protobuf_Timestamp =
-      try Google_Protobuf_Timestamp(jsonString: "\"\(timestampString)\"")
-    self.init(seconds: buf.seconds, nanoseconds: buf.nanos)
+    do {
+      let buf = try Google_Protobuf_Timestamp(jsonString: "\"\(timestampString)\"")
+      self.init(seconds: buf.seconds, nanoseconds: buf.nanos)
+    } catch {
+      throw DataConnectCodecError.invalidTimestampFormat(
+        message: "Failed to parse timestamp: \(timestampString)",
+        cause: error
+      )
+    }
   }
 
   public func encode(to encoder: any Swift.Encoder) throws {
