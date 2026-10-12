@@ -46,12 +46,18 @@ enum AnyCodableValue: Codable, Equatable, CustomStringConvertible {
   init(from decoder: Decoder) throws {
     let container = try decoder.singleValueContainer()
 
-    if let tsVal = try? container.decode(Timestamp.self) {
-      self = .timestamp(tsVal)
-    } else if let stringVal = try? container.decode(String.self) {
-      if let int64Val = try? Int64CodableConverter().decode(input: stringVal) {
+    // A string is only inferred as a typed scalar if re-encoding it reproduces the
+    // exact original string. Otherwise values like "08001" (postal code) or "+5"
+    // would be rewritten as "8001" and "5" when the cached value is encoded again.
+    if let stringVal = try? container.decode(String.self) {
+      if let tsVal = try? container.decode(Timestamp.self),
+         CodableTimestampHelper.string(from: tsVal) == stringVal {
+        self = .timestamp(tsVal)
+      } else if let int64Val = try? Int64CodableConverter().decode(input: stringVal),
+                String(int64Val) == stringVal {
         self = .int64(int64Val)
-      } else if let uuidVal = try? UUIDCodableConverter().decode(input: stringVal) {
+      } else if let uuidVal = try? UUIDCodableConverter().decode(input: stringVal),
+                (try? UUIDCodableConverter().encode(input: uuidVal)) == stringVal {
         self = .uuid(uuidVal)
       } else {
         self = .string(stringVal)
