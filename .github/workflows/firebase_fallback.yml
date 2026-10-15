@@ -5,8 +5,9 @@ name: firebase-fallback
 #
 # - Xcode 16.4 / 26.0: SwiftPM < 6.2.1 should skip Firebase 13 (tools-version
 #   6.2.1) and resolve 12.x.
-# - Xcode 26.1: SwiftPM 6.2.1 accepts Firebase 13's manifest, but the 6.2.1
-#   compiler should hit Firebase's `#if compiler(<6.2.3)` `#error`.
+# - Xcode 26.1: SwiftPM 6.2.1 accepts Firebase 13's manifest, but Data
+#   Connect's `#if compiler(>=6.2.3)` guard caps the range at `..< 13.0.0`,
+#   so it should resolve 12.x instead of hitting Firebase 13's `#error`.
 # - Xcode 26.2: should resolve 13.x.
 
 on:
@@ -30,7 +31,7 @@ jobs:
           - xcode: "26.0"
             expect: "12"
           - xcode: "26.1"
-            expect: "error"
+            expect: "12"
           - xcode: "26.2"
             expect: "13"
     env:
