@@ -110,10 +110,14 @@ func firebaseDependency() -> Package.Dependency {
   // Firebase 13 requires the Swift 6.2.3 compiler (Xcode 26.2+). Older
   // toolchains are capped at Firebase 12 so they don't resolve Firebase 13 and
   // hit its `#if compiler(<6.2.3)` `#error` (e.g. Xcode 26.1.x).
+  //
+  // SwiftPM 6.2+ rejects `traits: []` on a package version that declares no
+  // traits (Firebase 12), so traits are only declared where Firebase 13 is
+  // required.
   #if compiler(>=6.2.3)
-    return .package(url: firebaseURL, "11.5.0" ..< "14.0.0", traits: [])
+    return .package(url: firebaseURL, "13.0.0" ..< "14.0.0", traits: [])
   #else
-    return .package(url: firebaseURL, "11.5.0" ..< "13.0.0", traits: [])
+    return .package(url: firebaseURL, "11.5.0" ..< "13.0.0")
   #endif
 }
 

@@ -89,6 +89,7 @@ jobs:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           fetch-depth: 0
+          fetch-tags: true
 
       - name: Select Xcode
         shell: bash
@@ -104,8 +105,21 @@ jobs:
           git worktree add "${RUNNER_TEMP}/base/data-connect-ios-sdk" origin/nc.xcode26
           head -1 "${RUNNER_TEMP}/base/data-connect-ios-sdk/Package.swift"
 
+      - name: Create versioned prototype repo
+        shell: bash
+        run: |
+          # Local clone with the real release tags plus a fake 11.99.0 tag on
+          # the prototype commit, so SwiftPM can pick between them.
+          repo="${RUNNER_TEMP}/repo/data-connect-ios-sdk"
+          git clone --quiet "${GITHUB_WORKSPACE}" "${repo}"
+          git -C "${repo}" tag 11.99.0 HEAD
+          git -C "${repo}" tag --list '11.*' | sort -V | tail -3
+
       - name: Resolve consumers
         shell: bash
         run: |
           unset FIREBASE_MAIN
-          bash .github/prototype/consumers.sh "${GITHUB_WORKSPACE}" "${RUNNER_TEMP}/base/data-connect-ios-sdk"
+          bash .github/prototype/consumers.sh \
+            "${GITHUB_WORKSPACE}" \
+            "${RUNNER_TEMP}/base/data-connect-ios-sdk" \
+            "file://${RUNNER_TEMP}/repo/data-connect-ios-sdk"
