@@ -1,3 +1,11 @@
+# Unreleased
+- [changed] Firebase Data Connect now supports Firebase 13. The minimum
+  supported Xcode version for Data Connect is now Xcode 26.2, matching
+  Firebase. Resolving Data Connect against Firebase 13 with an Xcode version
+  older than 26.2 will fail with an error from Firebase's `Package.swift`
+  asking to upgrade to Xcode 26.2 or later.
+  [#16696](https://github.com/firebase/firebase-ios-sdk/issues/16696)
+
 # 11.12.6
 - [added] Add grpc request header for platform name and sdk version to enable metrics collection in cloud monitoring.
 - [added] Add grpc request header for SQL Connect server affinity, to improve server resource usage efficiency and performance.

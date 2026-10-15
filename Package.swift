@@ -101,7 +101,7 @@ func firebaseDependency() -> Package.Dependency {
     return .package(url: firebaseURL, branch: "main")
   }
 
-  return .package(url: firebaseURL, "11.5.0" ..< "13.0.0")
+  return .package(url: firebaseURL, "11.5.0" ..< "14.0.0")
 }
 
 func integrationTestPath() -> String? {
