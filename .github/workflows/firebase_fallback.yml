@@ -1,0 +1,87 @@
+name: firebase-fallback
+
+# Temporary workflow: verifies which Firebase major version SwiftPM resolves
+# for Data Connect's `11.5.0 ..< 14.0.0` range on each Xcode version.
+#
+# - Xcode 16.4 / 26.0: SwiftPM < 6.2.1 should skip Firebase 13 (tools-version
+#   6.2.1) and resolve 12.x.
+# - Xcode 26.1: SwiftPM 6.2.1 accepts Firebase 13's manifest, but the 6.2.1
+#   compiler should hit Firebase's `#if compiler(<6.2.3)` `#error`.
+# - Xcode 26.2: should resolve 13.x.
+
+on:
+  push:
+    branches: [nc.xcode26.fallback]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  resolve:
+    name: resolve (Xcode ${{ matrix.xcode }}, expect ${{ matrix.expect }})
+    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - xcode: "16.4"
+            expect: "12"
+          - xcode: "26.0"
+            expect: "12"
+          - xcode: "26.1"
+            expect: "error"
+          - xcode: "26.2"
+            expect: "13"
+    env:
+      XCODE_VERSION: ${{ matrix.xcode }}
+      EXPECT: ${{ matrix.expect }}
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
+      - name: Select Xcode
+        shell: bash
+        run: |
+          ls -d /Applications/Xcode*.app
+          # Match e.g. Xcode_26.0.app or Xcode_26.0.1.app.
+          xcode_app=$(ls -d /Applications/Xcode_"${XCODE_VERSION}"*.app | sort -V | tail -1)
+          echo "Selecting ${xcode_app}"
+          sudo xcode-select -s "${xcode_app}/Contents/Developer"
+          xcodebuild -version
+          swift --version
+          swift package --version
+
+      - name: Resolve and assert
+        shell: bash
+        run: |
+          # Make sure the version range is used, not firebase-ios-sdk main.
+          unset FIREBASE_MAIN
+          rm -rf .build Package.resolved
+
+          set +e
+          swift package resolve 2>&1 | tee resolve.log
+          status=${PIPESTATUS[0]}
+          set -e
+
+          if [[ "${EXPECT}" == "error" ]]; then
+            if [[ ${status} -ne 0 ]] && grep -q "Firebase requires Swift 6.2.3" resolve.log; then
+              echo "OK: resolution failed with Firebase's compiler #error."
+              exit 0
+            fi
+            echo "FAIL: expected Firebase's compiler #error (exit ${status})."
+            exit 1
+          fi
+
+          if [[ ${status} -ne 0 ]]; then
+            echo "FAIL: resolution failed (exit ${status})."
+            exit 1
+          fi
+
+          version=$(jq -r '.pins[] | select(.identity == "firebase-ios-sdk") | .state.version' Package.resolved)
+          echo "Resolved firebase-ios-sdk ${version}"
+          if [[ "${version}" == "${EXPECT}".* ]]; then
+            echo "OK: resolved Firebase ${EXPECT}.x."
+          else
+            echo "FAIL: expected Firebase ${EXPECT}.x."
+            exit 1
+          fi
