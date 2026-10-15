@@ -1,4 +1,4 @@
-// swift-tools-version:5.9
+// swift-tools-version:6.1
 // The swift-tools-version declares the minimum version of Swift required to
 // build this package.
 
@@ -89,25 +89,31 @@ let package = Package(
       dependencies: ["ShellExecutor"],
       path: "Tests/ShellExecutor"
     ),
-  ]
+  ],
+  // Tools-version 6.x defaults targets to the Swift 6 language mode.
+  swiftLanguageModes: [.v5]
 )
 
 func firebaseDependency() -> Package.Dependency {
   let firebaseURL = "https://github.com/firebase/firebase-ios-sdk"
 
+  // Data Connect only uses FirebaseCore and FirebaseAuth, so it opts out of
+  // Firebase's default traits (e.g. Firestore). Apps that use those features
+  // depend on firebase-ios-sdk directly, which re-enables them.
+
   // Point SPM CI to the tip of main of https://github.com/firebase/firebase-ios-sdk so that the
   // release process can defer publishing the GoogleAppMeasurement tag until after testing.
   if ProcessInfo.processInfo.environment["FIREBASE_MAIN"] != nil {
-    return .package(url: firebaseURL, branch: "main")
+    return .package(url: firebaseURL, branch: "main", traits: [])
   }
 
   // Firebase 13 requires the Swift 6.2.3 compiler (Xcode 26.2+). Older
   // toolchains are capped at Firebase 12 so they don't resolve Firebase 13 and
   // hit its `#if compiler(<6.2.3)` `#error` (e.g. Xcode 26.1.x).
   #if compiler(>=6.2.3)
-    return .package(url: firebaseURL, "11.5.0" ..< "14.0.0")
+    return .package(url: firebaseURL, "11.5.0" ..< "14.0.0", traits: [])
   #else
-    return .package(url: firebaseURL, "11.5.0" ..< "13.0.0")
+    return .package(url: firebaseURL, "11.5.0" ..< "13.0.0", traits: [])
   #endif
 }
 
