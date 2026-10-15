@@ -101,7 +101,14 @@ func firebaseDependency() -> Package.Dependency {
     return .package(url: firebaseURL, branch: "main")
   }
 
-  return .package(url: firebaseURL, "11.5.0" ..< "14.0.0")
+  // Firebase 13 requires the Swift 6.2.3 compiler (Xcode 26.2+). Older
+  // toolchains are capped at Firebase 12 so they don't resolve Firebase 13 and
+  // hit its `#if compiler(<6.2.3)` `#error` (e.g. Xcode 26.1.x).
+  #if compiler(>=6.2.3)
+    return .package(url: firebaseURL, "11.5.0" ..< "14.0.0")
+  #else
+    return .package(url: firebaseURL, "11.5.0" ..< "13.0.0")
+  #endif
 }
 
 func integrationTestPath() -> String? {
