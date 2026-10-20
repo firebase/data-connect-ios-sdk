@@ -236,6 +236,30 @@ final class CacheTests: XCTestCase {
   }
   """
 
+  // String values that look like Int64 / UUID / Timestamp but are not in their canonical form
+  let stringScalarsData = """
+  {
+    "user": {
+      "postalCode": "08001",
+      "ean": "00012688",
+      "signed": "+5",
+      "hexId": "D41D8CD98F00B204E9800998ECF8427E",
+      "localTime": "2026-05-04T11:10:45+02:00",
+      "count": "42"
+    },
+    "inline": {
+      "postalCode": "08001"
+    }
+  }
+  """
+
+  let stringScalarsExt = """
+  { "dataConnect": [
+    { "path": ["user"],
+      "entityId": "stringScalarsUser1" }
+  ]}
+  """
+
   var cacheProvider: SQLiteCacheProvider?
 
   override func setUpWithError() throws {
@@ -414,6 +438,42 @@ final class CacheTests: XCTestCase {
 
       XCTAssertEqual(decodedOriginal as NSDictionary?, decodedHydrated as NSDictionary?)
     }
+  }
+
+  func testStringScalarsDehydrationHydration() throws {
+    let cp = try XCTUnwrap(cacheProvider)
+
+    let jsonDecoder = JSONDecoder()
+    let extResponse = try jsonDecoder.decode(
+      ExtensionResponse.self,
+      from: stringScalarsExt.data(using: .utf8)!
+    )
+    let flattenedPaths = extResponse.flattenPathMetadata()
+
+    let resultsProcessor = ResultTreeProcessor()
+
+    let (dehydratedTree, _, _) = try resultsProcessor.dehydrateResults(
+      "queryStringScalars",
+      stringScalarsData.data(using: .utf8)!,
+      flattenedPaths,
+      cacheProvider: cp
+    )
+
+    let (hydratedResults, _) = try resultsProcessor.hydrateResults(
+      dehydratedTree,
+      cacheProvider: cp
+    )
+
+    let decodedOriginal = try JSONSerialization.jsonObject(
+      with: stringScalarsData.data(using: .utf8)!,
+      options: []
+    ) as? [String: Any]
+    let decodedHydrated = try JSONSerialization.jsonObject(
+      with: hydratedResults,
+      options: []
+    ) as? [String: Any]
+
+    XCTAssertEqual(decodedOriginal as NSDictionary?, decodedHydrated as NSDictionary?)
   }
 
   func testImpactedRefs() throws {
