@@ -1,4 +1,8 @@
 # Unreleased
+- [changed] Firebase Data Connect now supports Firebase 13 when built with
+  Xcode 26.2 or later, Firebase 13's minimum supported Xcode version. Older
+  Xcode versions continue to resolve Firebase 12 or earlier.
+  [#16696](https://github.com/firebase/firebase-ios-sdk/issues/16696)
 - [fixed] Decoding a string that matches the Timestamp format but is out of range
   (e.g. "2026-13-01T00:00:00Z") no longer crashes; it is kept as a String in cached and `AnyValue` data,
   and decoding it as a `Timestamp` throws. [#16888](https://github.com/firebase/firebase-ios-sdk/issues/16888)
