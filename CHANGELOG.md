@@ -6,6 +6,8 @@
 - [fixed] Decoding a string that matches the Timestamp format but is out of range
   (e.g. "2026-13-01T00:00:00Z") no longer crashes; it is kept as a String in cached and `AnyValue` data,
   and decoding it as a `Timestamp` throws. [#16888](https://github.com/firebase/firebase-ios-sdk/issues/16888)
+- [fixed] Client cache no longer rewrites String values that look like Int64, UUID or Timestamp
+  (e.g. "08001" was returned as "8001" on cache hits). [#16887](https://github.com/firebase/firebase-ios-sdk/issues/16887)
 
 # 11.12.6
 - [added] Add grpc request header for platform name and sdk version to enable metrics collection in cloud monitoring.
