@@ -2,7 +2,8 @@
 
 ## Requirements
 
-- Requires Xcode 15.2 or above
+- Requires the minimum Xcode version supported by Firebase. See the
+  [Firebase Swift Package Manager requirements](https://github.com/firebase/firebase-ios-sdk/blob/main/SwiftPackageManager.md#requirements).
 - See [Package.swift](Package.swift) for supported platform versions.
 
 ## Installation

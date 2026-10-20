@@ -1,4 +1,8 @@
 # Unreleased
+- [changed] Firebase Data Connect now supports Firebase 13 when built with
+  Xcode 26.2 or later, Firebase 13's minimum supported Xcode version. Older
+  Xcode versions continue to resolve Firebase 12 or earlier.
+  [#16696](https://github.com/firebase/firebase-ios-sdk/issues/16696)
 - [fixed] Client cache no longer rewrites String values that look like Int64, UUID or Timestamp
   (e.g. "08001" was returned as "8001" on cache hits). [#16887](https://github.com/firebase/firebase-ios-sdk/issues/16887)
 
