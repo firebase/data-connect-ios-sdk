@@ -1,4 +1,4 @@
-# Unreleased
+# 11.12.7
 - [changed] Firebase Data Connect now supports Firebase 13 when built with
   Xcode 26.2 or later, Firebase 13's minimum supported Xcode version. Older
   Xcode versions continue to resolve Firebase 12 or earlier.
