@@ -113,6 +113,8 @@ struct EntityNode {
             for r in impactedRefs {
               impactedRefsAccumulator?.append(r)
             }
+          } else {
+            scalars[key] = value
           }
         } else {
           // Since we don't know the type of an empty array,
