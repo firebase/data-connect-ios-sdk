@@ -260,6 +260,19 @@ final class CacheTests: XCTestCase {
   ]}
   """
 
+  // A non-empty list of scalars on an object that has no entity ID
+  let scalarArrayData = """
+  {
+    "items": [
+      { "name": "first", "tags": ["a", "b"] }
+    ]
+  }
+  """
+
+  let scalarArrayExt = """
+  { "dataConnect": [] }
+  """
+
   var cacheProvider: SQLiteCacheProvider?
 
   override func setUpWithError() throws {
@@ -466,6 +479,42 @@ final class CacheTests: XCTestCase {
 
     let decodedOriginal = try JSONSerialization.jsonObject(
       with: stringScalarsData.data(using: .utf8)!,
+      options: []
+    ) as? [String: Any]
+    let decodedHydrated = try JSONSerialization.jsonObject(
+      with: hydratedResults,
+      options: []
+    ) as? [String: Any]
+
+    XCTAssertEqual(decodedOriginal as NSDictionary?, decodedHydrated as NSDictionary?)
+  }
+
+  func testScalarArrayWithoutEntityIdDehydrationHydration() throws {
+    let cp = try XCTUnwrap(cacheProvider)
+
+    let jsonDecoder = JSONDecoder()
+    let extResponse = try jsonDecoder.decode(
+      ExtensionResponse.self,
+      from: scalarArrayExt.data(using: .utf8)!
+    )
+    let flattenedPaths = extResponse.flattenPathMetadata()
+
+    let resultsProcessor = ResultTreeProcessor()
+
+    let (dehydratedTree, _, _) = try resultsProcessor.dehydrateResults(
+      "queryScalarArray",
+      scalarArrayData.data(using: .utf8)!,
+      flattenedPaths,
+      cacheProvider: cp
+    )
+
+    let (hydratedResults, _) = try resultsProcessor.hydrateResults(
+      dehydratedTree,
+      cacheProvider: cp
+    )
+
+    let decodedOriginal = try JSONSerialization.jsonObject(
+      with: scalarArrayData.data(using: .utf8)!,
       options: []
     ) as? [String: Any]
     let decodedHydrated = try JSONSerialization.jsonObject(

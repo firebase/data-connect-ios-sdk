@@ -1,3 +1,8 @@
+# Unreleased
+- [fixed] Client cache no longer drops non-empty lists of scalars (e.g. `[String]`) from objects
+  without an entity ID, which made cached results for those queries fail to decode.
+  [#16977](https://github.com/firebase/firebase-ios-sdk/issues/16977)
+
 # 11.12.7
 - [changed] Firebase Data Connect now supports Firebase 13 when built with
   Xcode 26.2 or later, Firebase 13's minimum supported Xcode version. Older
