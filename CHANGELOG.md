@@ -1,4 +1,4 @@
-# Unreleased
+# 11.12.8
 - [fixed] Client cache no longer drops non-empty lists of scalars (e.g. `[String]`) from objects
   without an entity ID, which made cached results for those queries fail to decode.
   [#16977](https://github.com/firebase/firebase-ios-sdk/issues/16977)
